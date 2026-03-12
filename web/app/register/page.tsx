@@ -104,7 +104,7 @@ export default function RegisterPage() {
             </button>
           </div>
           <p className="text-xs text-[#555] mt-1.5">
-            We&apos;ll check <code className="text-[#555]">{url ? new URL(url.startsWith("http") ? url : `https://${url}`).origin + "/ai" : "https://yoursite.com/ai"}</code>
+            We&apos;ll check <code className="text-[#555]">{(() => { try { return new URL(url.startsWith("http") ? url : `https://${url}`).origin + "/ai"; } catch { return "https://yoursite.com/ai"; } })()}</code>
           </p>
         </div>
 
