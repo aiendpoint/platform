@@ -26,7 +26,10 @@ export default async function Home() {
         </h1>
         <p className="text-xl text-[#888] max-w-2xl mx-auto mb-10">
           Make your service instantly readable by AI agents.
+          <br />
+          <span className="italic font-bold">
           One endpoint. Pure JSON. No HTML noise.
+          </span>
         </p>
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Link
