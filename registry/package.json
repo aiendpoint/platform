@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^9.0.0",
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.39.0",
     "@upstash/redis": "^1.37.0",
     "fastify": "^4.26.0",

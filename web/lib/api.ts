@@ -144,6 +144,31 @@ export interface ConvertResult {
   source_url?: string;
 }
 
+export interface WebpageConvertResult extends ConvertResult {
+  ai_enhanced: boolean;
+  method: "ai" | "meta";
+}
+
+export async function convertWebpage(url: string): Promise<WebpageConvertResult> {
+  const res = await fetch(`${API_URL}/api/convert/webpage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw Object.assign(new Error(data.error ?? "Conversion failed"), { data, status: res.status });
+  return data;
+}
+
+export async function getWebpageConverterStatus(): Promise<{ ai_available: boolean }> {
+  try {
+    const res = await fetch(`${API_URL}/api/convert/webpage/status`);
+    return res.ok ? res.json() : { ai_available: false };
+  } catch {
+    return { ai_available: false };
+  }
+}
+
 export async function convertOpenApi(payload: { spec_url?: string; spec?: unknown }): Promise<ConvertResult> {
   const res = await fetch(`${API_URL}/api/convert/openapi`, {
     method: "POST",
