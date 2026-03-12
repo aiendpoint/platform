@@ -211,16 +211,20 @@ Phase 1 — 완료 ✅
   [x] 검증 배지 UI (ValidateBadge 컴포넌트, 카운트다운 타이머)
   [x] README 완성 후 GitHub 공개
 
-Phase 2 — 변환 레이어 & 수익화 (진행 중)
-  [ ] 1. OpenAPI/Swagger → /ai 변환기 (registry POST /api/convert/openapi + web UI)
-  [ ] 2. 웹페이지 URL → /ai 변환기 (Claude API로 페이지 분석 → 스펙 생성)
-  [ ] 3. 변환 결과 미리보기 + 원클릭 등록 (web UI)
-  [ ] 4. Stripe 결제 연동 (Pro $29/월, Business $199/월 플랜)
-  [ ] 5. 첫 10개 서비스 직접 등록 (docs/03_first_10_services.md 기준)
-  [ ] 6. HackerNews Show HN / Reddit r/webdev 포스팅
+Phase 2 — 변환 레이어 & 에코시스템 (진행 중)
+  [x] 1. OpenAPI/Swagger → /ai 변환기 (registry POST /api/convert/openapi + web UI)
+  [x] 2. 웹페이지 URL → /ai 변환기 (Gemini Flash로 페이지 분석 → 스펙 생성)
+  [ ] 3. MCP 서버 — Claude/Cursor가 레지스트리를 실제로 쓰게 만드는 핵심
+         - packages/mcp-server/ (@aiendpoint/mcp-server)
+         - Tools: search_services, fetch_ai_spec, validate_service
+         - npx @aiendpoint/mcp-server 로 즉시 사용 가능
+  [ ] 4. 첫 10개 서비스 직접 등록 (docs/03_first_10_services.md 기준)
+  [ ] 5. HackerNews Show HN / Reddit r/webdev 포스팅
+         - MCP 서버 완성 후 포스팅 → 실제로 써볼 수 있는 것이 있어야 함
+  ~~[ ] Stripe 결제 연동~~ → SKIP (개인 개발자, 한국 시장 집중 단계에서 불필요)
 
-Phase 3 — 에코시스템 확장
-  [ ] Claude / GPT / Gemini 공식 MCP 서버
+Phase 3 — 수익화 & 확장
+  [ ] Stripe / 토스페이먼츠 결제 연동 (Pro/Business 플랜)
   [ ] SDK 배포 (npm: @aiendpoint/sdk, pip: aiendpoint)
   [ ] 한국 시장 집중 공략 (카카오, 네이버 계열 서비스 PR)
   [ ] 에이전트 트래픽 과금 인프라
