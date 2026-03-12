@@ -29,8 +29,8 @@
 
 ```
 [x] Supabase  → Southeast Asia (Singapore)  ap-southeast-1  ✅
-[] Railway   → Southeast Asia (Singapore)
-[] Vercel    → vercel.json 에 "regions": ["sin1"] 추가
+[x] Railway   → Southeast Asia (Singapore)
+[x] Vercel    → vercel.json 에 "regions": ["sin1"] 추가
 [x] Upstash   → Asia Pacific (Singapore) 선택
 ```
 

@@ -255,18 +255,20 @@ def ai_spec():
       </section>
 
       {/* MCP Server */}
-      <section className="mb-12">
-        <h2 className="text-xl font-bold text-[#e5e5e5] mb-2">Use with AI agents</h2>
+      <section id="mcp" className="mb-12">
+        <h2 className="text-xl font-bold text-[#e5e5e5] mb-1">MCP Server</h2>
         <p className="text-[#888] text-sm mb-6">
-          Install the AIEndpoint MCP server so Claude, Cursor, and other AI agents can search the
-          registry and fetch <code className="text-[#888]">/ai</code> specs directly.
+          Let Claude or Cursor <strong className="text-[#aaa] font-medium">search the registry and fetch{" "}
+          <code className="text-[#888]">/ai</code> specs</strong> from any service — without leaving your conversation.
+          Install <a href="https://www.npmjs.com/package/@aiendpoint/mcp-server" target="_blank" rel="noopener noreferrer" className="text-[#3b82f6] hover:underline">@aiendpoint/mcp-server</a> once,
+          then ask your agent to find APIs for you.
         </p>
 
         {/* Claude Desktop */}
-        <div className="mb-6">
-          <p className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-3">Claude Desktop</p>
-          <p className="text-xs text-[#555] mb-2">
-            Edit <code className="text-[#555] bg-[#111] border border-[#222] px-1 py-0.5 rounded">~/Library/Application Support/Claude/claude_desktop_config.json</code>:
+        <div className="mb-5">
+          <p className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-2">Claude Desktop</p>
+          <p className="text-xs text-[#444] mb-2">
+            Edit <code className="text-[#444] bg-[#111] border border-[#222] px-1 py-0.5 rounded">~/Library/Application Support/Claude/claude_desktop_config.json</code>
           </p>
           <pre className="bg-[#0d0d0d] border border-[#222] rounded-lg p-4 text-xs font-mono text-[#888] overflow-x-auto whitespace-pre">{`{
   "mcpServers": {
@@ -280,9 +282,10 @@ def ai_spec():
 
         {/* Cursor */}
         <div className="mb-6">
-          <p className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-3">Cursor</p>
-          <p className="text-xs text-[#555] mb-2">
-            Edit <code className="text-[#555] bg-[#111] border border-[#222] px-1 py-0.5 rounded">~/.cursor/mcp.json</code> (global) or <code className="text-[#555] bg-[#111] border border-[#222] px-1 py-0.5 rounded">.cursor/mcp.json</code> (project):
+          <p className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-2">Cursor</p>
+          <p className="text-xs text-[#444] mb-2">
+            Edit <code className="text-[#444] bg-[#111] border border-[#222] px-1 py-0.5 rounded">~/.cursor/mcp.json</code> (global) or{" "}
+            <code className="text-[#444] bg-[#111] border border-[#222] px-1 py-0.5 rounded">.cursor/mcp.json</code> (project)
           </p>
           <pre className="bg-[#0d0d0d] border border-[#222] rounded-lg p-4 text-xs font-mono text-[#888] overflow-x-auto whitespace-pre">{`{
   "mcpServers": {
@@ -294,30 +297,82 @@ def ai_spec():
 }`}</pre>
         </div>
 
-        {/* Claude Code (skills.sh) */}
-        <div className="mb-6">
-          <p className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-3">Claude Code</p>
-          <p className="text-xs text-[#555] mb-2">
-            Install via <a href="https://skills.sh" target="_blank" rel="noopener noreferrer" className="text-[#3b82f6] hover:underline">skills.sh</a>:
-          </p>
-          <pre className="bg-[#0d0d0d] border border-[#222] rounded-lg p-4 text-xs font-mono text-[#888] overflow-x-auto whitespace-pre">{`npx skills add aiendpoint/platform --skill aiendpoint`}</pre>
-        </div>
-
-        {/* Tools */}
+        {/* Tools table */}
         <div className="bg-[#111] border border-[#222] rounded-lg overflow-hidden">
           <div className="px-4 py-2.5 border-b border-[#222]">
-            <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">Available tools</span>
+            <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">Tools provided</span>
           </div>
           <div className="divide-y divide-[#1a1a1a]">
             {[
               { name: "aiendpoint_search_services", desc: "Search registered services by keyword, category, or auth type" },
-              { name: "aiendpoint_fetch_ai_spec",   desc: "Fetch the /ai spec from any URL directly" },
+              { name: "aiendpoint_fetch_ai_spec",   desc: "Fetch the /ai spec from any service URL directly" },
               { name: "aiendpoint_validate_service", desc: "Check if a service correctly implements the /ai standard" },
             ].map(({ name, desc }) => (
               <div key={name} className="px-4 py-3">
                 <code className="text-xs font-mono text-[#3b82f6]">{name}</code>
                 <p className="text-xs text-[#555] mt-0.5">{desc}</p>
               </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-xs text-[#444] mt-3">
+          After restarting Claude Desktop or Cursor, try: <em>&quot;Find me a free weather API&quot;</em> or{" "}
+          <em>&quot;What can stripe.com do?&quot;</em>
+        </p>
+      </section>
+
+      {/* Claude Code Skill */}
+      <section id="skill" className="mb-12">
+        <h2 className="text-xl font-bold text-[#e5e5e5] mb-1">Claude Code Skill</h2>
+        <p className="text-[#888] text-sm mb-6">
+          Use <strong className="text-[#aaa] font-medium">Claude Code (CLI)</strong> to add a{" "}
+          <code className="text-[#888]">/ai</code> endpoint to your own service.
+          Install the skill once via <a href="https://skills.sh" target="_blank" rel="noopener noreferrer" className="text-[#3b82f6] hover:underline">skills.sh</a>,
+          then say <em className="text-[#666]">&quot;add /ai endpoint to my service&quot;</em> — Claude will detect your framework,
+          generate the implementation, and validate it.
+        </p>
+
+        {/* Install */}
+        <div className="mb-5">
+          <p className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-2">Install</p>
+          <pre className="bg-[#0d0d0d] border border-[#222] rounded-lg p-4 text-xs font-mono text-[#888] overflow-x-auto whitespace-pre">{`npx skills add aiendpoint/platform --skill aiendpoint`}</pre>
+        </div>
+
+        {/* What it does */}
+        <div className="bg-[#111] border border-[#222] rounded-lg overflow-hidden mb-5">
+          <div className="px-4 py-2.5 border-b border-[#222]">
+            <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">What the skill does</span>
+          </div>
+          <div className="divide-y divide-[#1a1a1a]">
+            {[
+              { step: "1", text: "Detects your framework — Express, Fastify, Next.js, FastAPI, Flask, and more" },
+              { step: "2", text: "Analyzes existing routes and generates a /ai spec with up to 15 capabilities" },
+              { step: "3", text: "Inserts the /ai endpoint implementation into your codebase" },
+              { step: "4", text: "Validates the spec via api.aiendpoint.dev and reports the score" },
+              { step: "5", text: "Optionally registers the service on the AIEndpoint registry" },
+            ].map(({ step, text }) => (
+              <div key={step} className="px-4 py-3 flex items-start gap-3">
+                <span className="text-[10px] font-mono text-[#333] shrink-0 mt-0.5">{step}</span>
+                <p className="text-xs text-[#666]">{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Trigger phrases */}
+        <div className="bg-[#111] border border-[#222] rounded-lg p-4">
+          <p className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-3">Trigger phrases</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              "add /ai endpoint to my service",
+              "make my service AI-ready",
+              "implement aiendpoint standard",
+              "register on aiendpoint.dev",
+            ].map((phrase) => (
+              <code key={phrase} className="text-xs bg-[#0d0d0d] border border-[#222] text-[#555] px-2 py-1 rounded">
+                &quot;{phrase}&quot;
+              </code>
             ))}
           </div>
         </div>

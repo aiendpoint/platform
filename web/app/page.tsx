@@ -113,6 +113,72 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Install strip */}
+      <section className="max-w-5xl mx-auto px-6 pb-20">
+        <div className="border border-[#222] rounded-xl p-8 bg-[#0d0d0d]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
+            <div>
+              <h2 className="text-lg font-bold text-[#e5e5e5]">Use with your AI agent</h2>
+              <p className="text-sm text-[#555] mt-1">
+                Discover registered services from Claude, Cursor, or Claude Code.
+              </p>
+            </div>
+            <Link
+              href="/docs#mcp"
+              className="text-xs text-[#3b82f6] hover:text-[#60a5fa] transition-colors whitespace-nowrap shrink-0"
+            >
+              Full setup guide →
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {/* Claude Desktop */}
+            <div className="bg-[#111] border border-[#222] rounded-lg p-4">
+              <p className="text-xs font-semibold text-[#888] mb-3">Claude Desktop</p>
+              <pre className="text-[10px] font-mono text-[#555] leading-relaxed whitespace-pre overflow-x-auto">{`{
+  "mcpServers": {
+    "aiendpoint": {
+      "command": "npx",
+      "args": ["-y",
+        "@aiendpoint/mcp-server"]
+    }
+  }
+}`}</pre>
+            </div>
+            {/* Cursor */}
+            <div className="bg-[#111] border border-[#222] rounded-lg p-4">
+              <p className="text-xs font-semibold text-[#888] mb-3">Cursor</p>
+              <pre className="text-[10px] font-mono text-[#555] leading-relaxed whitespace-pre overflow-x-auto">{`{
+  "mcpServers": {
+    "aiendpoint": {
+      "command": "npx",
+      "args": ["-y",
+        "@aiendpoint/mcp-server"]
+    }
+  }
+}`}</pre>
+            </div>
+            {/* Claude Code */}
+            <div className="bg-[#111] border border-[#222] rounded-lg p-4 flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold text-[#888]">Claude Code</p>
+                <a
+                  href="https://skills.sh"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-[#3b82f6] hover:underline"
+                >
+                  skills.sh ↗
+                </a>
+              </div>
+              <pre className="text-[10px] font-mono text-[#555] leading-relaxed whitespace-pre-wrap break-all">{`npx skills add aiendpoint/platform --skill aiendpoint`}</pre>
+              <p className="text-[10px] text-[#444] mt-3 leading-relaxed">
+                Adds /ai to your own service from inside Claude Code.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Recent services */}
       {services.length > 0 && (
         <section className="max-w-5xl mx-auto px-6 pb-24">
