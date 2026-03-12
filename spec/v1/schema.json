@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aiendpoint.dev/spec/v1/schema.json",
+  "title": "AIEndpoint /ai Spec v1.0",
+  "description": "JSON Schema for the /ai endpoint standard. A service implementing this spec becomes instantly AI-readable.",
+  "type": "object",
+  "required": ["aiendpoint", "service", "capabilities"],
+  "additionalProperties": false,
+  "properties": {
+    "aiendpoint": {
+      "type": "string",
+      "description": "Spec version. Must be '1.0' for v1 implementations.",
+      "const": "1.0",
+      "examples": ["1.0"]
+    },
+    "service": {
+      "type": "object",
+      "description": "Core metadata about the service.",
+      "required": ["name", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Service name. Short and recognizable.",
+          "minLength": 1,
+          "maxLength": 100,
+          "examples": ["GitHub", "Naver Search", "DemoWeather"]
+        },
+        "description": {
+          "type": "string",
+          "description": "One sentence. What the service does. Written for machines, not marketing. Keep under 200 characters for token efficiency.",
+          "minLength": 1,
+          "maxLength": 300,
+          "examples": [
+            "Search repositories, issues, and users on GitHub.",
+            "Get current weather and forecasts for cities worldwide."
+          ]
+        },
+        "category": {
+          "type": "array",
+          "description": "Service categories for discovery. Recommended — improves search ranking in the registry.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "productivity",
+              "ecommerce",
+              "finance",
+              "news",
+              "weather",
+              "maps",
+              "search",
+              "data",
+              "communication",
+              "calendar",
+              "storage",
+              "media",
+              "health",
+              "education",
+              "travel",
+              "food",
+              "government",
+              "developer"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "examples": [["ecommerce", "search"], ["weather", "data"]]
+        },
+        "language": {
+          "type": "array",
+          "description": "BCP-47 language codes the service supports.",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "default": ["en"],
+          "examples": [["ko", "en"], ["en"], ["ja", "en"]]
+        }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "description": "List of actions this service can perform. Each capability is one thing an AI agent can do.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "endpoint", "method"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this capability within the service. Use snake_case.",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "minLength": 1,
+            "maxLength": 64,
+            "examples": ["search_products", "get_weather", "list_categories"]
+          },
+          "description": {
+            "type": "string",
+            "description": "One sentence describing what this capability does.",
+            "minLength": 1,
+            "maxLength": 200,
+            "examples": [
+              "Search products by keyword",
+              "Get current weather for a city"
+            ]
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "The URL path (relative) or full URL for this capability. Relative paths are resolved against the service's base URL.",
+            "minLength": 1,
+            "examples": [
+              "/api/ai/products/search",
+              "/api/weather/current",
+              "https://api.github.com/search/repositories"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "description": "HTTP method.",
+            "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+            "default": "GET"
+          },
+          "params": {
+            "type": "object",
+            "description": "Parameters this endpoint accepts. Keys are param names. Values are compact human+machine readable descriptions: 'type, required|optional[, default N][, description]'.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "examples": [
+              {
+                "q": "string, required — search keyword",
+                "limit": "integer, optional, default 10, max 50",
+                "category": "string, optional — filter by category"
+              }
+            ]
+          },
+          "returns": {
+            "type": "string",
+            "description": "Compact description of what the response contains. Recommended — helps agents understand what to expect without making an extra call.",
+            "maxLength": 300,
+            "examples": [
+              "products[] {id, name, price, stock}",
+              "city{name, country}, condition, temp_c, humidity_pct, wind_kph"
+            ]
+          }
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "description": "Authentication requirements. Recommended — without this, agents cannot determine how to authenticate.",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Authentication mechanism.",
+          "enum": ["none", "apikey", "bearer", "oauth2"],
+          "examples": ["none", "apikey"]
+        },
+        "header": {
+          "type": "string",
+          "description": "HTTP header name for apikey or bearer auth.",
+          "examples": ["X-API-Key", "Authorization"]
+        },
+        "docs": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to authentication documentation.",
+          "examples": ["https://yourservice.com/docs/auth"]
+        }
+      }
+    },
+    "token_hints": {
+      "type": "object",
+      "description": "Hints for AI agents on how to reduce token usage when calling this service. Recommended.",
+      "additionalProperties": false,
+      "properties": {
+        "compact_mode": {
+          "type": "boolean",
+          "description": "If true, endpoints support ?compact=true to return minimal fields.",
+          "default": false,
+          "examples": [true]
+        },
+        "field_filtering": {
+          "type": "boolean",
+          "description": "If true, endpoints support ?fields=id,name for partial response selection.",
+          "default": false,
+          "examples": [true]
+        },
+        "delta_support": {
+          "type": "boolean",
+          "description": "If true, endpoints support ?since=ISO8601 for incremental updates.",
+          "default": false,
+          "examples": [false]
+        }
+      }
+    },
+    "rate_limits": {
+      "type": "object",
+      "description": "Rate limit information for AI agents to plan their requests.",
+      "additionalProperties": false,
+      "properties": {
+        "requests_per_minute": {
+          "type": "integer",
+          "description": "Maximum requests per minute for the default tier.",
+          "minimum": 1,
+          "examples": [60, 100, 1000]
+        },
+        "agent_tier_available": {
+          "type": "boolean",
+          "description": "If true, a higher rate limit tier is available for AI agents. See auth.docs for details.",
+          "examples": [true, false]
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Metadata about this /ai spec response.",
+      "additionalProperties": false,
+      "properties": {
+        "last_updated": {
+          "type": "string",
+          "description": "ISO 8601 date when this /ai spec was last updated. Helps agents determine freshness.",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}Z)?$",
+          "examples": ["2026-03-10", "2026-03-10T09:00:00Z"]
+        },
+        "changelog": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to changelog or release notes.",
+          "examples": ["https://yourservice.com/changelog"]
+        },
+        "status": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to service status page.",
+          "examples": ["https://status.yourservice.com"]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "aiendpoint": "1.0",
+      "service": {
+        "name": "ExampleShop",
+        "description": "Search and browse products from ExampleShop. Supports keyword search, category filtering, and price sorting.",
+        "category": ["ecommerce", "search"],
+        "language": ["en", "ko"]
+      },
+      "capabilities": [
+        {
+          "id": "search_products",
+          "description": "Search products by keyword",
+          "endpoint": "/api/ai/products/search",
+          "method": "GET",
+          "params": {
+            "q": "string, required — search keyword",
+            "category": "string, optional — filter by category",
+            "max_price": "number, optional — maximum price in USD",
+            "sort": "string, optional — price_asc|price_desc|relevance, default relevance",
+            "limit": "integer, optional, default 10, max 50"
+          },
+          "returns": "products[] {id, name, price_usd, stock, category, url}"
+        },
+        {
+          "id": "get_product",
+          "description": "Get full details of a product by ID",
+          "endpoint": "/api/ai/products/:id",
+          "method": "GET",
+          "params": {
+            "id": "string, required — product ID from search results"
+          },
+          "returns": "product {id, name, description, price_usd, stock, images[], category, url}"
+        }
+      ],
+      "auth": {
+        "type": "none"
+      },
+      "token_hints": {
+        "compact_mode": true,
+        "field_filtering": true,
+        "delta_support": false
+      },
+      "rate_limits": {
+        "requests_per_minute": 60,
+        "agent_tier_available": false
+      },
+      "meta": {
+        "last_updated": "2026-03-10",
+        "status": "https://status.exampleshop.com"
+      }
+    }
+  ]
+}

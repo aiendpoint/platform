@@ -1,0 +1,56 @@
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "DemoNews",
+    "description": "Search and retrieve recent news articles by keyword or category.",
+    "category": ["news", "search"],
+    "language": ["en"]
+  },
+  "capabilities": [
+    {
+      "id": "search_articles",
+      "description": "Search news articles by keyword",
+      "endpoint": "/api/articles/search",
+      "method": "GET",
+      "params": {
+        "q": "string, required — search keyword",
+        "category": "string, optional — filter by category (technology|business|politics|health)",
+        "limit": "integer, optional, default 5, max 20"
+      },
+      "returns": "articles[] {id, title, summary, category, published_at, source, url}"
+    },
+    {
+      "id": "get_latest",
+      "description": "Get the latest news articles",
+      "endpoint": "/api/articles/latest",
+      "method": "GET",
+      "params": {
+        "limit": "integer, optional, default 5, max 20",
+        "category": "string, optional — filter by category"
+      },
+      "returns": "articles[] {id, title, summary, category, published_at, source, url}"
+    },
+    {
+      "id": "get_article",
+      "description": "Get full content of a specific article by ID",
+      "endpoint": "/api/articles/:id",
+      "method": "GET",
+      "params": {
+        "id": "string, required — article ID from search results"
+      },
+      "returns": "article {id, title, summary, category, published_at, source, url}"
+    }
+  ],
+  "auth": {
+    "type": "none"
+  },
+  "token_hints": {
+    "compact_mode": true,
+    "field_filtering": true,
+    "delta_support": false
+  },
+  "meta": {
+    "last_updated": "2026-03-10",
+    "status": "https://demo-news.aiendpoint.dev/status"
+  }
+}

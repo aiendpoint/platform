@@ -1,0 +1,52 @@
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "DemoFX",
+    "description": "Get currency exchange rates. Supports 10 major currencies.",
+    "category": ["finance", "data"],
+    "language": ["en"]
+  },
+  "capabilities": [
+    {
+      "id": "get_rate",
+      "description": "Get exchange rate between two currencies",
+      "endpoint": "/api/rate",
+      "method": "GET",
+      "params": {
+        "from": "string, required — source currency code (USD|KRW|EUR|JPY|GBP|CNY|AUD|CAD|CHF|HKD)",
+        "to": "string, required — target currency code (same options)",
+        "amount": "number, optional, default 1 — amount to convert"
+      },
+      "returns": "from, to, rate, amount, converted_amount, last_updated"
+    },
+    {
+      "id": "list_currencies",
+      "description": "List all supported currency codes and names",
+      "endpoint": "/api/currencies",
+      "method": "GET",
+      "params": {},
+      "returns": "currencies[] {code, name, symbol}"
+    },
+    {
+      "id": "get_all_rates",
+      "description": "Get all rates relative to a base currency",
+      "endpoint": "/api/rates",
+      "method": "GET",
+      "params": {
+        "base": "string, required — base currency code (USD|KRW|EUR|JPY|GBP|CNY|AUD|CAD|CHF|HKD)"
+      },
+      "returns": "base, rates{currency_code: rate}, last_updated"
+    }
+  ],
+  "auth": {
+    "type": "none"
+  },
+  "token_hints": {
+    "compact_mode": false,
+    "field_filtering": false,
+    "delta_support": false
+  },
+  "meta": {
+    "last_updated": "2026-03-10"
+  }
+}

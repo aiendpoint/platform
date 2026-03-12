@@ -1,0 +1,53 @@
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "DemoWeather",
+    "description": "Get current weather and forecasts for cities worldwide.",
+    "category": ["weather", "data"],
+    "language": ["en"]
+  },
+  "capabilities": [
+    {
+      "id": "current_weather",
+      "description": "Get current weather for a city",
+      "endpoint": "/api/weather/current",
+      "method": "GET",
+      "params": {
+        "city": "string, required — city name (e.g. Seoul, Tokyo, London)",
+        "units": "string, optional — celsius|fahrenheit, default celsius"
+      },
+      "returns": "city{name, country}, condition, temp_c, humidity_pct, wind_kph"
+    },
+    {
+      "id": "forecast",
+      "description": "Get multi-day weather forecast for a city",
+      "endpoint": "/api/weather/forecast",
+      "method": "GET",
+      "params": {
+        "city": "string, required — city name",
+        "days": "integer, optional, default 3, max 7",
+        "units": "string, optional — celsius|fahrenheit, default celsius"
+      },
+      "returns": "city{}, forecast[] {date, condition, temp_high_c, temp_low_c, humidity_pct, wind_kph}"
+    },
+    {
+      "id": "supported_cities",
+      "description": "List all supported cities",
+      "endpoint": "/api/weather/cities",
+      "method": "GET",
+      "params": {},
+      "returns": "cities[] {key, name, country, lat, lon}"
+    }
+  ],
+  "auth": {
+    "type": "none"
+  },
+  "token_hints": {
+    "compact_mode": true,
+    "field_filtering": false,
+    "delta_support": false
+  },
+  "meta": {
+    "last_updated": "2026-03-10"
+  }
+}
