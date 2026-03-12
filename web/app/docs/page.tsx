@@ -322,11 +322,11 @@ def ai_spec():
         </p>
       </section>
 
-      {/* Claude Code Skill */}
+      {/* Skill */}
       <section id="skill" className="mb-12">
-        <h2 className="text-xl font-bold text-[#e5e5e5] mb-1">Claude Code Skill</h2>
+        <h2 className="text-xl font-bold text-[#e5e5e5] mb-1">Skill</h2>
         <p className="text-[#888] text-sm mb-6">
-          Use <strong className="text-[#aaa] font-medium">Claude Code (CLI)</strong> to add a{" "}
+          Add a{" "}
           <code className="text-[#888]">/ai</code> endpoint to your own service.
           Install the skill once via <a href="https://skills.sh" target="_blank" rel="noopener noreferrer" className="text-[#3b82f6] hover:underline">skills.sh</a>,
           then say <em className="text-[#666]">&quot;add /ai endpoint to my service&quot;</em> — Claude will detect your framework,
