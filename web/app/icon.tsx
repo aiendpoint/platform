@@ -14,20 +14,20 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          borderRadius: 7,
+          borderRadius: "50%",
         }}
       >
         <span
           style={{
             color: "white",
-            fontSize: 13,
-            fontWeight: 800,
+            fontSize: 22,
+            fontWeight: 900,
             fontFamily: "monospace",
-            letterSpacing: "-0.5px",
             lineHeight: 1,
+            marginTop: -1,
           }}
         >
-          /ai
+          /
         </span>
       </div>
     ),

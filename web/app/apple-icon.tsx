@@ -14,20 +14,20 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          borderRadius: 40,
+          borderRadius: "50%",
         }}
       >
         <span
           style={{
             color: "white",
-            fontSize: 72,
-            fontWeight: 800,
+            fontSize: 110,
+            fontWeight: 900,
             fontFamily: "monospace",
-            letterSpacing: "-3px",
             lineHeight: 1,
+            marginTop: -4,
           }}
         >
-          /ai
+          /
         </span>
       </div>
     ),
