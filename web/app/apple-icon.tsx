@@ -8,7 +8,7 @@ export default function AppleIcon() {
     (
       <div
         style={{
-          background: "#3b82f6",
+          background: "#0a0a0a",
           width: "100%",
           height: "100%",
           display: "flex",
@@ -17,18 +17,15 @@ export default function AppleIcon() {
           borderRadius: "50%",
         }}
       >
-        <span
+        <div
           style={{
-            color: "white",
-            fontSize: 110,
-            fontWeight: 900,
-            fontFamily: "monospace",
-            lineHeight: 1,
-            marginTop: -4,
+            background: "white",
+            width: 28,
+            height: 110,
+            borderRadius: 14,
+            transform: "rotate(-40deg)",
           }}
-        >
-          /
-        </span>
+        />
       </div>
     ),
     { ...size }

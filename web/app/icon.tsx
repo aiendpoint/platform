@@ -8,7 +8,7 @@ export default function Icon() {
     (
       <div
         style={{
-          background: "#3b82f6",
+          background: "#0a0a0a",
           width: "100%",
           height: "100%",
           display: "flex",
@@ -17,18 +17,15 @@ export default function Icon() {
           borderRadius: "50%",
         }}
       >
-        <span
+        <div
           style={{
-            color: "white",
-            fontSize: 22,
-            fontWeight: 900,
-            fontFamily: "monospace",
-            lineHeight: 1,
-            marginTop: -1,
+            background: "white",
+            width: 5,
+            height: 20,
+            borderRadius: 3,
+            transform: "rotate(-40deg)",
           }}
-        >
-          /
-        </span>
+        />
       </div>
     ),
     { ...size }
