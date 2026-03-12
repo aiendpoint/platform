@@ -133,7 +133,7 @@ registry와 web은 그 다음 단계.
 | 파트 | 스택 | 이유 |
 |------|------|------|
 | registry 백엔드 | Node.js + Fastify + TypeScript | 빠른 JSON 처리, 타입 안전 |
-| web 프론트 | Next.js 14 (App Router) | Vercel 무료 배포 |
+| web 프론트 | Next.js 16 (App Router) | Vercel 무료 배포 |
 | DB | Supabase (PostgreSQL) | 무료 플랜, REST API 자동 생성 |
 | 캐시 | Upstash Redis | 무료 플랜, edge 친화적 |
 | 배포 | Vercel (web) + Railway (registry) | 둘 다 무료 시작 |
@@ -192,23 +192,38 @@ __pycache__/
 ## 작업 우선순위
 
 ```
-Phase 0 — 지금 당장 (1~2일)
-  ✅ Organization 생성: github.com/aiendpoint
-  ✅ 레포 생성: aiendpoint/platform
-  [ ] 루트 모노레포 구조 잡기 (package.json, pnpm-workspace.yaml, turbo.json)
-  [ ] spec/v1/schema.json 작성
-  [ ] demos/ 세 개 구현 및 실행 확인
+Phase 0 — 완료 ✅
+  [x] Organization 생성: github.com/aiendpoint
+  [x] 레포 생성: aiendpoint/platform
+  [x] 루트 모노레포 구조 잡기 (package.json, pnpm-workspace.yaml, turbo.json)
+  [x] spec/v1/schema.json 작성
+  [x] demos/ 세 개 구현 및 실행 확인 (news/Express, weather/FastAPI, fx/Cloudflare Workers)
 
-Phase 1 — 이번 주 (3~5일)
-  [ ] registry 백엔드 기본 라우트 (등록, 검색, 검증)
-  [ ] Supabase 테이블 설계 및 연결
-  [ ] web 랜딩페이지 + 등록 폼
+Phase 1 — 완료 ✅
+  [x] registry 백엔드 기본 라우트 (등록, 검색, 검증, 배지)
+  [x] Supabase 테이블 설계 및 연결
+  [x] web 랜딩페이지 + 등록 폼 + 서비스 목록 + validate 페이지 + docs
+  [x] aiendpoint.dev 자체 /ai 엔드포인트 (dogfooding)
+  [x] Vercel (web) + Railway (registry + demos) 프로덕션 배포
+  [x] DNS 설정 (aiendpoint.dev → Vercel, api.aiendpoint.dev → Railway)
+  [x] Upstash Redis 캐시 레이어 (validate 5분, services 1분)
+  [x] CORS 다중 도메인 지원 (comma-separated CORS_ORIGIN)
+  [x] 검증 배지 UI (ValidateBadge 컴포넌트, 카운트다운 타이머)
+  [x] README 완성 후 GitHub 공개
 
-Phase 2 — 다음 주
-  [ ] 첫 10개 서비스 등록
-  [ ] 검증 배지 SVG 생성
-  [ ] README 완성 후 GitHub 공개
-  [ ] HackerNews, Reddit 포스팅
+Phase 2 — 변환 레이어 & 수익화 (진행 중)
+  [ ] 1. OpenAPI/Swagger → /ai 변환기 (registry POST /api/convert/openapi + web UI)
+  [ ] 2. 웹페이지 URL → /ai 변환기 (Claude API로 페이지 분석 → 스펙 생성)
+  [ ] 3. 변환 결과 미리보기 + 원클릭 등록 (web UI)
+  [ ] 4. Stripe 결제 연동 (Pro $29/월, Business $199/월 플랜)
+  [ ] 5. 첫 10개 서비스 직접 등록 (docs/03_first_10_services.md 기준)
+  [ ] 6. HackerNews Show HN / Reddit r/webdev 포스팅
+
+Phase 3 — 에코시스템 확장
+  [ ] Claude / GPT / Gemini 공식 MCP 서버
+  [ ] SDK 배포 (npm: @aiendpoint/sdk, pip: aiendpoint)
+  [ ] 한국 시장 집중 공략 (카카오, 네이버 계열 서비스 PR)
+  [ ] 에이전트 트래픽 과금 인프라
 ```
 
 ---

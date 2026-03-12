@@ -4,8 +4,9 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/services", label: "Services" },
-  { href: "/docs",     label: "Docs" },
+  { href: "/convert",  label: "Convert" },
   { href: "/validate", label: "Validate" },
+  { href: "/docs",     label: "Docs" },
 ];
 
 export function Navbar() {

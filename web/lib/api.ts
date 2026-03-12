@@ -125,6 +125,36 @@ export async function getCategories(): Promise<{ categories: Category[] }> {
   return res.json();
 }
 
+export interface ConvertResult {
+  converted: {
+    aiendpoint: string;
+    service: { name: string; description: string; category?: string[] };
+    capabilities: Array<{
+      id: string;
+      description: string;
+      endpoint: string;
+      method: string;
+      params?: Record<string, string>;
+      returns?: string;
+    }>;
+    auth?: { type: string; docs?: string };
+    meta?: Record<string, string>;
+  };
+  capability_count: number;
+  source_url?: string;
+}
+
+export async function convertOpenApi(payload: { spec_url?: string; spec?: unknown }): Promise<ConvertResult> {
+  const res = await fetch(`${API_URL}/api/convert/openapi`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw Object.assign(new Error(data.error ?? "Conversion failed"), { data, status: res.status });
+  return data;
+}
+
 export async function getStats(): Promise<{ total: number; verified: number; capabilities: number }> {
   try {
     const data = await getServices({ limit: 1 });
