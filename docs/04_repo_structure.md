@@ -214,10 +214,11 @@ Phase 1 — 완료 ✅
 Phase 2 — 변환 레이어 & 에코시스템 (진행 중)
   [x] 1. OpenAPI/Swagger → /ai 변환기 (registry POST /api/convert/openapi + web UI)
   [x] 2. 웹페이지 URL → /ai 변환기 (Gemini Flash로 페이지 분석 → 스펙 생성)
-  [ ] 3. MCP 서버 — Claude/Cursor가 레지스트리를 실제로 쓰게 만드는 핵심
+  [x] 3. MCP 서버 — Claude/Cursor가 레지스트리를 실제로 쓰게 만드는 핵심
          - packages/mcp-server/ (@aiendpoint/mcp-server)
          - Tools: search_services, fetch_ai_spec, validate_service
          - npx @aiendpoint/mcp-server 로 즉시 사용 가능
+         - npm publish 완료 → https://www.npmjs.com/package/@aiendpoint/mcp-server
   [ ] 4. 첫 10개 서비스 직접 등록 (docs/03_first_10_services.md 기준)
   [ ] 5. HackerNews Show HN / Reddit r/webdev 포스팅
          - MCP 서버 완성 후 포스팅 → 실제로 써볼 수 있는 것이 있어야 함
