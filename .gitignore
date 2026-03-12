@@ -33,5 +33,5 @@ Thumbs.db
 .agents/
 .claude/
 ./docs/
-./ai-work/
+./ai-work
 skills-lock.json
