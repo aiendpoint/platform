@@ -55,6 +55,10 @@ export interface ValidationResult {
   warnings: ValidationIssue[];
   passes: ValidationIssue[];
   checked_at: string;
+  /** true when this response was served from Redis cache */
+  cached: boolean;
+  /** ISO timestamp — when the cached result expires and a fresh check will run */
+  cache_expires_at: string;
 }
 
 export interface ValidationIssue {

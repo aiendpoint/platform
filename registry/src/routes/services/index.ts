@@ -1,6 +1,14 @@
+/**
+ * ⚠️  CACHE: Results are cached in Redis for 60 s (1 min).
+ *     Cache key: services:v1:<q>:<category>:<auth_type>:<language>:<verified>:<page>:<limit>
+ *     If Redis env vars are absent the route works without caching.
+ */
 import type { FastifyInstance } from 'fastify'
 import { db } from '../../db/index.js'
 import type { ServiceListItem } from '../../types/index.js'
+import { cacheGet, cacheSet } from '../../cache/index.js'
+
+const SERVICES_TTL = 60 // 1 minute
 
 export async function servicesListRoute(app: FastifyInstance) {
   app.get<{
@@ -28,6 +36,16 @@ export async function servicesListRoute(app: FastifyInstance) {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20))
     const offset   = (pageNum - 1) * limitNum
 
+    const cats = category ? (Array.isArray(category) ? category : [category]) : []
+
+    // ── Cache hit ─────────────────────────────────────────────────────────────
+    const cacheKey = `services:v1:${q ?? ''}:${cats.join(',')}:${auth_type ?? ''}:${language ?? ''}:${verified ?? ''}:${pageNum}:${limitNum}`
+    const cached = await cacheGet<unknown>(cacheKey)
+    if (cached) {
+      return reply.send(cached)
+    }
+
+    // ── DB query ──────────────────────────────────────────────────────────────
     let query = db
       .from('services')
       .select(
@@ -38,11 +56,10 @@ export async function servicesListRoute(app: FastifyInstance) {
       .is('deleted_at', null)
 
     if (q) {
-      query = query.ilike('name', `%${q}%`)  // simple name search; full-text via tsvector is better but needs Supabase RPC
+      query = query.ilike('name', `%${q}%`)
     }
 
-    if (category) {
-      const cats = Array.isArray(category) ? category : [category]
+    if (cats.length > 0) {
       query = query.overlaps('categories', cats)
     }
 
@@ -79,11 +96,10 @@ export async function servicesListRoute(app: FastifyInstance) {
       created_at:   row.created_at
     }))
 
-    reply.send({
-      total: count ?? 0,
-      page: pageNum,
-      limit: limitNum,
-      services
-    })
+    const response = { total: count ?? 0, page: pageNum, limit: limitNum, services }
+
+    await cacheSet(cacheKey, response, SERVICES_TTL)
+
+    reply.send(response)
   })
 }

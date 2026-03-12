@@ -1,21 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { validateUrl, type ValidationResult } from "@/lib/api";
 import { ValidateBadge } from "@/components/ValidateBadge";
+
+function formatCountdown(secs: number): string {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 export default function ValidatePage() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
+
+  // Countdown timer — ticks every second while cache_expires_at is set
+  useEffect(() => {
+    if (!result?.cache_expires_at) {
+      setCountdown(null);
+      return;
+    }
+    const computeSecs = () =>
+      Math.max(0, Math.floor((new Date(result.cache_expires_at).getTime() - Date.now()) / 1000));
+
+    setCountdown(computeSecs());
+    const timer = setInterval(() => {
+      const secs = computeSecs();
+      setCountdown(secs);
+      if (secs === 0) clearInterval(timer);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [result?.cache_expires_at]);
 
   const handleValidate = async () => {
     if (!url.trim()) return;
     setLoading(true);
     setError(null);
     setResult(null);
+    setCountdown(null);
     try {
       const r = await validateUrl(url.trim());
       setResult(r);
@@ -35,7 +61,7 @@ export default function ValidatePage() {
         {" "}spec correctly. Scores from 0–100.
       </p>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2">
         <input
           type="url"
           value={url}
@@ -53,34 +79,44 @@ export default function ValidatePage() {
         </button>
       </div>
 
-      {error && (
-        <div className="bg-[#111] border border-[#ef4444]/30 rounded-lg p-4 mb-6">
-          <p className="text-sm text-[#ef4444]">{error}</p>
-        </div>
+      {/* Cache expiry notice — shown below input after any successful validation */}
+      {result && countdown !== null && countdown > 0 && (
+        <p className="mt-2 text-xs text-[#555]">
+          {result.cached ? "Cached result" : "Result cached"} · refreshes in{" "}
+          <span className="font-mono text-[#666]">{formatCountdown(countdown)}</span>
+        </p>
       )}
 
-      {loading && (
-        <div className="bg-[#111] border border-[#222] rounded-lg p-8 text-center">
-          <p className="text-[#555] text-sm">Fetching and analyzing <code className="text-[#555]">/ai</code>…</p>
-        </div>
-      )}
+      <div className="mt-6">
+        {error && (
+          <div className="bg-[#111] border border-[#ef4444]/30 rounded-lg p-4 mb-6">
+            <p className="text-sm text-[#ef4444]">{error}</p>
+          </div>
+        )}
 
-      {result && !loading && (
-        <>
-          <ValidateBadge result={result} />
+        {loading && (
+          <div className="bg-[#111] border border-[#222] rounded-lg p-8 text-center">
+            <p className="text-[#555] text-sm">Fetching and analyzing <code className="text-[#555]">/ai</code>…</p>
+          </div>
+        )}
 
-          {result.passed && (
-            <div className="mt-4 flex gap-3">
-              <Link
-                href={`/register?url=${encodeURIComponent(url)}`}
-                className="flex-1 text-center bg-[#3b82f6] hover:bg-[#2563eb] text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
-              >
-                Register this service →
-              </Link>
-            </div>
-          )}
-        </>
-      )}
+        {result && !loading && (
+          <>
+            <ValidateBadge result={result} />
+
+            {result.passed && (
+              <div className="mt-4 flex gap-3">
+                <Link
+                  href={`/register?url=${encodeURIComponent(url)}`}
+                  className="flex-1 text-center bg-[#3b82f6] hover:bg-[#2563eb] text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
+                >
+                  Register this service →
+                </Link>
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Scoring guide */}
       <div className="mt-12 border-t border-[#222] pt-8">

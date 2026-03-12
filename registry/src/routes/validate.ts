@@ -1,5 +1,14 @@
+/**
+ * ⚠️  CACHE: Results are cached in Redis for 300 s (5 min).
+ *     Cache key: validate:v1:<url>
+ *     Response includes `cached` (bool) and `cache_expires_at` (ISO timestamp).
+ *     If Redis env vars are absent the route works without caching.
+ */
 import type { FastifyInstance } from 'fastify'
 import { validateAiEndpoint, getScoreGrade } from '../services/validator.js'
+import { cacheGet, cacheSet, cacheTtl } from '../cache/index.js'
+
+const VALIDATE_TTL = 300 // 5 minutes
 
 export async function validateRoute(app: FastifyInstance) {
   app.get<{ Querystring: { url?: string } }>('/api/validate', async (req, reply) => {
@@ -9,7 +18,6 @@ export async function validateRoute(app: FastifyInstance) {
       return reply.status(400).send({ error: '"url" parameter is required', code: 'MISSING_PARAM' })
     }
 
-    // Basic URL validation
     let parsed: URL
     try {
       parsed = new URL(url)
@@ -21,22 +29,44 @@ export async function validateRoute(app: FastifyInstance) {
       return reply.status(400).send({ error: 'URL must use http or https', code: 'INVALID_URL' })
     }
 
+    const cacheKey = `validate:v1:${url}`
+
+    // ── Cache hit ─────────────────────────────────────────────────────────────
+    const cached = await cacheGet<Record<string, unknown>>(cacheKey)
+    if (cached) {
+      const remainingTtl = await cacheTtl(cacheKey)
+      const expiresAt = new Date(Date.now() + remainingTtl * 1000).toISOString()
+      return reply.send({ ...cached, cached: true, cache_expires_at: expiresAt })
+    }
+
+    // ── Fresh validation ──────────────────────────────────────────────────────
     const result = await validateAiEndpoint(url)
     const { grade } = getScoreGrade(result.score)
 
-    reply.send({
+    const expiresAt = new Date(Date.now() + VALIDATE_TTL * 1000).toISOString()
+
+    const response = {
       url,
-      ai_url: result.ai_url,
-      passed: result.passed,
-      score: result.score,
+      ai_url:           result.ai_url,
+      passed:           result.passed,
+      score:            result.score,
       grade,
-      spec_version: result.spec_version,
-      response_ms: result.response_ms,
+      spec_version:     result.spec_version,
+      response_ms:      result.response_ms,
       capability_count: result.capability_count,
-      errors: result.errors,
-      warnings: result.warnings,
-      passes: result.passes,
-      checked_at: new Date().toISOString()
-    })
+      errors:           result.errors,
+      warnings:         result.warnings,
+      passes:           result.passes,
+      checked_at:       new Date().toISOString(),
+      cached:           false,
+      cache_expires_at: expiresAt,
+    }
+
+    // Only cache successful fetches (passed or meaningful errors — not connection failures)
+    if (result.ai_url !== null || result.errors.some(e => e.code !== 'NO_AI_ENDPOINT')) {
+      await cacheSet(cacheKey, response, VALIDATE_TTL)
+    }
+
+    reply.send(response)
   })
 }
