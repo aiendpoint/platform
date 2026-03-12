@@ -1,0 +1,229 @@
+# 레포 구조 — github.com/aiendpoint/platform
+
+## 결정 사항
+
+- **GitHub Organization**: `aiendpoint` (대시 없음)
+- **레포 이름**: `platform` (모노레포)
+- **패키지 매니저**: `pnpm` + `turborepo`
+
+---
+
+## 디렉토리 구조
+
+```
+platform/
+├── spec/
+│   ├── v1/
+│   │   ├── schema.json          # /ai 응답 JSON Schema
+│   │   └── README.md            # 스펙 설명
+│   └── examples/
+│       ├── news.json            # 뉴스 서비스 예시
+│       ├── weather.json         # 날씨 서비스 예시
+│       └── fx.json              # 환율 서비스 예시
+├── registry/                    # Fastify 백엔드
+│   ├── src/
+│   │   ├── routes/
+│   │   │   ├── register.ts      # 서비스 등록
+│   │   │   ├── search.ts        # 서비스 검색
+│   │   │   └── validate.ts      # /ai 스펙 검증
+│   │   ├── db/
+│   │   │   └── index.ts         # Supabase 클라이언트
+│   │   └── index.ts             # 서버 엔트리포인트
+│   ├── package.json
+│   └── tsconfig.json
+├── web/                         # Next.js 14 프론트엔드
+│   ├── app/
+│   │   ├── page.tsx             # 랜딩페이지
+│   │   ├── register/
+│   │   │   └── page.tsx         # 서비스 등록 페이지
+│   │   └── services/
+│   │       └── page.tsx         # 서비스 목록/검색
+│   ├── package.json
+│   └── tsconfig.json
+├── demos/
+│   ├── news/                    # Node.js + Express (데모 1)
+│   │   ├── index.js
+│   │   ├── data/articles.json
+│   │   └── package.json
+│   ├── weather/                 # Python + FastAPI (데모 2)
+│   │   ├── main.py
+│   │   └── requirements.txt
+│   └── fx/                      # Cloudflare Workers (데모 3)
+│       ├── worker.js
+│       └── wrangler.toml
+├── sdk/
+│   └── js/                      # 나중에 추가
+├── CLAUDE.md                    # 프로젝트 전체 컨텍스트
+├── README.md                    # GitHub 공개용
+├── package.json                 # pnpm workspaces 루트
+├── pnpm-workspace.yaml
+└── turbo.json
+```
+
+---
+
+## 초기 설정 순서
+
+### 1. 루트 설정
+
+**`package.json`**
+```json
+{
+  "name": "aiendpoint-platform",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  }
+}
+```
+
+**`pnpm-workspace.yaml`**
+```yaml
+packages:
+  - 'registry'
+  - 'web'
+  - 'demos/*'
+  - 'sdk/*'
+```
+
+**`turbo.json`**
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "build": {
+      "outputs": [".next/**", "dist/**"]
+    }
+  }
+}
+```
+
+---
+
+### 2. 첫 커밋 목표
+
+```bash
+# 이것만 되면 첫 커밋 완료
+curl http://localhost:3001/ai   # 데모 뉴스 서버
+curl http://localhost:3002/ai   # 데모 날씨 서버
+curl http://localhost:3003/ai   # 데모 환율 서버
+```
+
+구조만 잡고 데모 서버 3개가 `/ai` 응답을 리턴하면 된다.
+registry와 web은 그 다음 단계.
+
+---
+
+### 3. 스택 결정
+
+| 파트 | 스택 | 이유 |
+|------|------|------|
+| registry 백엔드 | Node.js + Fastify + TypeScript | 빠른 JSON 처리, 타입 안전 |
+| web 프론트 | Next.js 14 (App Router) | Vercel 무료 배포 |
+| DB | Supabase (PostgreSQL) | 무료 플랜, REST API 자동 생성 |
+| 캐시 | Upstash Redis | 무료 플랜, edge 친화적 |
+| 배포 | Vercel (web) + Railway (registry) | 둘 다 무료 시작 |
+| 모노레포 | pnpm + turborepo | 무료, 모노레포 표준 |
+
+---
+
+### 4. 환경변수 구조
+
+```
+platform/
+├── .env.example          # 커밋용 (실제 값 없음)
+├── registry/.env.local   # gitignore
+└── web/.env.local        # gitignore
+```
+
+**`.env.example`**
+```bash
+# Supabase
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_KEY=
+
+# Upstash Redis
+UPSTASH_REDIS_URL=
+UPSTASH_REDIS_TOKEN=
+
+# Claude API (변환 레이어용)
+ANTHROPIC_API_KEY=
+
+# 공공데이터포털
+PUBLIC_DATA_API_KEY=
+
+# Naver
+NAVER_CLIENT_ID=
+NAVER_CLIENT_SECRET=
+```
+
+---
+
+### 5. .gitignore
+
+```
+node_modules/
+.env.local
+.env
+dist/
+.next/
+__pycache__/
+*.pyc
+.turbo/
+```
+
+---
+
+## 작업 우선순위
+
+```
+Phase 0 — 지금 당장 (1~2일)
+  ✅ Organization 생성: github.com/aiendpoint
+  ✅ 레포 생성: aiendpoint/platform
+  [ ] 루트 모노레포 구조 잡기 (package.json, pnpm-workspace.yaml, turbo.json)
+  [ ] spec/v1/schema.json 작성
+  [ ] demos/ 세 개 구현 및 실행 확인
+
+Phase 1 — 이번 주 (3~5일)
+  [ ] registry 백엔드 기본 라우트 (등록, 검색, 검증)
+  [ ] Supabase 테이블 설계 및 연결
+  [ ] web 랜딩페이지 + 등록 폼
+
+Phase 2 — 다음 주
+  [ ] 첫 10개 서비스 등록
+  [ ] 검증 배지 SVG 생성
+  [ ] README 완성 후 GitHub 공개
+  [ ] HackerNews, Reddit 포스팅
+```
+
+---
+
+## Claude Code 작업 지시
+
+이 레포에서 작업을 시작할 때 순서:
+
+1. `spec/v1/schema.json` 부터 만든다 — 모든 것의 기준
+2. `demos/news/` → `demos/weather/` → `demos/fx/` 순으로 구현
+3. 각 데모가 `/ai` 응답을 리턴하는지 `curl`로 확인
+4. `registry/` 작업 시작
+
+**절대 원칙**:
+- 스펙을 단순하게 유지한다 — 필드 추가 전에 "정말 필요한가" 한 번 더 생각
+- 모든 응답은 JSON — 예외 없음
+- 에러도 JSON — `{ "error": "message" }` 형식 통일
+- 토큰 효율 — 응답이 길어지면 compact 옵션 추가를 고려
