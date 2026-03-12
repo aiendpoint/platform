@@ -16,7 +16,7 @@ let geminiModel: ReturnType<InstanceType<typeof GoogleGenerativeAI>['getGenerati
 if (process.env.GEMINI_API_KEY) {
   const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
   geminiModel = genai.getGenerativeModel({
-    model: 'gemini-2.0-flash-lite',
+    model: 'gemini-flash-lite-latest',
     generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
   })
 }
