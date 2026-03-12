@@ -300,7 +300,7 @@ def ai_spec():
           <p className="text-xs text-[#555] mb-2">
             Install via <a href="https://skills.sh" target="_blank" rel="noopener noreferrer" className="text-[#3b82f6] hover:underline">skills.sh</a>:
           </p>
-          <pre className="bg-[#0d0d0d] border border-[#222] rounded-lg p-4 text-xs font-mono text-[#888] overflow-x-auto whitespace-pre">{`npx skills add aiendpoint/platform`}</pre>
+          <pre className="bg-[#0d0d0d] border border-[#222] rounded-lg p-4 text-xs font-mono text-[#888] overflow-x-auto whitespace-pre">{`npx skills add aiendpoint/platform --skill aiendpoint`}</pre>
         </div>
 
         {/* Tools */}
