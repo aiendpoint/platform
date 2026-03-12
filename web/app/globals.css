@@ -28,3 +28,70 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: #444; }
 
 pre, code { font-family: var(--font-geist-mono), monospace; }
+
+.docs-prose {
+  max-width: 52rem;
+}
+
+.docs-prose h2,
+.docs-prose h3 {
+  scroll-margin-top: 6rem;
+}
+
+.docs-prose h2 {
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  font-size: 1.875rem;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #f3f4f6;
+  letter-spacing: -0.02em;
+}
+
+.docs-prose h3 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #f3f4f6;
+}
+
+.docs-prose p,
+.docs-prose ol,
+.docs-prose ul {
+  margin-top: 1rem;
+  color: #a3a3a3;
+  line-height: 1.8;
+}
+
+.docs-prose ul,
+.docs-prose ol {
+  padding-left: 1.25rem;
+}
+
+.docs-prose li + li {
+  margin-top: 0.35rem;
+}
+
+.docs-prose table {
+  margin-top: 1rem;
+  border: 1px solid #222;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.docs-prose th,
+.docs-prose td {
+  border-bottom: 1px solid #1f1f1f;
+  padding: 0.8rem 1rem;
+}
+
+.docs-prose th {
+  background: #111;
+  color: #f1f1f1;
+  font-weight: 500;
+}
+
+.docs-prose td {
+  background: #0d0d0d;
+}

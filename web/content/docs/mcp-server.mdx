@@ -1,0 +1,39 @@
+export const metadata = {
+  title: "MCP Server",
+  description: "Use the AIEndpoint MCP server so Claude or Cursor can search services and fetch /ai specs directly.",
+  section: "Integrations",
+  order: 5,
+  href: "/docs/mcp-server",
+  toc: [
+    { id: "install", title: "Install" },
+    { id: "claude-desktop", title: "Claude Desktop" },
+    { id: "cursor", title: "Cursor" },
+  ],
+};
+
+<h2 id="install">Install</h2>
+
+```bash
+npx -y @aiendpoint/mcp-server
+```
+
+<h2 id="claude-desktop">Claude Desktop</h2>
+
+Add the server to `~/Library/Application Support/Claude/claude_desktop_config.json`.
+
+```json
+{
+  "mcpServers": {
+    "aiendpoint": {
+      "command": "npx",
+      "args": ["-y", "@aiendpoint/mcp-server"]
+    }
+  }
+}
+```
+
+<h2 id="cursor">Cursor</h2>
+
+Add the same block to `~/.cursor/mcp.json` or `.cursor/mcp.json`.
+
+After restarting the client, you can ask for services, fetch specs, or validate a service implementation without leaving the chat.

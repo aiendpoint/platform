@@ -1,0 +1,58 @@
+export const metadata = {
+  title: "Spec Reference",
+  description: "Required fields, optional fields, capability rules, and category values for AIEndpoint v1.0.",
+  section: "Reference",
+  order: 3,
+  href: "/docs/spec",
+  toc: [
+    { id: "required-fields", title: "Required fields" },
+    { id: "capability-object", title: "Capability object" },
+    { id: "optional-fields", title: "Optional fields" },
+    { id: "category-values", title: "Category values" },
+  ],
+};
+
+<h2 id="required-fields">Required fields</h2>
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `aiendpoint` | `string` | Must be `"1.0"` |
+| `service.name` | `string` | Human-readable service name |
+| `service.description` | `string` | Concise summary for agents |
+| `capabilities` | `array` | Must contain at least one capability |
+
+<h2 id="capability-object">Capability object</h2>
+
+Each item in `capabilities` describes one action an AI agent can take.
+
+```json
+{
+  "id": "search_products",
+  "description": "Search for products by keyword or category",
+  "endpoint": "/api/products/search",
+  "method": "GET",
+  "params": {
+    "q": "search keyword (string, required)",
+    "category": "filter by category (string, optional)",
+    "limit": "maximum results (integer, optional, default: 20)"
+  },
+  "returns": "products[] with id, name, price, stock"
+}
+```
+
+<h2 id="optional-fields">Optional fields</h2>
+
+Use optional fields to reduce ambiguity for agents and improve discoverability.
+
+| Field | Why it matters |
+| --- | --- |
+| `service.language` | Helps with locale-aware routing |
+| `service.category` | Improves registry search quality |
+| `auth` | Tells agents what auth they need |
+| `token_hints` | Helps agents make cheaper calls |
+| `rate_limits` | Lets agents plan retries and pacing |
+| `meta.last_updated` | Gives the spec freshness metadata |
+
+<h2 id="category-values">Category values</h2>
+
+`productivity`, `ecommerce`, `finance`, `news`, `weather`, `maps`, `search`, `data`, `communication`, `calendar`, `storage`, `media`, `health`, `education`, `travel`, `food`, `government`, `developer`

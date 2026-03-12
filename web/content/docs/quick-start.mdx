@@ -1,0 +1,72 @@
+export const metadata = {
+  title: "Quick Start",
+  description: "Implement a minimal /ai endpoint, return valid JSON, and verify it with the validator.",
+  section: "Getting Started",
+  order: 2,
+  href: "/docs/quick-start",
+  toc: [
+    { id: "minimal-shape", title: "Minimal shape" },
+    { id: "express-example", title: "Express example" },
+    { id: "next-steps", title: "Next steps" },
+  ],
+};
+
+<h2 id="minimal-shape">Minimal shape</h2>
+
+Every implementation starts with the same minimum contract.
+
+```json
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "Acme Store",
+    "description": "E-commerce API for products and orders",
+    "category": ["ecommerce"]
+  },
+  "capabilities": [
+    {
+      "id": "search_products",
+      "description": "Search for products by keyword",
+      "endpoint": "/api/products/search",
+      "method": "GET"
+    }
+  ]
+}
+```
+
+<h2 id="express-example">Express example</h2>
+
+```ts
+app.get("/ai", (_req, res) => {
+  res.json({
+    aiendpoint: "1.0",
+    service: {
+      name: "Acme Store",
+      description: "E-commerce API for products and orders",
+      category: ["ecommerce"],
+    },
+    capabilities: [
+      {
+        id: "search_products",
+        description: "Search for products by keyword",
+        endpoint: "/api/products/search",
+        method: "GET",
+        params: {
+          q: "search keyword (string, required)",
+          limit: "maximum results (integer, optional, default: 20)",
+        },
+        returns: "products[] with id, name, price, stock",
+      },
+    ],
+  });
+});
+```
+
+<h2 id="next-steps">Next steps</h2>
+
+After the endpoint responds:
+
+1. Make sure it returns JSON over `HTTP 200`
+2. Add `auth`, `token_hints`, and `meta.last_updated`
+3. Run the validator from [`Validation`](/docs/validation)
+4. Register the service in the AIEndpoint directory

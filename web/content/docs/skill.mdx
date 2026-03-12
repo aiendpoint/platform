@@ -1,0 +1,33 @@
+export const metadata = {
+  title: "Skill",
+  description: "Install the AIEndpoint skill so an agent can generate and validate a /ai endpoint inside an existing codebase.",
+  section: "Integrations",
+  order: 6,
+  href: "/docs/skill",
+  toc: [
+    { id: "install", title: "Install" },
+    { id: "what-it-does", title: "What it does" },
+    { id: "trigger-phrases", title: "Trigger phrases" },
+  ],
+};
+
+<h2 id="install">Install</h2>
+
+```bash
+npx skills add aiendpoint/platform --skill aiendpoint
+```
+
+<h2 id="what-it-does">What it does</h2>
+
+1. Detects the framework in the current project
+2. Generates an `/ai` response with service and capability metadata
+3. Inserts the route into the codebase
+4. Validates the result against the public validator
+5. Optionally registers the service in the directory
+
+<h2 id="trigger-phrases">Trigger phrases</h2>
+
+- `add /ai endpoint to my service`
+- `make my service AI-ready`
+- `implement aiendpoint standard`
+- `register on aiendpoint.dev`

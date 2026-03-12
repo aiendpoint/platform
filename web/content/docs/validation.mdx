@@ -1,0 +1,42 @@
+export const metadata = {
+  title: "Validation",
+  description: "How the validator scores an /ai endpoint and what warnings or failures mean in practice.",
+  section: "Reference",
+  order: 4,
+  href: "/docs/validation",
+  toc: [
+    { id: "score-model", title: "Score model" },
+    { id: "required-failures", title: "Required failures" },
+    { id: "recommended-fields", title: "Recommended fields" },
+  ],
+};
+
+<h2 id="score-model">Score model</h2>
+
+The validator uses a 100-point model with three classes of outcomes:
+
+- Errors: required parts of the spec are missing or invalid
+- Warnings: the spec is usable but incomplete
+- Passes: required or recommended checks that succeeded
+
+<h2 id="required-failures">Required failures</h2>
+
+These usually block registration:
+
+- `/ai` endpoint not reachable
+- Response is not valid JSON
+- Missing `aiendpoint`
+- Missing `service.name`
+- Missing `service.description`
+- Missing or empty `capabilities`
+
+<h2 id="recommended-fields">Recommended fields</h2>
+
+These do not block registration, but they lower confidence and score:
+
+- `service.category`
+- `auth`
+- `token_hints`
+- `meta.last_updated`
+
+For implementation details, see the validator logic in the registry service and the public validator page at [`/validate`](/validate).

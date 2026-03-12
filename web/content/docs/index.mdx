@@ -1,0 +1,39 @@
+export const metadata = {
+  title: "Introduction",
+  description: "What the /ai standard is, why it exists, and how to navigate the rest of the documentation.",
+  section: "Getting Started",
+  order: 1,
+  href: "/docs",
+  toc: [
+    { id: "why-ai", title: "Why /ai" },
+    { id: "what-you-get", title: "What you get" },
+    { id: "documentation-map", title: "Documentation map" },
+  ],
+};
+
+<h2 id="why-ai">Why /ai</h2>
+
+`/ai` is a lightweight JSON endpoint that tells an AI agent what a service can do and how to call it.
+
+Instead of scraping HTML, guessing hidden APIs, or reading a long human-focused docs site, an agent can fetch one predictable endpoint and get a compact machine-readable contract.
+
+<h2 id="what-you-get">What you get</h2>
+
+- A predictable `GET /ai` entry point
+- A compact service summary and capability list
+- Clear authentication hints
+- Token-efficiency hints such as compact mode or field filtering
+- A validation path for checking whether an implementation is usable
+
+<h2 id="documentation-map">Documentation map</h2>
+
+Use these pages in order if you are implementing the spec for the first time:
+
+1. [`Quick Start`](/docs/quick-start)
+2. [`Spec Reference`](/docs/spec)
+3. [`Validation`](/docs/validation)
+
+If you are integrating AIEndpoint with clients or workflows, the more relevant pages are:
+
+- [`MCP Server`](/docs/mcp-server)
+- [`Skill`](/docs/skill)

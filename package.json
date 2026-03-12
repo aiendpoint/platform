@@ -6,6 +6,9 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
+    "web:dev": "pnpm --filter web dev",
+    "web:build": "pnpm --filter web build",
+    "web:start": "pnpm --filter web start",
     "demo:news": "cd demos/news && node index.js",
     "demo:weather": "cd demos/weather && uvicorn main:app --port 3002",
     "demo:fx": "cd demos/fx && wrangler dev --port 3003"
