@@ -20,8 +20,15 @@ const app = Fastify({
 })
 
 // ─── CORS ─────────────────────────────────────────────────────────────────
+const rawOrigin = process.env.CORS_ORIGIN
+const corsOrigin = rawOrigin
+  ? rawOrigin.includes(',')
+    ? rawOrigin.split(',').map(o => o.trim())
+    : rawOrigin
+  : '*'
+
 await app.register(cors, {
-  origin: process.env.CORS_ORIGIN ?? '*',
+  origin: corsOrigin,
   methods: ['GET', 'POST', 'OPTIONS']
 })
 
