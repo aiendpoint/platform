@@ -1,0 +1,74 @@
+[
+  {
+    "id": "1",
+    "title": "AI Agents Are Replacing API Integrations",
+    "summary": "New research shows AI agents can autonomously integrate with services using standardized endpoints.",
+    "category": "technology",
+    "published_at": "2026-03-10T09:00:00Z",
+    "source": "TechCrunch",
+    "url": "https://example.com/article/1"
+  },
+  {
+    "id": "2",
+    "title": "Google Workspace CLI: Built for AI Agents First",
+    "summary": "Google releases open-source CLI with agent-first design, ships 100+ SKILL.md files.",
+    "category": "technology",
+    "published_at": "2026-03-08T14:30:00Z",
+    "source": "VentureBeat",
+    "url": "https://example.com/article/2"
+  },
+  {
+    "id": "3",
+    "title": "The Token Economy: Why Efficient APIs Matter",
+    "summary": "As LLM costs scale with token usage, API design that minimizes token consumption becomes a competitive advantage.",
+    "category": "business",
+    "published_at": "2026-03-07T11:00:00Z",
+    "source": "Forbes",
+    "url": "https://example.com/article/3"
+  },
+  {
+    "id": "4",
+    "title": "MCP Adoption Reaches 50,000 Servers",
+    "summary": "Anthropic's Model Context Protocol sees explosive growth as developers standardize agent tool interfaces.",
+    "category": "technology",
+    "published_at": "2026-03-05T08:00:00Z",
+    "source": "Wired",
+    "url": "https://example.com/article/4"
+  },
+  {
+    "id": "5",
+    "title": "Korean Startup Ecosystem Embraces Agentic AI",
+    "summary": "Major Korean platforms including Kakao and Naver begin shipping agent-compatible API layers.",
+    "category": "technology",
+    "published_at": "2026-03-03T10:00:00Z",
+    "source": "Korea Herald",
+    "url": "https://example.com/article/5"
+  },
+  {
+    "id": "6",
+    "title": "OpenAI Launches GPT-5 with Enhanced Tool Use",
+    "summary": "GPT-5 introduces native support for structured service discovery, reducing hallucinations in API calls.",
+    "category": "technology",
+    "published_at": "2026-03-01T12:00:00Z",
+    "source": "The Verge",
+    "url": "https://example.com/article/6"
+  },
+  {
+    "id": "7",
+    "title": "Global E-Commerce AI Spend Hits $12B",
+    "summary": "Retailers worldwide increase AI agent budgets as autonomous shopping assistants drive measurable revenue gains.",
+    "category": "business",
+    "published_at": "2026-02-28T09:00:00Z",
+    "source": "Bloomberg",
+    "url": "https://example.com/article/7"
+  },
+  {
+    "id": "8",
+    "title": "WHO Approves AI Diagnostic Tool for Rare Diseases",
+    "summary": "The AI system demonstrated 94% accuracy in identifying rare genetic conditions from patient records.",
+    "category": "health",
+    "published_at": "2026-02-25T15:00:00Z",
+    "source": "Reuters",
+    "url": "https://example.com/article/8"
+  }
+]
