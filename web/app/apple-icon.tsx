@@ -20,10 +20,10 @@ export default function AppleIcon() {
         <div
           style={{
             background: "white",
-            width: 28,
+            width: 22,
             height: 110,
             borderRadius: 14,
-            transform: "rotate(-40deg)",
+            transform: "rotate(40deg)",
           }}
         />
       </div>

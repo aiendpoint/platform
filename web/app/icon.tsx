@@ -20,10 +20,10 @@ export default function Icon() {
         <div
           style={{
             background: "white",
-            width: 5,
+            width: 4,
             height: 20,
             borderRadius: 3,
-            transform: "rotate(-40deg)",
+            transform: "rotate(40deg)",
           }}
         />
       </div>
