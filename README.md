@@ -4,6 +4,7 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Spec](https://img.shields.io/badge/spec-v1.0-green.svg)](spec/v1/schema.json)
+[![npm](https://img.shields.io/npm/v/@aiendpoint/mcp-server?label=mcp-server)](https://www.npmjs.com/package/@aiendpoint/mcp-server)
 
 ---
 
@@ -49,6 +50,39 @@ curl https://yourservice.com/ai
 ```
 
 **Implement in 10 minutes.** See the [spec docs](docs/01_spec.md) or the [live documentation](https://aiendpoint.dev/docs).
+
+---
+
+## Use with AI agents
+
+### MCP Server — search the registry from Claude or Cursor
+
+```bash
+npx -y @aiendpoint/mcp-server
+```
+
+Add to `claude_desktop_config.json` or `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "aiendpoint": {
+      "command": "npx",
+      "args": ["-y", "@aiendpoint/mcp-server"]
+    }
+  }
+}
+```
+
+Tools available: `aiendpoint_search_services` · `aiendpoint_fetch_ai_spec` · `aiendpoint_validate_service`
+
+### Skill — add `/ai` to your own service
+
+```bash
+npx skills add aiendpoint/platform --skill aiendpoint
+```
+
+Then in Claude Code: *"add /ai endpoint to my service"* — detects your framework, generates the spec, inserts the code, validates it.
 
 ---
 
@@ -230,9 +264,10 @@ cd web && npm run build
 - [x] Demo servers (Node.js, Python, Cloudflare Workers)
 - [x] Registry API (Fastify + Supabase)
 - [x] Web frontend (Next.js 16)
-- [ ] Vercel + Railway deployment
-- [ ] OpenAPI/Swagger → `/ai` converter
-- [ ] Claude / GPT MCP server
+- [x] Vercel + Railway deployment
+- [x] OpenAPI/Swagger → `/ai` converter
+- [x] MCP server (`@aiendpoint/mcp-server` on npm)
+- [x] Claude Code skill (skills.sh)
 - [ ] npm + pip SDK
 - [ ] Stripe billing (Pro/Business plans)
 
