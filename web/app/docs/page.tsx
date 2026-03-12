@@ -254,6 +254,75 @@ def ai_spec():
         </ul>
       </section>
 
+      {/* MCP Server */}
+      <section className="mb-12">
+        <h2 className="text-xl font-bold text-[#e5e5e5] mb-2">Use with AI agents</h2>
+        <p className="text-[#888] text-sm mb-6">
+          Install the AIEndpoint MCP server so Claude, Cursor, and other AI agents can search the
+          registry and fetch <code className="text-[#888]">/ai</code> specs directly.
+        </p>
+
+        {/* Claude Desktop */}
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-3">Claude Desktop</p>
+          <p className="text-xs text-[#555] mb-2">
+            Edit <code className="text-[#555] bg-[#111] border border-[#222] px-1 py-0.5 rounded">~/Library/Application Support/Claude/claude_desktop_config.json</code>:
+          </p>
+          <pre className="bg-[#0d0d0d] border border-[#222] rounded-lg p-4 text-xs font-mono text-[#888] overflow-x-auto whitespace-pre">{`{
+  "mcpServers": {
+    "aiendpoint": {
+      "command": "npx",
+      "args": ["-y", "@aiendpoint/mcp-server"]
+    }
+  }
+}`}</pre>
+        </div>
+
+        {/* Cursor */}
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-3">Cursor</p>
+          <p className="text-xs text-[#555] mb-2">
+            Edit <code className="text-[#555] bg-[#111] border border-[#222] px-1 py-0.5 rounded">~/.cursor/mcp.json</code> (global) or <code className="text-[#555] bg-[#111] border border-[#222] px-1 py-0.5 rounded">.cursor/mcp.json</code> (project):
+          </p>
+          <pre className="bg-[#0d0d0d] border border-[#222] rounded-lg p-4 text-xs font-mono text-[#888] overflow-x-auto whitespace-pre">{`{
+  "mcpServers": {
+    "aiendpoint": {
+      "command": "npx",
+      "args": ["-y", "@aiendpoint/mcp-server"]
+    }
+  }
+}`}</pre>
+        </div>
+
+        {/* Claude Code (skills.sh) */}
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-3">Claude Code</p>
+          <p className="text-xs text-[#555] mb-2">
+            Install via <a href="https://skills.sh" target="_blank" rel="noopener noreferrer" className="text-[#3b82f6] hover:underline">skills.sh</a>:
+          </p>
+          <pre className="bg-[#0d0d0d] border border-[#222] rounded-lg p-4 text-xs font-mono text-[#888] overflow-x-auto whitespace-pre">{`npx skills add aiendpoint/platform`}</pre>
+        </div>
+
+        {/* Tools */}
+        <div className="bg-[#111] border border-[#222] rounded-lg overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-[#222]">
+            <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">Available tools</span>
+          </div>
+          <div className="divide-y divide-[#1a1a1a]">
+            {[
+              { name: "aiendpoint_search_services", desc: "Search registered services by keyword, category, or auth type" },
+              { name: "aiendpoint_fetch_ai_spec",   desc: "Fetch the /ai spec from any URL directly" },
+              { name: "aiendpoint_validate_service", desc: "Check if a service correctly implements the /ai standard" },
+            ].map(({ name, desc }) => (
+              <div key={name} className="px-4 py-3">
+                <code className="text-xs font-mono text-[#3b82f6]">{name}</code>
+                <p className="text-xs text-[#555] mt-0.5">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <div className="border-t border-[#222] pt-8 flex items-center gap-4">
         <Link
