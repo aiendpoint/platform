@@ -1,0 +1,37 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+.next/
+.turbo/
+out/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Cloudflare Workers
+.wrangler/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Claude Code internal files
+.agent/
+.agents/
+.claude/
+./docs/
+./ai-work/
+skills-lock.json
