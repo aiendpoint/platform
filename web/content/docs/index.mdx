@@ -13,6 +13,23 @@ export const metadata = {
 
 <h2 id="why-ai">Why /ai</h2>
 
+The web already has conventions for machines:
+
+<div className="grid sm:grid-cols-3 gap-3 text-sm my-6">
+  <div className="rounded-lg p-4 border bg-[#111] border-[#222]">
+    <code className="text-xs font-mono text-[#888]">robots.txt</code>
+    <p className="text-[#555] text-xs mt-1">Tells crawlers what NOT to do</p>
+  </div>
+  <div className="rounded-lg p-4 border bg-[#111] border-[#222]">
+    <code className="text-xs font-mono text-[#888]">sitemap.xml</code>
+    <p className="text-[#555] text-xs mt-1">Tells crawlers where pages are</p>
+  </div>
+  <div className="rounded-lg p-4 border bg-[#3b82f6]/5 border-[#3b82f6]/20">
+    <code className="text-xs font-mono text-[#3b82f6]">/ai</code>
+    <p className="text-[#555] text-xs mt-1">Tells AI agents what you can DO</p>
+  </div>
+</div>
+
 `/ai` is a lightweight JSON endpoint that tells an AI agent what a service can do and how to call it.
 
 Instead of scraping HTML, guessing hidden APIs, or reading a long human-focused docs site, an agent can fetch one predictable endpoint and get a compact machine-readable contract.

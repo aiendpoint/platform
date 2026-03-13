@@ -12,7 +12,7 @@ const links = [
 export function Navbar() {
   const path = usePathname();
   return (
-    <header className="sticky top-0 z-50 border-b border-[#222] bg-[#0a0a0a]/90 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-[#222] bg-background backdrop-blur-sm">
       <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
         <Link href="/" className="font-mono font-bold text-[#e5e5e5] hover:text-white transition-colors">
           aiendpoint<span className="text-[#3b82f6]">.dev</span>
