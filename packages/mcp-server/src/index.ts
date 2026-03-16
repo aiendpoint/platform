@@ -19,7 +19,7 @@ import { z } from 'zod'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const REGISTRY_BASE = 'https://api.aiendpoint.dev'
+const REGISTRY_BASE = process.env.REGISTRY_URL ?? 'https://api.aiendpoint.dev'
 const CHARACTER_LIMIT = 20_000
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -33,6 +33,7 @@ interface ServiceRecord {
   categories: string[] | null
   auth_type: string | null
   is_verified: boolean
+  score: number
   spec_version: string | null
   created_at: string
 }
@@ -67,16 +68,34 @@ interface AiSpec {
   meta?: Record<string, unknown>
 }
 
+interface ValidationIssue {
+  field: string
+  message: string
+  code: string
+}
+
+interface TokenEfficiency {
+  spec_token_estimate: number
+  issues: string[]
+  score: number
+}
+
 interface ValidateResponse {
   url: string
-  valid: boolean
+  ai_url: string | null
+  passed: boolean
   score: number
-  badge: string | null
-  checks: Array<{ name: string; passed: boolean; message?: string }>
-  spec?: AiSpec
-  cached?: boolean
-  cache_expires_at?: string
-  error?: string
+  grade: string
+  spec_version: string | null
+  response_ms: number | null
+  capability_count: number
+  errors: ValidationIssue[]
+  warnings: ValidationIssue[]
+  passes: ValidationIssue[]
+  token_efficiency: TokenEfficiency | null
+  checked_at: string
+  cached: boolean
+  cache_expires_at: string
 }
 
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
@@ -86,7 +105,7 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
     ...options,
     headers: {
       'Accept': 'application/json',
-      'User-Agent': 'AIEndpoint-MCP/0.1.0',
+      'User-Agent': 'AIEndpoint-MCP/0.2.0',
       ...options?.headers,
     },
     signal: AbortSignal.timeout(15_000),
@@ -110,8 +129,9 @@ function truncate(text: string): string {
 function formatService(s: ServiceRecord): string {
   const cats  = s.categories?.join(', ') || '—'
   const badge = s.is_verified ? '[✓ verified]' : ''
+  const score = s.score ? ` · Score: ${s.score}` : ''
   const desc  = s.description ? `\n  ${s.description}` : ''
-  return `**${s.name}** ${badge}\n  URL: ${s.url}\n  Category: ${cats}${desc}`
+  return `**${s.name}** ${badge}${score}\n  URL: ${s.url}\n  Category: ${cats}${desc}`
 }
 
 function formatCapability(cap: AiCapability): string {
@@ -126,7 +146,7 @@ function formatCapability(cap: AiCapability): string {
 
 const server = new McpServer({
   name: 'aiendpoint-mcp-server',
-  version: '0.1.0',
+  version: '0.2.0',
 })
 
 // ── Tool 1: search_services ───────────────────────────────────────────────────
@@ -231,6 +251,7 @@ Examples:
             categories:  s.categories,
             auth_type:   s.auth_type,
             is_verified: s.is_verified,
+            score:       s.score,
           })),
         },
       }
@@ -345,15 +366,17 @@ Args:
   - url (string, required): Base URL of the service to validate (e.g. "https://stripe.com")
 
 Returns:
-  - valid (boolean): Whether the /ai endpoint passes all required checks
+  - passed (boolean): Whether the /ai endpoint passes all required checks
   - score (number): Compliance score 0–100
-  - badge (string | null): Badge level — "verified", "compliant", or null
-  - checks[]: Each individual check with name, passed status, and optional message
-  - spec: The parsed /ai spec if validation succeeded
+  - grade (string): "Excellent" (90+) | "Good" (70+) | "Basic" (50+) | "Poor"
+  - errors[]: Required fields that are missing or invalid
+  - warnings[]: Recommended fields that are absent
+  - passes[]: Checks that passed
+  - token_efficiency: Token efficiency score and improvement suggestions
 
 Notes:
   - Results are cached for 5 minutes to reduce load on services
-  - A valid service has score >= 60 and passes all required checks`,
+  - A passing service has no errors (score can still vary based on optional fields)`,
 
     inputSchema: z.object({
       url: z.string().url().describe('Base URL of the service to validate (the /ai path will be appended automatically)'),
@@ -373,33 +396,42 @@ Notes:
         `${REGISTRY_BASE}/api/validate?${params}`
       )
 
-      const passedChecks  = data.checks.filter(c => c.passed).length
-      const totalChecks   = data.checks.length
-      const statusEmoji   = data.valid ? '✅' : '❌'
-      const cachedNote    = data.cached ? ' *(cached)*' : ''
+      const statusEmoji = data.passed ? '✅' : '❌'
+      const cachedNote  = data.cached ? ' *(cached)*' : ''
 
       const lines: string[] = [
         `## Validation Result for ${data.url}${cachedNote}`,
         '',
-        `${statusEmoji} **${data.valid ? 'Valid' : 'Invalid'}** — Score: ${data.score}/100${data.badge ? `  ·  Badge: **${data.badge}**` : ''}`,
+        `${statusEmoji} **${data.passed ? 'Passed' : 'Failed'}** — Score: ${data.score}/100  ·  Grade: **${data.grade}**`,
         '',
-        `### Checks (${passedChecks}/${totalChecks} passed)`,
-        ...data.checks.map(c => `${c.passed ? '✓' : '✗'} ${c.name}${c.message ? ` — ${c.message}` : ''}`),
       ]
 
-      if (!data.valid) {
-        const failing = data.checks.filter(c => !c.passed)
+      if (data.passes.length > 0) {
+        lines.push(`### ✓ Passes (${data.passes.length})`)
+        lines.push(...data.passes.map(p => `  ✓ ${p.field} — ${p.message}`))
         lines.push('')
-        lines.push('### How to fix')
-        lines.push(...failing.map(c => `- **${c.name}**: ${c.message || 'Check the /ai spec documentation at aiendpoint.dev/docs'}`))
       }
 
-      if (data.spec?.capabilities?.length) {
-        lines.push('', `### Capabilities (${data.spec.capabilities.length})`)
-        lines.push(...data.spec.capabilities.slice(0, 5).map(formatCapability))
-        if (data.spec.capabilities.length > 5) {
-          lines.push(`  *... and ${data.spec.capabilities.length - 5} more — use aiendpoint_fetch_ai_spec to see all*`)
-        }
+      if (data.warnings.length > 0) {
+        lines.push(`### ⚠ Warnings (${data.warnings.length})`)
+        lines.push(...data.warnings.map(w => `  ⚠ ${w.field} — ${w.message}`))
+        lines.push('')
+      }
+
+      if (data.errors.length > 0) {
+        lines.push(`### ✗ Errors (${data.errors.length})`)
+        lines.push(...data.errors.map(e => `  ✗ ${e.field} — ${e.message}`))
+        lines.push('')
+      }
+
+      if (data.token_efficiency?.issues?.length) {
+        lines.push('### Token Efficiency Issues')
+        lines.push(...data.token_efficiency.issues.map(i => `  • ${i}`))
+        lines.push('')
+      }
+
+      if (data.capability_count > 0) {
+        lines.push(`*${data.capability_count} capabilities found — use aiendpoint_fetch_ai_spec to see details*`)
       }
 
       const text = truncate(lines.join('\n'))
@@ -407,12 +439,14 @@ Notes:
       return {
         content: [{ type: 'text', text }],
         structuredContent: {
-          url:    data.url,
-          valid:  data.valid,
-          score:  data.score,
-          badge:  data.badge,
-          checks: data.checks,
-          cached: data.cached ?? false,
+          url:              data.url,
+          passed:           data.passed,
+          score:            data.score,
+          grade:            data.grade,
+          errors:           data.errors,
+          warnings:         data.warnings,
+          capability_count: data.capability_count,
+          cached:           data.cached,
         },
       }
     } catch (err) {

@@ -1,6 +1,6 @@
 {
   "name": "@aiendpoint/mcp-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server for AIEndpoint registry — lets AI agents search and discover /ai-enabled web services",
   "type": "module",
   "main": "dist/index.js",
