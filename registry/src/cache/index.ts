@@ -61,3 +61,16 @@ export async function cacheTtl(key: string): Promise<number> {
     return 0
   }
 }
+
+/** Deletes all keys matching a glob pattern (e.g. 'services:v1:*'). No-op if no Redis. */
+export async function cacheDelPattern(pattern: string): Promise<void> {
+  if (!redis) return
+  try {
+    const keys = await redis.keys(pattern)
+    if (keys.length > 0) {
+      await redis.del(...(keys as [string, ...string[]]))
+    }
+  } catch {
+    // ignore — cache invalidation is best-effort
+  }
+}

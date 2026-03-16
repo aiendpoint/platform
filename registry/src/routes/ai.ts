@@ -20,11 +20,13 @@ export async function aiRoute(app: FastifyInstance) {
             q: 'string, optional — keyword search (name, description)',
             category: 'string, optional — filter by category',
             auth_type: 'string, optional — none|apikey|oauth2|bearer',
+            min_score: 'integer, optional — minimum validation score 0–100',
+            sort: 'string, optional — newest|score|name (default: newest)',
             verified: 'boolean, optional — only verified services',
             limit: 'integer, optional, default 20, max 100',
             page: 'integer, optional, default 1'
           },
-          returns: 'total, page, limit, services[] {id, name, description, url, ai_url, categories, auth_type, is_verified}'
+          returns: 'total, page, limit, services[] {id, name, description, url, ai_url, categories, auth_type, is_verified, score}'
         },
         {
           id: 'get_service',
@@ -44,7 +46,7 @@ export async function aiRoute(app: FastifyInstance) {
           params: {
             url: 'string, required — service URL to validate (e.g. https://yourservice.com)'
           },
-          returns: 'passed, score, errors[], warnings[], passes[], response_ms, capability_count'
+          returns: 'passed, score, grade, errors[], warnings[], passes[], response_ms, capability_count, token_efficiency{score, issues[]}, cached, cache_expires_at'
         },
         {
           id: 'list_categories',
@@ -62,7 +64,7 @@ export async function aiRoute(app: FastifyInstance) {
         delta_support: false
       },
       meta: {
-        last_updated: '2026-03-12',
+        last_updated: '2026-03-17',
         status: '/health'
       }
     })

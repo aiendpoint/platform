@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { db } from '../../db/index.js'
 import { validateAiEndpoint, getScoreGrade, parseSpec } from '../../services/validator.js'
+import { cacheDelPattern } from '../../cache/index.js'
 import type { AuthType, HttpMethod } from '../../types/index.js'
 
 interface RegisterBody {
@@ -108,6 +109,9 @@ export async function serviceRegisterRoute(app: FastifyInstance) {
 
       await db.from('capabilities').insert(capRows)
     }
+
+    // Invalidate cached service list (new service should appear immediately)
+    await cacheDelPattern('services:v1:*')
 
     // Save validation record
     await db.from('validations').insert({
