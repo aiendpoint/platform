@@ -1,0 +1,144 @@
+export const metadata = {
+  title: "Concepts",
+  description: "Design philosophy behind /ai — token efficiency, capability modeling, auth hints, and versioning.",
+  section: "Concepts",
+  order: 7,
+  href: "/docs/concepts",
+  toc: [
+    { id: "token-efficiency", title: "Token efficiency" },
+    { id: "capability-design", title: "Capability design" },
+    { id: "auth-model", title: "Auth model" },
+    { id: "versioning", title: "Versioning" },
+  ],
+};
+
+<h2 id="token-efficiency">Token efficiency as first principle</h2>
+
+Every field in the `/ai` spec exists to reduce token consumption without losing information. This isn't an optimization — it's the reason the spec exists.
+
+**Why it matters:** An AI agent processing a typical webpage spends ~50,000 tokens before reaching useful data. A well-written `/ai` response delivers the same actionable information in under 1,000 tokens.
+
+### Writing good descriptions
+
+The `description` field on both the service and each capability is the most impactful place to apply token efficiency. AI agents read these first to decide whether to proceed.
+
+| ❌ Verbose | ✅ Concise |
+|---|---|
+| `"This endpoint allows you to search our extensive product catalog using various filtering and sorting options"` | `"Search products by keyword, category, price range"` |
+| `"Returns a comprehensive list of all available items with their complete metadata"` | `"products[] with id, name, price, stock"` |
+
+The `returns` field in capabilities follows the same rule. Describe the shape, not the philosophy.
+
+### token_hints
+
+The optional `token_hints` object tells agents what optimizations your service supports:
+
+```json
+"token_hints": {
+  "compact_mode": true,
+  "field_filtering": true,
+  "delta_support": false
+}
+```
+
+- **`compact_mode`** — your API accepts a `?compact=true` param that removes null fields and verbose metadata
+- **`field_filtering`** — your API accepts a `?fields=id,name,price` param to return only requested fields
+- **`delta_support`** — your API supports delta/patch responses (only changed fields since last call)
+
+These are hints, not requirements. An agent will use them when available.
+
+---
+
+<h2 id="capability-design">Capability design</h2>
+
+Each capability represents one thing an agent can do with your service. The goal is a flat, unambiguous list — not a taxonomy.
+
+### Naming conventions
+
+Use `snake_case`. Start with a verb.
+
+```
+search_products    ✅
+get_order          ✅
+listAllAvailableProductsByCategory  ❌  (too long)
+products           ❌  (no verb)
+```
+
+### Params format
+
+Params are a flat object, not JSON Schema. Each value is a human-readable string that describes type, required/optional, defaults, and constraints:
+
+```json
+"params": {
+  "q":       "keyword (string, required)",
+  "limit":   "result count (integer, optional, default: 10, max: 50)",
+  "category": "filter by category slug (string, optional)"
+}
+```
+
+This format is intentionally minimal. AI agents parse natural language descriptions more reliably than deeply nested JSON Schema objects.
+
+### Common anti-patterns
+
+- **Too many capabilities** — if you have 30+ capabilities, group them or ask whether all are relevant to an AI agent
+- **Overlapping capabilities** — `search_products` and `find_products` doing slightly different things confuses agents
+- **Missing `returns`** — agents often check `returns` before calling an endpoint to verify the response shape
+
+---
+
+<h2 id="auth-model">Auth model</h2>
+
+`/ai` does not handle authentication directly. It provides hints so agents know what to expect.
+
+```json
+"auth": {
+  "type": "apikey",
+  "docs": "https://yoursite.com/developers/auth"
+}
+```
+
+### Auth types
+
+| Value | Meaning |
+|---|---|
+| `"none"` | No auth required — agent can call immediately |
+| `"apikey"` | API key in header or query param |
+| `"bearer"` | Bearer token (JWT or opaque) in Authorization header |
+| `"oauth2"` | OAuth 2.0 flow required |
+| `"custom"` | Non-standard — agent must read the docs URL |
+
+### The docs URL matters
+
+When `type` is anything other than `"none"`, the `docs` URL is critical. AI agents can fetch and parse auth documentation to understand exact header names, token formats, and flow steps. A missing or broken `docs` URL forces agents to guess.
+
+---
+
+<h2 id="versioning">Versioning & evolution</h2>
+
+The `aiendpoint` field declares spec compatibility:
+
+```json
+{
+  "aiendpoint": "1.0",
+  ...
+}
+```
+
+### Compatibility rules
+
+- A **v1.0** response must always be parseable by a v1.x parser
+- Adding new optional fields is non-breaking
+- Removing required fields or changing field semantics requires a major version bump
+- Agents should ignore unknown fields (forward compatibility)
+
+### meta.last_updated
+
+The optional `meta.last_updated` field (ISO 8601) lets agents cache aggressively:
+
+```json
+"meta": {
+  "last_updated": "2025-03-01"
+}
+```
+
+If an agent cached your `/ai` response and sees the same `last_updated`, it can skip re-fetching. Omit this field only if your capabilities change frequently.

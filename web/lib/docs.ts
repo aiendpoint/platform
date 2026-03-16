@@ -24,6 +24,8 @@ const docsEntries: DocsEntry[] = [
   { slug: ["validation"], load: () => import("@/content/docs/validation.mdx") },
   { slug: ["mcp-server"], load: () => import("@/content/docs/mcp-server.mdx") },
   { slug: ["skill"], load: () => import("@/content/docs/skill.mdx") },
+  { slug: ["concepts"], load: () => import("@/content/docs/concepts.mdx") },
+  { slug: ["roadmap"], load: () => import("@/content/docs/roadmap.mdx") },
 ];
 
 function normalizeSlug(slug?: string[]) {

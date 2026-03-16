@@ -1,0 +1,68 @@
+export const metadata = {
+  title: "Roadmap",
+  description: "What's been built, what's in progress, and where AIEndpoint is going.",
+  section: "Project",
+  order: 8,
+  href: "/docs/roadmap",
+  toc: [
+    { id: "phase-1", title: "Phase 1 — Foundation" },
+    { id: "phase-2", title: "Phase 2 — Ecosystem" },
+    { id: "phase-3", title: "Phase 3 — Scale" },
+    { id: "vision", title: "Long-term vision" },
+  ],
+};
+
+The roadmap reflects AIEndpoint's goal: make `/ai` a convention as ubiquitous as `robots.txt`. Each phase expands the ecosystem without breaking what came before.
+
+---
+
+<h2 id="phase-1">Phase 1 — Foundation ✅</h2>
+
+The core infrastructure is live. Everything an early adopter needs to implement, validate, and register a `/ai` endpoint.
+
+- **Spec v1.0** — field definitions, capability schema, auth hints, token_hints, category list
+- **Demo servers** — reference implementations in Node.js, Python, and Cloudflare Workers
+- **Registry API** — Fastify + Supabase backend; register by URL, auto-fetch and store spec
+- **Web frontend** — Next.js, service list, search, individual service pages
+- **Validator** — 0–100 score with pass/fail breakdown; available via UI and API
+- **MCP Server** — `@aiendpoint/mcp-server`; lets Claude and Cursor query the registry directly
+- **Claude Code Skill** — `npx skills add aiendpoint/platform --skill aiendpoint`; generate and validate `/ai` inside an existing codebase
+
+---
+
+<h2 id="phase-2">Phase 2 — Ecosystem 🔄</h2>
+
+Lowering the barrier to adoption. Services shouldn't need to write `/ai` from scratch.
+
+- **OpenAPI → /ai converter** ✅ — paste a Swagger URL, get a ready-to-use `/ai` response
+- **Webpage → /ai converter** ✅ — provide a URL, AI extracts capabilities from the existing site
+- **npm SDK** — TypeScript helpers: `createAiEndpoint()`, response validation, type definitions
+- **pip SDK** — Python equivalent for FastAPI, Flask, Django
+- **Badge embed** — `![AI-Ready](https://aiendpoint.dev/badge/yoursite.com)` for READMEs and docs
+
+---
+
+<h2 id="phase-3">Phase 3 — Scale 📋</h2>
+
+Making the standard commercially sustainable while keeping the spec open.
+
+- **Stripe billing** — Pro ($29/mo) and Business ($199/mo) plans
+- **Agent traffic dashboard** — service owners see how many agents called their `/ai`, which capabilities were used
+- **Uptime monitoring** — real-time tracking of `/ai` endpoint availability and response time
+- **Korean market push** — outreach to Kakao, Naver, Toss, Coupang ecosystem; PRs to add `/ai` to major services
+- **Enterprise registry** — self-hosted, white-label registry for internal service directories
+
+---
+
+<h2 id="vision">Long-term vision 🔭</h2>
+
+If `/ai` reaches the adoption level of `robots.txt`, the infrastructure built around it becomes foundational.
+
+- **Spec v2.0** — streaming capabilities, webhook declarations, delta response support
+- **Auth broker** — AIEndpoint manages OAuth flows on behalf of agents (like Stripe for payments)
+- **Agent traffic routing** — registry as an active proxy, not just a directory; intelligent load balancing for AI traffic
+- **Cross-registry federation** — multiple independent registries that sync, so no single point of failure
+
+---
+
+Contributions and feedback are welcome on [GitHub](https://github.com/aiendpoint/platform). If you're building something that would benefit from a feature listed here, open an issue.
