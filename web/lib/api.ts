@@ -9,6 +9,7 @@ export interface ServiceListItem {
   categories: string[];
   auth_type: string;
   is_verified: boolean;
+  score: number;
   spec_version: string;
   created_at: string;
 }
@@ -80,6 +81,8 @@ export async function getServices(params?: {
   category?: string;
   auth_type?: string;
   verified?: boolean;
+  min_score?: number;
+  sort?: "newest" | "score" | "name";
   page?: number;
   limit?: number;
 }): Promise<ServicesResponse> {
@@ -88,6 +91,8 @@ export async function getServices(params?: {
   if (params?.category)  qs.set("category", params.category);
   if (params?.auth_type) qs.set("auth_type", params.auth_type);
   if (params?.verified)  qs.set("verified", "true");
+  if (params?.min_score !== undefined) qs.set("min_score", String(params.min_score));
+  if (params?.sort)      qs.set("sort", params.sort);
   if (params?.page)      qs.set("page", String(params.page));
   if (params?.limit)     qs.set("limit", String(params.limit));
 

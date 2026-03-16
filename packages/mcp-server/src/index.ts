@@ -143,6 +143,8 @@ Args:
   - query (string, optional): Keyword search — matches service name and description
   - category (string, optional): Filter by category. One of: ecommerce, productivity, data, finance, media, communication, developer, ai, search, maps, weather, news
   - auth_type (string, optional): Filter by auth type. One of: none, apikey, oauth2, bearer
+  - min_score (number, optional): Minimum compliance score 0–100. Use 70 for well-implemented services, 90 for gold-tier only.
+  - sort (string, optional): Sort order — newest (default), score (highest first), name (A–Z)
   - limit (number, optional): Max results to return, 1–50 (default: 10)
   - offset (number, optional): Pagination offset (default: 0)
 
@@ -153,12 +155,15 @@ Returns:
 Examples:
   - Find payment APIs: query="payment"
   - Find free weather services: category="weather", auth_type="none"
+  - Find high-quality weather services: category="weather", min_score=70
   - Find Korean e-commerce platforms: query="쇼핑", category="ecommerce"`,
 
     inputSchema: z.object({
       query:     z.string().max(200).optional().describe('Keyword search — matches name and description'),
       category:  z.string().optional().describe('Filter by category: ecommerce|productivity|data|finance|media|communication|developer|ai|search|maps|weather|news'),
       auth_type: z.string().optional().describe('Filter by auth type: none|apikey|oauth2|bearer'),
+      min_score: z.number().int().min(0).max(100).optional().describe('Minimum compliance score 0–100 (70=good, 90=gold)'),
+      sort:      z.enum(['newest', 'score', 'name']).optional().describe('Sort: newest (default) | score (highest first) | name (A–Z)'),
       limit:     z.number().int().min(1).max(50).default(10).describe('Max results (default: 10)'),
       offset:    z.number().int().min(0).default(0).describe('Pagination offset (default: 0)'),
     }).strict(),
@@ -170,12 +175,14 @@ Examples:
       openWorldHint:   true,
     },
   },
-  async ({ query, category, auth_type, limit, offset }) => {
+  async ({ query, category, auth_type, min_score, sort, limit, offset }) => {
     try {
       const params = new URLSearchParams()
-      if (query)     params.set('q', query)
-      if (category)  params.set('category', category)
-      if (auth_type) params.set('auth_type', auth_type)
+      if (query)               params.set('q', query)
+      if (category)            params.set('category', category)
+      if (auth_type)           params.set('auth_type', auth_type)
+      if (min_score !== undefined) params.set('min_score', String(min_score))
+      if (sort)                params.set('sort', sort)
       params.set('limit', String(limit))
       params.set('page', String(Math.max(1, Math.floor(offset / limit) + 1)))
 
