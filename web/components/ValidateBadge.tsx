@@ -1,4 +1,4 @@
-import type { ValidationResult } from "@/lib/api";
+import type { ValidationResult, TokenEfficiency } from "@/lib/api";
 
 const GRADE_COLORS = {
   Excellent: { bar: "#22c55e", text: "text-[#22c55e]" },
@@ -82,6 +82,80 @@ export function ValidateBadge({ result }: { result: ValidationResult }) {
           </ul>
         </div>
       )}
+
+      {/* Token Efficiency */}
+      {result.token_efficiency && (
+        <TokenEfficiencyPanel te={result.token_efficiency} />
+      )}
+    </div>
+  );
+}
+
+function TokenEfficiencyPanel({ te }: { te: TokenEfficiency }) {
+  const scoreColor = te.score >= 12 ? "text-[#22c55e]" : te.score >= 8 ? "text-[#3b82f6]" : "text-[#f59e0b]";
+  const barColor   = te.score >= 12 ? "#22c55e"        : te.score >= 8 ? "#3b82f6"        : "#f59e0b";
+
+  const checks = [
+    {
+      label: "Spec size",
+      value: `~${te.spec_token_estimate.toLocaleString()} tokens`,
+      ok: te.spec_token_estimate <= 2000,
+      hint: te.spec_token_estimate > 2000 ? "Consider trimming verbose descriptions" : undefined,
+    },
+    {
+      label: "service.description",
+      value: `${te.description_length} chars`,
+      ok: te.description_length >= 20 && te.description_length <= 150,
+      hint: te.description_length > 150 ? "Aim for ≤ 150 chars" : te.description_length < 20 ? "Too short — add more context" : undefined,
+    },
+    {
+      label: "token_hints",
+      value: te.has_token_hints ? "present" : "missing",
+      ok: te.has_token_hints,
+      hint: !te.has_token_hints ? 'Add "token_hints" with compact_mode, field_filtering' : undefined,
+    },
+    {
+      label: "Capability descriptions",
+      value: `avg ${te.avg_capability_description} chars`,
+      ok: te.avg_capability_description >= 10 && te.avg_capability_description <= 100,
+      hint: te.avg_capability_description > 100 ? "Aim for ≤ 100 chars avg" : undefined,
+    },
+    {
+      label: "Returns specificity",
+      value: te.capability_count > 0
+        ? `${te.returns_specific_count}/${te.capability_count} specific`
+        : "n/a",
+      ok: te.capability_count === 0 || te.returns_specific_count / te.capability_count >= 0.5,
+      hint: te.capability_count > 0 && te.returns_specific_count / te.capability_count < 0.5
+        ? 'Add field names: "items[] with id, name, price"'
+        : undefined,
+    },
+  ];
+
+  return (
+    <div className="border-t border-[#1a1a1a] pt-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs text-[#888] uppercase tracking-wider">Token Efficiency</p>
+        <span className={`text-sm font-mono font-bold ${scoreColor}`}>{te.score}<span className="text-[#444] text-xs">/15</span></span>
+      </div>
+      <div className="h-1 bg-[#1a1a1a] rounded-full overflow-hidden mb-4">
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${(te.score / 15) * 100}%`, backgroundColor: barColor }}
+        />
+      </div>
+      <ul className="space-y-2">
+        {checks.map(({ label, value, ok, hint }) => (
+          <li key={label} className="flex items-start gap-2 text-xs">
+            <span className={`mt-0.5 shrink-0 ${ok ? "text-[#22c55e]" : "text-[#f59e0b]"}`}>{ok ? "✓" : "⚠"}</span>
+            <div className="flex-1 min-w-0">
+              <span className="text-[#555]">{label}: </span>
+              <span className={ok ? "text-[#888]" : "text-[#f59e0b]/80"}>{value}</span>
+              {hint && <p className="text-[#444] mt-0.5">{hint}</p>}
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

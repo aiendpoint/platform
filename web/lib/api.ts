@@ -43,6 +43,17 @@ export interface ServicesResponse {
   services: ServiceListItem[];
 }
 
+export interface TokenEfficiency {
+  spec_token_estimate: number;
+  description_length: number;
+  avg_capability_description: number;
+  has_token_hints: boolean;
+  returns_specific_count: number;
+  capability_count: number;
+  issues: string[];
+  score: number; // 0–15
+}
+
 export interface ValidationResult {
   url: string;
   ai_url: string | null;
@@ -55,6 +66,7 @@ export interface ValidationResult {
   errors: ValidationIssue[];
   warnings: ValidationIssue[];
   passes: ValidationIssue[];
+  token_efficiency: TokenEfficiency | null;
   checked_at: string;
   /** true when this response was served from Redis cache */
   cached: boolean;

@@ -140,14 +140,15 @@ export default function ValidatePage() {
         <div className="mt-6 space-y-2">
           <p className="text-xs text-[#555] font-semibold uppercase tracking-wider">Score breakdown</p>
           {[
-            { pts: "20", label: "Connectivity", desc: "/ai returns 200 OK within 3s" },
-            { pts: "40", label: "Required fields", desc: "aiendpoint, name, description, capabilities" },
+            { pts: "15", label: "Connectivity",       desc: "/ai reachable + responds within 3s" },
+            { pts: "35", label: "Required fields",    desc: "aiendpoint, name, description, capabilities" },
             { pts: "20", label: "Capability quality", desc: "id, description, endpoint, method, returns" },
-            { pts: "20", label: "Recommended", desc: "category, auth, token_hints, meta.last_updated" },
-          ].map(({ pts, label, desc }) => (
+            { pts: "15", label: "Recommended",        desc: "category, auth, meta.last_updated" },
+            { pts: "15", label: "Token efficiency",   desc: "description length, token_hints, returns specificity", accent: true },
+          ].map(({ pts, label, desc, accent }) => (
             <div key={label} className="flex items-baseline gap-3 text-sm">
-              <span className="text-[#3b82f6] font-mono text-xs w-6 shrink-0">{pts}pt</span>
-              <span className="text-[#888]">{label}</span>
+              <span className={`font-mono text-xs w-6 shrink-0 ${accent ? "text-[#22c55e]" : "text-[#3b82f6]"}`}>{pts}pt</span>
+              <span className={accent ? "text-[#22c55e]/80" : "text-[#888]"}>{label}</span>
               <span className="text-[#555] text-xs">— {desc}</span>
             </div>
           ))}

@@ -57,6 +57,7 @@ export async function validateRoute(app: FastifyInstance) {
       errors:           result.errors,
       warnings:         result.warnings,
       passes:           result.passes,
+      token_efficiency: result.token_efficiency,
       checked_at:       new Date().toISOString(),
       cached:           false,
       cache_expires_at: expiresAt,
