@@ -29,11 +29,40 @@ export default async function Home() {
           <br />
           <span className="text-[#bbb]">AI agents are a fundamentally different client.</span>
         </p>
-        <p className="text-sm text-[#555] max-w-xl mx-auto mb-10">
+        <p className="text-sm text-[#555] max-w-xl mx-auto mb-8">
           Every time an AI agent visits your site, it processes tens of thousands of tokens —
           HTML, scripts, styles, ads — just to find the few hundred tokens it actually needed.
           <code className="text-[#3b82f6] mx-1">/ai</code> ends that.
         </p>
+
+        {/* Evolution timeline */}
+        <div className="flex items-center justify-center gap-2 flex-wrap mb-10 select-none">
+          {(
+            [
+              { name: "robots.txt", label: "don't go" },
+              { name: "sitemap.xml", label: "go here" },
+              { name: "llms.txt", label: "context" },
+              { name: "/ai", label: "do this", accent: true },
+            ] as Array<{ name: string; label: string; accent?: boolean }>
+          ).map((item, i) => (
+            <div key={item.name} className="flex items-center gap-2">
+              {i > 0 && <span className="text-[#333] text-xs">→</span>}
+              <div
+                className={`px-3 py-1.5 rounded-lg border text-xs ${
+                  item.accent
+                    ? "border-[#3b82f6]/40 bg-[#3b82f6]/5 text-[#3b82f6]"
+                    : "border-[#222] bg-[#111] text-[#555]"
+                }`}
+              >
+                <code className="font-mono">{item.name}</code>
+                <span className={`ml-1.5 text-[10px] ${item.accent ? "text-[#3b82f6]/70" : "text-[#444]"}`}>
+                  · {item.label}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div className="flex items-center justify-center gap-3 flex-wrap mb-6">
           <Link
             href="/register"
@@ -136,21 +165,47 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* How it works */}
+      {/* Start here — persona cards */}
       <section className="max-w-5xl mx-auto px-6 py-20">
-        <h2 className="text-2xl font-bold text-[#e5e5e5] text-center mb-12">How it works</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {[
-            { step: "01", title: "Implement /ai", desc: "Add GET /ai to your service returning structured JSON with your capabilities. 10 lines of code." },
-            { step: "02", title: "Register & validate", desc: "Submit your URL. We fetch and validate your spec, scoring it 0–100. Pass to get an AI-Ready badge." },
-            { step: "03", title: "AI agents connect", desc: "Any agent queries the registry, discovers your service, and instantly knows how to call it." },
-          ].map(({ step, title, desc }) => (
-            <div key={step} className="bg-[#111] border border-[#222] rounded-lg p-6">
-              <p className="text-xs font-mono text-[#444] mb-3">{step}</p>
-              <h3 className="font-semibold text-[#e5e5e5] mb-2">{title}</h3>
-              <p className="text-sm text-[#888] leading-relaxed">{desc}</p>
-            </div>
-          ))}
+        <h2 className="text-2xl font-bold text-[#e5e5e5] text-center mb-3">Start here</h2>
+        <p className="text-sm text-[#555] text-center mb-10">Choose what fits you best</p>
+        <div className="grid md:grid-cols-3 gap-4">
+          <Link
+            href="/docs/quick-start"
+            className="bg-[#111] border border-[#222] hover:border-[#3b82f6]/40 rounded-xl p-6 transition-colors group"
+          >
+            <p className="text-xs font-mono text-[#444] mb-3">I have a web service</p>
+            <h3 className="font-semibold text-[#e5e5e5] mb-2 group-hover:text-[#3b82f6] transition-colors">
+              Add /ai in 10 minutes →
+            </h3>
+            <p className="text-sm text-[#555] leading-relaxed">
+              Return structured JSON from <code className="text-[#888]">/ai</code>. Register. Get a badge. AI agents can find and call you instantly.
+            </p>
+          </Link>
+          <Link
+            href="/docs/mcp-server"
+            className="bg-[#111] border border-[#222] hover:border-[#3b82f6]/40 rounded-xl p-6 transition-colors group"
+          >
+            <p className="text-xs font-mono text-[#444] mb-3">I'm building an AI agent</p>
+            <h3 className="font-semibold text-[#e5e5e5] mb-2 group-hover:text-[#3b82f6] transition-colors">
+              Search the registry →
+            </h3>
+            <p className="text-sm text-[#555] leading-relaxed">
+              Install the MCP server. Ask your agent to find services by category. No scraping, no hallucinated endpoints.
+            </p>
+          </Link>
+          <Link
+            href="/why"
+            className="bg-[#111] border border-[#222] hover:border-[#3b82f6]/40 rounded-xl p-6 transition-colors group"
+          >
+            <p className="text-xs font-mono text-[#444] mb-3">I want to understand</p>
+            <h3 className="font-semibold text-[#e5e5e5] mb-2 group-hover:text-[#3b82f6] transition-colors">
+              Read why →
+            </h3>
+            <p className="text-sm text-[#555] leading-relaxed">
+              Why a new standard? How does it compare to MCP, OpenAPI, llms.txt? What problem does it actually solve?
+            </p>
+          </Link>
         </div>
       </section>
 
