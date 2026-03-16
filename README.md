@@ -32,7 +32,7 @@ The web already solves similar problems with simple file conventions:
 ```
 robots.txt   (1994)  →  tells crawlers what NOT to do
 sitemap.xml  (2005)  →  tells crawlers where pages are
-/ai          (2025)  →  tells AI agents what you CAN DO  ← this project
+/ai          (2026)  →  tells AI agents what you CAN DO  ← this project
 ```
 
 Any service that exposes `GET /ai` returns a compact JSON description of its capabilities.
