@@ -61,6 +61,10 @@ Based on the codebase analysis, create an `AiEndpointSpec` JSON object:
   "auth": {
     "type": "<none|apikey|oauth2|bearer>"
   },
+  "token_hints": {
+    "compact_mode": true,
+    "field_filtering": true
+  },
   "meta": {
     "last_updated": "<today's date YYYY-MM-DD>"
   }
@@ -168,16 +172,23 @@ After adding the `/ai` endpoint, validate it against the official schema.
 
 If the server is running locally, run:
 ```bash
-curl -s "https://api.aiendpoint.dev/api/validate?url=http://localhost:<port>" | jq '.valid, .score, .badge'
+curl -s "https://api.aiendpoint.dev/api/validate?url=http://localhost:<port>" | jq '{passed: .passed, score: .score, grade: .grade, errors: .errors}'
 ```
 
-If validation fails, read the `checks` array in the response and fix the issues.
+If validation fails, read the `errors[]` array in the response and fix the issues. Each error has `field`, `message`, and `code`.
 
 **Common issues:**
-- `"aiendpoint field must equal '1.0'"` → Check for typos, must be the string `"1.0"` not the number `1.0`
-- `"capabilities must have at least 1 item"` → Add at least one capability
-- `"capability.id must be snake_case"` → No camelCase, no spaces, no hyphens
-- `"Content-Type must be application/json"` → Make sure the response sets the correct header
+- `MISSING_VERSION` → `aiendpoint` field missing or not `"1.0"` (must be a string, not number)
+- `EMPTY_CAPABILITIES` → `capabilities` array must have at least one item
+- `INCOMPLETE_CAPABILITY` → Each capability needs `id`, `description`, `endpoint`, `method`
+- `MISSING_RETURNS` → Add a `returns` field to each capability (e.g. `"products[] with id, name, price"`)
+
+**Scoring guide (0–100):**
+- Connectivity (15pt): `/ai` reachable within 3s
+- Required fields (35pt): `aiendpoint`, `service.name`, `service.description`, `capabilities`
+- Capability quality (20pt): each capability has `id`, `description`, `endpoint`, `method`, `returns`
+- Recommended (15pt): `service.category`, `auth`, `meta.last_updated`
+- Token efficiency (15pt): description length 20–150 chars, `token_hints` present, concise `returns`
 
 ---
 
