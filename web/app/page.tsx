@@ -21,17 +21,20 @@ export default async function Home() {
           <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full" />
           Open Standard · Apache 2.0
         </div>
-        <h1 className="text-5xl font-bold tracking-tight text-[#e5e5e5] mb-4">
+        <h1 className="text-5xl font-bold tracking-tight text-[#e5e5e5] mb-6">
           The <code className="text-[#3b82f6]">/ai</code> Standard
         </h1>
-        <p className="text-xl text-[#888] max-w-2xl mx-auto mb-10">
-          Make your service instantly readable by AI agents.
+        <p className="text-xl text-[#888] max-w-2xl mx-auto mb-4">
+          The web was built for human browsers.
           <br />
-          <span className="italic font-bold">
-          One endpoint. Pure JSON. No HTML noise.
-          </span>
+          <span className="text-[#bbb]">AI agents are a fundamentally different client.</span>
         </p>
-        <div className="flex items-center justify-center gap-3 flex-wrap">
+        <p className="text-sm text-[#555] max-w-xl mx-auto mb-10">
+          Every time an AI agent visits your site, it processes tens of thousands of tokens —
+          HTML, scripts, styles, ads — just to find the few hundred tokens it actually needed.
+          <code className="text-[#3b82f6] mx-1">/ai</code> ends that.
+        </p>
+        <div className="flex items-center justify-center gap-3 flex-wrap mb-6">
           <Link
             href="/register"
             className="bg-[#3b82f6] hover:bg-[#2563eb] text-white font-medium px-6 py-3 rounded-lg transition-colors"
@@ -45,6 +48,74 @@ export default async function Home() {
             Read the spec
           </Link>
         </div>
+        <Link href="/why" className="text-sm text-[#555] hover:text-[#888] transition-colors">
+          Why we built this →
+        </Link>
+      </section>
+
+      {/* The problem — aha moment */}
+      <section className="max-w-5xl mx-auto px-6 pb-20">
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Before */}
+          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <span className="w-2 h-2 rounded-full bg-[#ef4444]" />
+              <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">AI agent reads a webpage</span>
+            </div>
+            <div className="space-y-2 mb-5">
+              {[
+                { label: "HTML structure + content", pct: 18 },
+                { label: "JavaScript bundles", pct: 42 },
+                { label: "CSS & styles", pct: 20 },
+                { label: "Ads, trackers, widgets", pct: 12 },
+                { label: "Useful information", pct: 5, accent: true },
+              ].map(({ label, pct, accent }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <div className="flex-1 bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${accent ? "bg-[#3b82f6]" : "bg-[#333]"}`}
+                      style={{ width: `${pct * 2}%` }}
+                    />
+                  </div>
+                  <span className={`text-xs w-52 shrink-0 ${accent ? "text-[#3b82f6]" : "text-[#444]"}`}>
+                    {pct}% {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="text-3xl font-bold font-mono text-[#ef4444]">~50,000<span className="text-base text-[#555] ml-1">tokens</span></p>
+            <p className="text-xs text-[#444] mt-1">typical page · 95% is noise</p>
+          </div>
+
+          {/* After */}
+          <div className="bg-[#0d0d0d] border border-[#3b82f6]/20 rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <span className="w-2 h-2 rounded-full bg-[#22c55e]" />
+              <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">AI agent reads /ai</span>
+            </div>
+            <div className="space-y-2 mb-5">
+              {[
+                { label: "Service name & description", pct: 20 },
+                { label: "Capabilities & endpoints", pct: 55 },
+                { label: "Auth & rate limits", pct: 15 },
+                { label: "Token hints", pct: 10 },
+              ].map(({ label, pct }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <div className="flex-1 bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
+                    <div className="h-full rounded-full bg-[#3b82f6]/60" style={{ width: `${pct * 2}%` }} />
+                  </div>
+                  <span className="text-xs text-[#555] w-52 shrink-0">{pct}% {label}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-3xl font-bold font-mono text-[#22c55e]">~800<span className="text-base text-[#555] ml-1">tokens</span></p>
+            <p className="text-xs text-[#444] mt-1">pure signal · 0% noise</p>
+          </div>
+        </div>
+        <p className="text-center text-xs text-[#444] mt-4">
+          60× fewer tokens. Zero parsing. Instant, reliable access to exactly what the agent needs.{" "}
+          <Link href="/why" className="text-[#3b82f6] hover:underline">Full story →</Link>
+        </p>
       </section>
 
       {/* Stats */}

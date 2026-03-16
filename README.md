@@ -1,24 +1,44 @@
 # AIEndpoint — The `/ai` Standard
 
-> A standard endpoint for AI agents to discover and use any web service — without scraping, guessing, or reading documentation.
+**The web was built for human browsers. AI agents are a fundamentally different client.**
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Spec](https://img.shields.io/badge/spec-v1.0-green.svg)](spec/v1/schema.json)
 [![npm](https://img.shields.io/npm/v/@aiendpoint/mcp-server?label=mcp-server)](https://www.npmjs.com/package/@aiendpoint/mcp-server)
 
+Every time an AI agent visits your site, it processes tens of thousands of tokens — HTML, scripts, styles, ads — just to find the few hundred tokens it actually needed. `/ai` ends that.
+
+```
+AI agent reads a webpage  →  ~50,000 tokens  (95% noise)
+AI agent reads /ai        →     ~800 tokens  (0% noise)
+```
+
 ---
 
-## What is this?
+## The problem
 
-**AIEndpoint** defines a simple convention: any web service exposes `GET /ai` returning a structured JSON description of its capabilities.
+When an AI agent needs to use a web service today, it has three bad options:
+
+- **Scrape HTML** — loads everything, understands little. Token-heavy, fragile, noisy.
+- **Hardcode the API** — read the docs manually, write a custom integration, watch it break.
+- **Hope there's an MCP server** — exists for fewer than 1% of services.
+
+None of these scale. The web needs a machine-readable interface layer designed for AI agents.
+
+## The convention
+
+The web already solves similar problems with simple file conventions:
 
 ```
-robots.txt  → tells crawlers what NOT to do
-sitemap.xml → tells crawlers where pages are
-/ai         → tells AI agents what you CAN DO  ← this project
+robots.txt   (1994)  →  tells crawlers what NOT to do
+sitemap.xml  (2005)  →  tells crawlers where pages are
+/ai          (2025)  →  tells AI agents what you CAN DO  ← this project
 ```
 
-AI agents query the **AIEndpoint Registry** to discover services, then use the `/ai` spec to call them directly — no scraping, no documentation parsing.
+Any service that exposes `GET /ai` returns a compact JSON description of its capabilities.
+AI agents read it directly — no scraping, no guessing, no documentation parsing.
+
+→ **[Full story: aiendpoint.dev/why](https://aiendpoint.dev/why)**
 
 ---
 
