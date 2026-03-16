@@ -81,6 +81,7 @@ export async function serviceRegisterRoute(app: FastifyInstance) {
         auth_type:     (spec.auth?.type ?? 'none') as AuthType,
         auth_docs_url: spec.auth?.docs ?? null,
         status:        'active',
+        score:         validation.score,
         is_verified:   badge !== 'none',
         verified_at:   badge !== 'none' ? now : null,
         owner_email:   owner_email ?? null,

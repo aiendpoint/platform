@@ -1,6 +1,6 @@
 /**
  * ⚠️  CACHE: Results are cached in Redis for 60 s (1 min).
- *     Cache key: services:v1:<q>:<category>:<auth_type>:<language>:<verified>:<page>:<limit>
+ *     Cache key: services:v1:<q>:<category>:<auth_type>:<language>:<verified>:<min_score>:<sort>:<page>:<limit>
  *     If Redis env vars are absent the route works without caching.
  */
 import type { FastifyInstance } from 'fastify'
@@ -18,6 +18,8 @@ export async function servicesListRoute(app: FastifyInstance) {
       auth_type?: string
       language?: string
       verified?: string
+      min_score?: string
+      sort?: string
       page?: string
       limit?: string
     }
@@ -28,6 +30,8 @@ export async function servicesListRoute(app: FastifyInstance) {
       auth_type,
       language,
       verified,
+      min_score,
+      sort = 'newest',
       page = '1',
       limit = '20'
     } = req.query
@@ -39,7 +43,7 @@ export async function servicesListRoute(app: FastifyInstance) {
     const cats = category ? (Array.isArray(category) ? category : [category]) : []
 
     // ── Cache hit ─────────────────────────────────────────────────────────────
-    const cacheKey = `services:v1:${q ?? ''}:${cats.join(',')}:${auth_type ?? ''}:${language ?? ''}:${verified ?? ''}:${pageNum}:${limitNum}`
+    const cacheKey = `services:v1:${q ?? ''}:${cats.join(',')}:${auth_type ?? ''}:${language ?? ''}:${verified ?? ''}:${min_score ?? ''}:${sort}:${pageNum}:${limitNum}`
     const cached = await cacheGet<unknown>(cacheKey)
     if (cached) {
       return reply.send(cached)
@@ -49,7 +53,7 @@ export async function servicesListRoute(app: FastifyInstance) {
     let query = db
       .from('services')
       .select(
-        'id, name, description, url, ai_url, categories, auth_type, is_verified, spec_version, created_at',
+        'id, name, description, url, ai_url, categories, auth_type, is_verified, score, spec_version, created_at',
         { count: 'exact' }
       )
       .eq('status', 'active')
@@ -75,8 +79,23 @@ export async function servicesListRoute(app: FastifyInstance) {
       query = query.eq('is_verified', true)
     }
 
+    if (min_score) {
+      const minScoreNum = parseInt(min_score, 10)
+      if (!isNaN(minScoreNum)) {
+        query = query.gte('score', minScoreNum)
+      }
+    }
+
+    // Sorting
+    if (sort === 'score') {
+      query = query.order('score', { ascending: false })
+    } else if (sort === 'name') {
+      query = query.order('name', { ascending: true })
+    } else {
+      query = query.order('created_at', { ascending: false })
+    }
+
     const { data, error, count } = await query
-      .order('created_at', { ascending: false })
       .range(offset, offset + limitNum - 1)
 
     if (error) {
@@ -92,6 +111,7 @@ export async function servicesListRoute(app: FastifyInstance) {
       categories:   row.categories,
       auth_type:    row.auth_type,
       is_verified:  row.is_verified,
+      score:        row.score ?? 0,
       spec_version: row.spec_version,
       created_at:   row.created_at
     }))
