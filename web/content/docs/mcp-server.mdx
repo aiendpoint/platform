@@ -8,32 +8,50 @@ export const metadata = {
     { id: "install", title: "Install" },
     { id: "claude-desktop", title: "Claude Desktop" },
     { id: "cursor", title: "Cursor" },
+    { id: "claude-code", title: "Claude Code" },
   ],
 };
 
+import { McpInstallTabs, McpConfigTabs, McpClaudeCodeTabs } from "@/components/McpTabs";
+
 <h2 id="install">Install</h2>
 
+Run directly with your preferred package manager — no global install needed.
+
+<McpInstallTabs />
+
+Or install globally so it starts without a download:
+
 ```bash
-npx -y @aiendpoint/mcp-server
+npm install -g @aiendpoint/mcp-server
 ```
+
+Then use `aiendpoint-mcp` as the command in your config.
 
 <h2 id="claude-desktop">Claude Desktop</h2>
 
-Add the server to `~/Library/Application Support/Claude/claude_desktop_config.json`.
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
-```json
-{
-  "mcpServers": {
-    "aiendpoint": {
-      "command": "npx",
-      "args": ["-y", "@aiendpoint/mcp-server"]
-    }
-  }
-}
-```
+<McpConfigTabs />
+
+Restart Claude Desktop. You can now ask:
+> "Find me a free weather API" → calls `aiendpoint_search_services`
+> "What can stripe.com do?" → calls `aiendpoint_fetch_ai_spec`
 
 <h2 id="cursor">Cursor</h2>
 
-Add the same block to `~/.cursor/mcp.json` or `.cursor/mcp.json`.
+Add to `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (per project):
 
-After restarting the client, you can ask for services, fetch specs, or validate a service implementation without leaving the chat.
+<McpConfigTabs />
+
+<h2 id="claude-code">Claude Code</h2>
+
+Add globally so all projects can use it:
+
+<McpClaudeCodeTabs />
+
+Or scope to a single project:
+
+```bash
+claude mcp add --scope project aiendpoint -- npx -y @aiendpoint/mcp-server
+```

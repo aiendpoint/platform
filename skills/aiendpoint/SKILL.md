@@ -212,3 +212,38 @@ Or direct the user to: `https://aiendpoint.dev/register`
 - For internal/admin endpoints, skip them — only expose public-facing capabilities
 - `params` values should be short: `"string (required) — product ID"` not `"This parameter is a string type and is required..."`
 - The whole `/ai` response should stay under 10KB for token efficiency
+
+---
+
+## Using the MCP Server (for AI agents consuming /ai)
+
+Once your `/ai` endpoint is live and registered, AI agents can discover and call your service through the AIEndpoint MCP server. You can also use it interactively to test your implementation.
+
+**Install and run:**
+
+```bash
+# npm
+npx -y @aiendpoint/mcp-server
+
+# pnpm
+pnpm dlx @aiendpoint/mcp-server
+
+# bun (fastest startup)
+bunx @aiendpoint/mcp-server
+
+# yarn
+yarn dlx @aiendpoint/mcp-server
+```
+
+**Validate your endpoint via MCP** (instead of curl):
+
+Once connected, ask your AI assistant:
+> "Validate https://yourdomain.com" → calls `aiendpoint_validate_service`
+
+**Claude Code integration:**
+
+```bash
+claude mcp add aiendpoint -- npx -y @aiendpoint/mcp-server
+# or with bun:
+claude mcp add aiendpoint -- bunx @aiendpoint/mcp-server
+```

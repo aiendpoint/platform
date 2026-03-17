@@ -29,6 +29,47 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
+<details>
+<summary>Using pnpm / bun / yarn</summary>
+
+**pnpm**
+```json
+{
+  "mcpServers": {
+    "aiendpoint": {
+      "command": "pnpm",
+      "args": ["dlx", "@aiendpoint/mcp-server"]
+    }
+  }
+}
+```
+
+**bun** (fastest startup)
+```json
+{
+  "mcpServers": {
+    "aiendpoint": {
+      "command": "bunx",
+      "args": ["@aiendpoint/mcp-server"]
+    }
+  }
+}
+```
+
+**yarn**
+```json
+{
+  "mcpServers": {
+    "aiendpoint": {
+      "command": "yarn",
+      "args": ["dlx", "@aiendpoint/mcp-server"]
+    }
+  }
+}
+```
+
+</details>
+
 Restart Claude Desktop. You can now ask:
 > "Find me a free weather API" → Claude calls `aiendpoint_search_services`
 > "What can stripe.com do?" → Claude calls `aiendpoint_fetch_ai_spec`
@@ -48,13 +89,60 @@ Add to `.cursor/mcp.json` in your project (or `~/.cursor/mcp.json` globally):
 }
 ```
 
-### Local install (faster startup)
+<details>
+<summary>Using pnpm / bun / yarn</summary>
+
+Replace `"command"` and `"args"` with the same alternatives shown in the Claude Desktop section above.
+
+</details>
+
+### Claude Code
+
+```bash
+# add globally (all projects)
+claude mcp add aiendpoint -- npx -y @aiendpoint/mcp-server
+
+# add to current project only
+claude mcp add --scope project aiendpoint -- npx -y @aiendpoint/mcp-server
+```
+
+<details>
+<summary>Using pnpm / bun / yarn</summary>
+
+```bash
+# pnpm
+claude mcp add aiendpoint -- pnpm dlx @aiendpoint/mcp-server
+
+# bun
+claude mcp add aiendpoint -- bunx @aiendpoint/mcp-server
+
+# yarn
+claude mcp add aiendpoint -- yarn dlx @aiendpoint/mcp-server
+```
+
+</details>
+
+### Global install (skip the download on every run)
 
 ```bash
 npm install -g @aiendpoint/mcp-server
+# pnpm
+pnpm add -g @aiendpoint/mcp-server
+# bun
+bun add -g @aiendpoint/mcp-server
 ```
 
-Then use `aiendpoint-mcp` as the command instead of `npx -y @aiendpoint/mcp-server`.
+Then use `aiendpoint-mcp` as the command:
+
+```json
+{
+  "mcpServers": {
+    "aiendpoint": {
+      "command": "aiendpoint-mcp"
+    }
+  }
+}
+```
 
 ## Usage Examples
 
