@@ -19,32 +19,32 @@ function isWebpageResult(r: AnyResult): r is WebpageConvertResult {
 
 function CapabilityTable({ caps }: { caps: ConvertResult["converted"]["capabilities"] }) {
   return (
-    <div className="bg-[#111] border border-[#222] rounded-lg overflow-hidden">
-      <div className="px-4 py-2.5 border-b border-[#222]">
-        <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">Capabilities</span>
+    <div className="bg-canvas border border-line rounded-lg overflow-hidden">
+      <div className="px-4 py-2.5 border-b border-line">
+        <span className="text-xs font-semibold text-subtle uppercase tracking-wider">Capabilities</span>
       </div>
-      <div className="divide-y divide-[#1a1a1a]">
+      <div className="divide-y divide-surface">
         {caps.length === 0 ? (
-          <p className="px-4 py-4 text-xs text-[#555]">
+          <p className="px-4 py-4 text-xs text-subtle">
             No capabilities inferred — edit the JSON above to add them manually.
           </p>
         ) : caps.map((cap) => (
           <div key={cap.id} className="px-4 py-3 flex items-start gap-4">
             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded font-mono shrink-0 mt-0.5 ${
-              cap.method === "GET"    ? "bg-[#22c55e]/10 text-[#22c55e]" :
-              cap.method === "POST"   ? "bg-[#3b82f6]/10 text-[#3b82f6]" :
-              cap.method === "DELETE" ? "bg-[#ef4444]/10 text-[#ef4444]" :
-                                       "bg-[#f59e0b]/10 text-[#f59e0b]"
+              cap.method === "GET"    ? "bg-success/10 text-success" :
+              cap.method === "POST"   ? "bg-accent/10 text-accent" :
+              cap.method === "DELETE" ? "bg-error/10 text-error" :
+                                       "bg-warning/10 text-warning"
             }`}>
               {cap.method}
             </span>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-mono text-[#888]">{cap.id}</span>
-                <span className="text-[#333]">·</span>
-                <span className="text-xs font-mono text-[#555] truncate">{cap.endpoint}</span>
+                <span className="text-xs font-mono text-muted">{cap.id}</span>
+                <span className="text-line-dim">·</span>
+                <span className="text-xs font-mono text-subtle truncate">{cap.endpoint}</span>
               </div>
-              <p className="text-xs text-[#666] mt-0.5">{cap.description}</p>
+              <p className="text-xs text-ghost mt-0.5">{cap.description}</p>
             </div>
           </div>
         ))}
@@ -117,21 +117,21 @@ export default function ConvertPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-16">
-      <h1 className="text-3xl font-bold text-[#e5e5e5] mb-2">Converter</h1>
-      <p className="text-[#888] mb-8">
+      <h1 className="text-3xl font-bold text-fg mb-2">Converter</h1>
+      <p className="text-muted mb-8">
         Turn any webpage or OpenAPI spec into a{" "}
-        <code className="text-[#888] bg-[#111] border border-[#222] px-1.5 py-0.5 rounded text-xs">/ai</code>{" "}
+        <code className="text-muted bg-canvas border border-line px-1.5 py-0.5 rounded text-xs">/ai</code>{" "}
         endpoint spec ready to register.
       </p>
 
       {/* Tab switcher */}
-      <div className="flex gap-1 mb-5 bg-[#111] border border-[#222] rounded-lg p-1 w-fit">
+      <div className="flex gap-1 mb-5 bg-canvas border border-line rounded-lg p-1 w-fit">
         {TABS.map(({ id, label }) => (
           <button
             key={id}
             onClick={() => { setMode(id); setError(null); setResult(null); }}
             className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${
-              mode === id ? "bg-[#1a1a1a] text-[#e5e5e5]" : "text-[#555] hover:text-[#888]"
+              mode === id ? "bg-surface text-fg" : "text-subtle hover:text-muted"
             }`}
           >
             {label}
@@ -145,8 +145,8 @@ export default function ConvertPage() {
           {aiAvailable !== null && (
             <p className={`flex items-center gap-2 text-xs px-3 py-2 rounded border ${
               aiAvailable
-                ? "border-[#a855f7]/25 bg-[#a855f7]/5 text-[#a855f7]"
-                : "border-[#333] text-[#555]"
+                ? "border-purple/25 bg-purple/5 text-purple"
+                : "border-line-dim text-subtle"
             }`}>
               <span>{aiAvailable ? "✦" : "○"}</span>
               {aiAvailable
@@ -161,12 +161,12 @@ export default function ConvertPage() {
               onChange={(e) => setWebUrl(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && canConvert && handleConvert()}
               placeholder="https://example.com"
-              className="flex-1 bg-[#111] border border-[#222] rounded-lg px-4 py-2.5 text-[#e5e5e5] placeholder-[#444] focus:outline-none focus:border-[#444] font-mono text-sm transition-colors"
+              className="flex-1 bg-canvas border border-line rounded-lg px-4 py-2.5 text-fg placeholder-faint focus:outline-none focus:border-faint font-mono text-sm transition-colors"
             />
             <button
               onClick={handleConvert}
               disabled={!canConvert || loading}
-              className="bg-[#3b82f6] hover:bg-[#2563eb] disabled:opacity-40 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
+              className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
             >
               {loading ? "Analyzing…" : "Convert →"}
             </button>
@@ -183,12 +183,12 @@ export default function ConvertPage() {
             onChange={(e) => setSpecUrl(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && canConvert && handleConvert()}
             placeholder="https://petstore3.swagger.io/api/v3/openapi.json"
-            className="flex-1 bg-[#111] border border-[#222] rounded-lg px-4 py-2.5 text-[#e5e5e5] placeholder-[#444] focus:outline-none focus:border-[#444] font-mono text-sm transition-colors"
+            className="flex-1 bg-canvas border border-line rounded-lg px-4 py-2.5 text-fg placeholder-faint focus:outline-none focus:border-faint font-mono text-sm transition-colors"
           />
           <button
             onClick={handleConvert}
             disabled={!canConvert || loading}
-            className="bg-[#3b82f6] hover:bg-[#2563eb] disabled:opacity-40 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
+            className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
           >
             {loading ? "Converting…" : "Convert →"}
           </button>
@@ -203,12 +203,12 @@ export default function ConvertPage() {
             onChange={(e) => setJsonText(e.target.value)}
             placeholder={'{\n  "openapi": "3.0.0",\n  "info": { "title": "My API", ... },\n  "paths": { ... }\n}'}
             rows={10}
-            className="w-full bg-[#111] border border-[#222] rounded-lg px-4 py-3 text-[#e5e5e5] placeholder-[#333] focus:outline-none focus:border-[#444] font-mono text-xs transition-colors resize-y"
+            className="w-full bg-canvas border border-line rounded-lg px-4 py-3 text-fg placeholder-line-dim focus:outline-none focus:border-faint font-mono text-xs transition-colors resize-y"
           />
           <button
             onClick={handleConvert}
             disabled={!canConvert || loading}
-            className="bg-[#3b82f6] hover:bg-[#2563eb] disabled:opacity-40 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+            className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
           >
             {loading ? "Converting…" : "Convert →"}
           </button>
@@ -217,15 +217,15 @@ export default function ConvertPage() {
 
       {/* Error */}
       {error && (
-        <div className="bg-[#111] border border-[#ef4444]/30 rounded-lg p-4 mb-6">
-          <p className="text-sm text-[#ef4444]">{error}</p>
+        <div className="bg-canvas border border-error/30 rounded-lg p-4 mb-6">
+          <p className="text-sm text-error">{error}</p>
         </div>
       )}
 
       {/* Loading */}
       {loading && (
-        <div className="bg-[#111] border border-[#222] rounded-lg p-8 text-center">
-          <p className="text-[#555] text-sm">
+        <div className="bg-canvas border border-line rounded-lg p-8 text-center">
+          <p className="text-subtle text-sm">
             {mode === "webpage" && aiAvailable
               ? "Fetching page · analyzing with Gemini AI…"
               : mode === "webpage"
@@ -239,20 +239,20 @@ export default function ConvertPage() {
       {result && !loading && (
         <div className="space-y-4">
           {/* Summary bar */}
-          <div className="flex items-center justify-between bg-[#111] border border-[#222] rounded-lg px-4 py-3 flex-wrap gap-3">
+          <div className="flex items-center justify-between bg-canvas border border-line rounded-lg px-4 py-3 flex-wrap gap-3">
             <div className="flex items-center gap-3 text-sm flex-wrap">
-              <span className="text-[#22c55e] font-medium">✓ Converted</span>
-              <span className="text-[#555]">·</span>
-              <span className="text-[#888]">
-                <span className="text-[#e5e5e5] font-mono">{result.capability_count}</span> capabilities
+              <span className="text-success font-medium">✓ Converted</span>
+              <span className="text-subtle">·</span>
+              <span className="text-muted">
+                <span className="text-fg font-mono">{result.capability_count}</span> capabilities
               </span>
               {isWebpageResult(result) && (
                 <>
-                  <span className="text-[#555]">·</span>
+                  <span className="text-subtle">·</span>
                   <span className={`text-xs px-2 py-0.5 rounded border ${
                     result.ai_enhanced
-                      ? "border-[#a855f7]/30 text-[#a855f7] bg-[#a855f7]/5"
-                      : "border-[#444] text-[#555]"
+                      ? "border-purple/30 text-purple bg-purple/5"
+                      : "border-faint text-subtle"
                   }`}>
                     {result.ai_enhanced ? "✦ Gemini AI" : "meta only"}
                   </span>
@@ -262,13 +262,13 @@ export default function ConvertPage() {
             <div className="flex gap-2">
               <button
                 onClick={handleCopy}
-                className="text-xs text-[#888] hover:text-[#e5e5e5] border border-[#333] px-3 py-1.5 rounded transition-colors"
+                className="text-xs text-muted hover:text-fg border border-line-dim px-3 py-1.5 rounded transition-colors"
               >
                 {copied ? "Copied!" : "Copy JSON"}
               </button>
               <Link
                 href={registerUrl}
-                className="text-xs bg-[#3b82f6] hover:bg-[#2563eb] text-white px-3 py-1.5 rounded transition-colors"
+                className="text-xs bg-accent hover:bg-accent-hover text-white px-3 py-1.5 rounded transition-colors"
               >
                 Register service →
               </Link>
@@ -276,7 +276,7 @@ export default function ConvertPage() {
           </div>
 
           {/* JSON preview */}
-          <pre className="bg-[#0d0d0d] border border-[#222] rounded-lg p-4 text-xs text-[#a3a3a3] font-mono overflow-auto max-h-[520px] leading-relaxed">
+          <pre className="bg-code border border-line rounded-lg p-4 text-xs text-[#a3a3a3] font-mono overflow-auto max-h-[520px] leading-relaxed">
             {JSON.stringify(result.converted, null, 2)}
           </pre>
 
@@ -287,8 +287,8 @@ export default function ConvertPage() {
 
       {/* Examples */}
       {!result && !loading && !error && (
-        <div className="mt-8 border-t border-[#222] pt-8">
-          <p className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-3">Try an example</p>
+        <div className="mt-8 border-t border-line pt-8">
+          <p className="text-xs font-semibold text-subtle uppercase tracking-wider mb-3">Try an example</p>
           <div className="flex flex-wrap gap-2">
             {mode === "webpage" && (
               [
@@ -297,7 +297,7 @@ export default function ConvertPage() {
                 { label: "Notion",  url: "https://notion.so"  },
               ].map(({ label, url }) => (
                 <button key={url} onClick={() => setWebUrl(url)}
-                  className="text-xs text-[#555] hover:text-[#888] border border-[#222] hover:border-[#333] px-3 py-1.5 rounded transition-colors font-mono">
+                  className="text-xs text-subtle hover:text-muted border border-line hover:border-line-dim px-3 py-1.5 rounded transition-colors font-mono">
                   {label}
                 </button>
               ))
@@ -308,7 +308,7 @@ export default function ConvertPage() {
                 { label: "Petstore Swagger 2",  url: "https://petstore.swagger.io/v2/swagger.json" },
               ].map(({ label, url }) => (
                 <button key={url} onClick={() => setSpecUrl(url)}
-                  className="text-xs text-[#555] hover:text-[#888] border border-[#222] hover:border-[#333] px-3 py-1.5 rounded transition-colors font-mono">
+                  className="text-xs text-subtle hover:text-muted border border-line hover:border-line-dim px-3 py-1.5 rounded transition-colors font-mono">
                   {label}
                 </button>
               ))

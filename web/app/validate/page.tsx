@@ -54,10 +54,10 @@ export default function ValidatePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-16">
-      <h1 className="text-3xl font-bold text-[#e5e5e5] mb-2">Validator</h1>
-      <p className="text-[#888] mb-8">
+      <h1 className="text-3xl font-bold text-fg mb-2">Validator</h1>
+      <p className="text-muted mb-8">
         Check if a service implements the{" "}
-        <code className="text-[#888] bg-[#111] border border-[#222] px-1.5 py-0.5 rounded text-xs">/ai</code>
+        <code className="text-muted bg-canvas border border-line px-1.5 py-0.5 rounded text-xs">/ai</code>
         {" "}spec correctly. Scores from 0–100.
       </p>
 
@@ -68,12 +68,12 @@ export default function ValidatePage() {
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleValidate()}
           placeholder="https://yourservice.com"
-          className="flex-1 bg-[#111] border border-[#222] rounded-lg px-4 py-2.5 text-[#e5e5e5] placeholder-[#444] focus:outline-none focus:border-[#444] font-mono text-sm transition-colors"
+          className="flex-1 bg-canvas border border-line rounded-lg px-4 py-2.5 text-fg placeholder-faint focus:outline-none focus:border-faint font-mono text-sm transition-colors"
         />
         <button
           onClick={handleValidate}
           disabled={!url.trim() || loading}
-          className="bg-[#3b82f6] hover:bg-[#2563eb] disabled:opacity-40 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
+          className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
         >
           {loading ? "Checking…" : "Validate"}
         </button>
@@ -81,22 +81,22 @@ export default function ValidatePage() {
 
       {/* Cache expiry notice — shown below input after any successful validation */}
       {result && countdown !== null && countdown > 0 && (
-        <p className="mt-2 text-xs text-[#555]">
+        <p className="mt-2 text-xs text-subtle">
           {result.cached ? "Cached result" : "Result cached"} · refreshes in{" "}
-          <span className="font-mono text-[#666]">{formatCountdown(countdown)}</span>
+          <span className="font-mono text-ghost">{formatCountdown(countdown)}</span>
         </p>
       )}
 
       <div className="mt-6">
         {error && (
-          <div className="bg-[#111] border border-[#ef4444]/30 rounded-lg p-4 mb-6">
-            <p className="text-sm text-[#ef4444]">{error}</p>
+          <div className="bg-canvas border border-error/30 rounded-lg p-4 mb-6">
+            <p className="text-sm text-error">{error}</p>
           </div>
         )}
 
         {loading && (
-          <div className="bg-[#111] border border-[#222] rounded-lg p-8 text-center">
-            <p className="text-[#555] text-sm">Fetching and analyzing <code className="text-[#555]">/ai</code>…</p>
+          <div className="bg-canvas border border-line rounded-lg p-8 text-center">
+            <p className="text-subtle text-sm">Fetching and analyzing <code className="text-subtle">/ai</code>…</p>
           </div>
         )}
 
@@ -108,7 +108,7 @@ export default function ValidatePage() {
               <div className="mt-4 flex gap-3">
                 <Link
                   href={`/register?url=${encodeURIComponent(url)}`}
-                  className="flex-1 text-center bg-[#3b82f6] hover:bg-[#2563eb] text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
+                  className="flex-1 text-center bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
                 >
                   Register this service →
                 </Link>
@@ -119,26 +119,26 @@ export default function ValidatePage() {
       </div>
 
       {/* Scoring guide */}
-      <div className="mt-12 border-t border-[#222] pt-8">
-        <h2 className="text-sm font-semibold text-[#888] uppercase tracking-wider mb-4">Scoring guide</h2>
+      <div className="mt-12 border-t border-line pt-8">
+        <h2 className="text-sm font-semibold text-muted uppercase tracking-wider mb-4">Scoring guide</h2>
         <div className="space-y-2 text-sm">
           {[
-            { range: "90–100", grade: "Excellent", badge: "AI-Ready Gold", color: "text-[#22c55e]" },
-            { range: "70–89",  grade: "Good",      badge: "AI-Ready",      color: "text-[#3b82f6]" },
-            { range: "50–69",  grade: "Basic",     badge: "AI-Compatible", color: "text-[#f59e0b]" },
-            { range: "0–49",   grade: "Poor",      badge: "No badge",      color: "text-[#ef4444]" },
+            { range: "90–100", grade: "Excellent", badge: "AI-Ready Gold", color: "text-success" },
+            { range: "70–89",  grade: "Good",      badge: "AI-Ready",      color: "text-accent" },
+            { range: "50–69",  grade: "Basic",     badge: "AI-Compatible", color: "text-warning" },
+            { range: "0–49",   grade: "Poor",      badge: "No badge",      color: "text-error" },
           ].map(({ range, grade, badge, color }) => (
             <div key={range} className="flex items-center gap-3">
               <span className={`font-mono text-xs w-16 ${color}`}>{range}</span>
               <span className={`font-medium ${color}`}>{grade}</span>
-              <span className="text-[#555]">·</span>
-              <span className="text-[#555]">{badge}</span>
+              <span className="text-subtle">·</span>
+              <span className="text-subtle">{badge}</span>
             </div>
           ))}
         </div>
 
         <div className="mt-6 space-y-2">
-          <p className="text-xs text-[#555] font-semibold uppercase tracking-wider">Score breakdown</p>
+          <p className="text-xs text-subtle font-semibold uppercase tracking-wider">Score breakdown</p>
           {[
             { pts: "15", label: "Connectivity",       desc: "/ai reachable + responds within 3s" },
             { pts: "35", label: "Required fields",    desc: "aiendpoint, name, description, capabilities" },
@@ -147,9 +147,9 @@ export default function ValidatePage() {
             { pts: "15", label: "Token efficiency",   desc: "description length, token_hints, returns specificity", accent: true },
           ].map(({ pts, label, desc, accent }) => (
             <div key={label} className="flex items-baseline gap-3 text-sm">
-              <span className={`font-mono text-xs w-6 shrink-0 ${accent ? "text-[#22c55e]" : "text-[#3b82f6]"}`}>{pts}pt</span>
-              <span className={accent ? "text-[#22c55e]/80" : "text-[#888]"}>{label}</span>
-              <span className="text-[#555] text-xs">— {desc}</span>
+              <span className={`font-mono text-xs w-6 shrink-0 ${accent ? "text-success" : "text-accent"}`}>{pts}pt</span>
+              <span className={accent ? "text-success/80" : "text-muted"}>{label}</span>
+              <span className="text-subtle text-xs">— {desc}</span>
             </div>
           ))}
         </div>

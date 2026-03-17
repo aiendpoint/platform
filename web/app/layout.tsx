@@ -19,14 +19,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
         <Navbar />
         <main>{children}</main>
-        <footer className="border-t border-[#222] mt-20 py-8 px-6 text-center text-[#888] text-sm">
+        <footer className="border-t border-line mt-20 py-8 px-6 text-center text-muted text-sm">
           <div className="max-w-5xl mx-auto flex flex-wrap justify-center gap-6">
-            <a href="https://github.com/aiendpoint/platform" className="hover:text-[#e5e5e5] transition-colors">GitHub</a>
-            <a href="/docs" className="hover:text-[#e5e5e5] transition-colors">Spec</a>
-            <a href="/docs" className="hover:text-[#e5e5e5] transition-colors">Docs</a>
-            <a href="/validate" className="hover:text-[#e5e5e5] transition-colors">Validator</a>
+            <a href="https://github.com/aiendpoint/platform" className="hover:text-fg transition-colors">GitHub</a>
+            <a href="/docs" className="hover:text-fg transition-colors">Spec</a>
+            <a href="/docs" className="hover:text-fg transition-colors">Docs</a>
+            <a href="/validate" className="hover:text-fg transition-colors">Validator</a>
           </div>
-          <p className="mt-4 text-xs text-[#555]">AIEndpoint Spec v1.0 — Apache 2.0</p>
+          <p className="mt-4 text-xs text-subtle">AIEndpoint Spec v1.0 — Apache 2.0</p>
         </footer>
       </body>
       {googleAnalyticsId ? <GoogleAnalytics gaId={googleAnalyticsId} /> : null}

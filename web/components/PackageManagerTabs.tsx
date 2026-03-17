@@ -30,9 +30,9 @@ export function PackageManagerTabs({ tabs }: PackageManagerTabsProps) {
   }
 
   return (
-    <div className="my-4 overflow-hidden rounded-2xl border border-[#222]">
+    <div className="my-4 overflow-hidden rounded-2xl border border-line">
       {/* Tab bar */}
-      <div className="flex items-center border-b border-[#222] bg-[#0a0a0a]">
+      <div className="flex items-center border-b border-line bg-code">
         <div className="flex">
           {tabs.map((tab) => (
             <button
@@ -40,12 +40,12 @@ export function PackageManagerTabs({ tabs }: PackageManagerTabsProps) {
               onClick={() => setActive(tab.id)}
               className={`relative px-4 py-2.5 text-xs font-mono transition-colors ${
                 active === tab.id
-                  ? "text-[#e5e5e5]"
-                  : "text-[#555] hover:text-[#999]"
+                  ? "text-fg"
+                  : "text-subtle hover:text-muted"
               }`}
             >
               {active === tab.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-px bg-[#77a8ff]" />
+                <span className="absolute bottom-0 left-0 right-0 h-px bg-link" />
               )}
               {tab.label}
             </button>
@@ -53,14 +53,14 @@ export function PackageManagerTabs({ tabs }: PackageManagerTabsProps) {
         </div>
         <button
           onClick={handleCopy}
-          className="ml-auto px-4 py-2.5 text-xs text-[#555] transition-colors hover:text-[#e5e5e5]"
+          className="ml-auto px-4 py-2.5 text-xs text-subtle transition-colors hover:text-fg"
           aria-label="Copy to clipboard"
         >
           {copied ? "✓ copied" : "copy"}
         </button>
       </div>
       {/* Code block */}
-      <pre className="m-0 overflow-x-auto bg-[#0d0d0d] p-4 text-sm text-[#c9c9c9]">
+      <pre className="m-0 overflow-x-auto bg-code p-4 text-sm text-[#c9c9c9]">
         <code>{current?.content ?? ""}</code>
       </pre>
     </div>

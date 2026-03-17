@@ -53,18 +53,18 @@ export default function RegisterPage() {
   if (step === "done") {
     return (
       <div className="max-w-2xl mx-auto px-6 py-16">
-        <div className="bg-[#111] border border-[#22c55e]/30 rounded-lg p-8 text-center">
+        <div className="bg-canvas border border-success/30 rounded-lg p-8 text-center">
           <p className="text-4xl mb-4">✓</p>
-          <h2 className="text-xl font-bold text-[#22c55e] mb-2">Registered!</h2>
-          <p className="text-[#888] text-sm mb-6">Your service is now in the registry.</p>
+          <h2 className="text-xl font-bold text-success mb-2">Registered!</h2>
+          <p className="text-muted text-sm mb-6">Your service is now in the registry.</p>
           <div className="flex items-center justify-center gap-3">
             <Link
               href={`/services/${registeredId}`}
-              className="bg-[#3b82f6] hover:bg-[#2563eb] text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+              className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
             >
               View service page →
             </Link>
-            <Link href="/services" className="text-sm text-[#888] hover:text-[#e5e5e5] transition-colors">
+            <Link href="/services" className="text-sm text-muted hover:text-fg transition-colors">
               Browse all services
             </Link>
           </div>
@@ -75,17 +75,17 @@ export default function RegisterPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-16">
-      <h1 className="text-3xl font-bold text-[#e5e5e5] mb-2">Register your service</h1>
-      <p className="text-[#888] mb-8">
+      <h1 className="text-3xl font-bold text-fg mb-2">Register your service</h1>
+      <p className="text-muted mb-8">
         Enter your service URL. We&apos;ll fetch{" "}
-        <code className="text-[#888] bg-[#111] border border-[#222] px-1.5 py-0.5 rounded text-xs">/ai</code>
+        <code className="text-muted bg-canvas border border-line px-1.5 py-0.5 rounded text-xs">/ai</code>
         {" "}and validate it automatically.
       </p>
 
       <div className="space-y-5">
         {/* URL input */}
         <div>
-          <label className="block text-sm text-[#888] mb-1.5">Service URL</label>
+          <label className="block text-sm text-muted mb-1.5">Service URL</label>
           <div className="flex gap-2">
             <input
               type="url"
@@ -93,18 +93,18 @@ export default function RegisterPage() {
               onChange={(e) => { setUrl(e.target.value); reset(); }}
               onKeyDown={(e) => e.key === "Enter" && handleValidate()}
               placeholder="https://yourservice.com"
-              className="flex-1 bg-[#111] border border-[#222] rounded-lg px-4 py-2.5 text-[#e5e5e5] placeholder-[#444] focus:outline-none focus:border-[#444] font-mono text-sm transition-colors"
+              className="flex-1 bg-canvas border border-line rounded-lg px-4 py-2.5 text-fg placeholder-faint focus:outline-none focus:border-faint font-mono text-sm transition-colors"
             />
             <button
               onClick={handleValidate}
               disabled={!url.trim() || step === "validating"}
-              className="bg-[#1a1a1a] hover:bg-[#222] disabled:opacity-40 border border-[#222] text-[#e5e5e5] text-sm font-medium px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
+              className="bg-surface hover:bg-line disabled:opacity-40 border border-line text-fg text-sm font-medium px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
             >
               {step === "validating" ? "Checking…" : "Validate"}
             </button>
           </div>
-          <p className="text-xs text-[#555] mt-1.5">
-            We&apos;ll check <code className="text-[#555]">{(() => { try { return new URL(url.startsWith("http") ? url : `https://${url}`).origin + "/ai"; } catch { return "https://yoursite.com/ai"; } })()}</code>
+          <p className="text-xs text-subtle mt-1.5">
+            We&apos;ll check <code className="text-subtle">{(() => { try { return new URL(url.startsWith("http") ? url : `https://${url}`).origin + "/ai"; } catch { return "https://yoursite.com/ai"; } })()}</code>
           </p>
         </div>
 
@@ -116,28 +116,28 @@ export default function RegisterPage() {
             {result.passed ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-[#888] mb-1.5">Email <span className="text-[#555]">(optional)</span></label>
+                  <label className="block text-sm text-muted mb-1.5">Email <span className="text-subtle">(optional)</span></label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full bg-[#111] border border-[#222] rounded-lg px-4 py-2.5 text-[#e5e5e5] placeholder-[#444] focus:outline-none focus:border-[#444] text-sm transition-colors"
+                    className="w-full bg-canvas border border-line rounded-lg px-4 py-2.5 text-fg placeholder-faint focus:outline-none focus:border-faint text-sm transition-colors"
                   />
-                  <p className="text-xs text-[#555] mt-1">For ownership verification and update notifications</p>
+                  <p className="text-xs text-subtle mt-1">For ownership verification and update notifications</p>
                 </div>
                 <button
                   onClick={handleRegister}
                   disabled={step === "registering"}
-                  className="w-full bg-[#3b82f6] hover:bg-[#2563eb] disabled:opacity-40 text-white font-medium py-3 rounded-lg transition-colors"
+                  className="w-full bg-accent hover:bg-accent-hover disabled:opacity-40 text-white font-medium py-3 rounded-lg transition-colors"
                 >
                   {step === "registering" ? "Registering…" : "Register service"}
                 </button>
               </div>
             ) : (
-              <div className="bg-[#111] border border-[#f59e0b]/20 rounded-lg p-4">
-                <p className="text-sm text-[#f59e0b] mb-1">Validation did not pass</p>
-                <p className="text-xs text-[#888]">Fix the errors above, then validate again.</p>
+              <div className="bg-canvas border border-warning/20 rounded-lg p-4">
+                <p className="text-sm text-warning mb-1">Validation did not pass</p>
+                <p className="text-xs text-muted">Fix the errors above, then validate again.</p>
               </div>
             )}
           </>
@@ -145,11 +145,11 @@ export default function RegisterPage() {
 
         {/* Error state */}
         {step === "error" && error && (
-          <div className="bg-[#111] border border-[#ef4444]/30 rounded-lg p-4">
-            <p className="text-sm text-[#ef4444] mb-2">{error}</p>
+          <div className="bg-canvas border border-error/30 rounded-lg p-4">
+            <p className="text-sm text-error mb-2">{error}</p>
             <button
               onClick={reset}
-              className="text-xs text-[#888] hover:text-[#e5e5e5] transition-colors"
+              className="text-xs text-muted hover:text-fg transition-colors"
             >
               Try again
             </button>
@@ -158,9 +158,9 @@ export default function RegisterPage() {
       </div>
 
       {/* Help */}
-      <div className="mt-12 border-t border-[#222] pt-8">
-        <p className="text-sm text-[#555] mb-3">Don&apos;t have a <code className="text-[#555]">/ai</code> endpoint yet?</p>
-        <Link href="/docs" className="text-sm text-[#3b82f6] hover:text-[#60a5fa] transition-colors">
+      <div className="mt-12 border-t border-line pt-8">
+        <p className="text-sm text-subtle mb-3">Don&apos;t have a <code className="text-subtle">/ai</code> endpoint yet?</p>
+        <Link href="/docs" className="text-sm text-accent hover:text-accent-soft transition-colors">
           Read the implementation guide →
         </Link>
       </div>

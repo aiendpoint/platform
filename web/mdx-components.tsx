@@ -4,7 +4,7 @@ function Pre(props: React.ComponentProps<"pre">) {
   return (
     <pre
       {...props}
-      className="overflow-x-auto rounded-2xl border border-[#222] bg-[#0d0d0d] p-4 text-sm text-[#c9c9c9]"
+      className="overflow-x-auto rounded-2xl border border-line bg-code p-4 text-sm text-[#c9c9c9]"
     />
   );
 }
@@ -13,7 +13,7 @@ function Code(props: React.ComponentProps<"code">) {
   return (
     <code
       {...props}
-      className="rounded bg-[#131313] px-1.5 py-0.5 font-mono text-[0.92em] text-[#d7d7d7]"
+      className="rounded bg-inset px-1.5 py-0.5 font-mono text-[0.92em] text-[#d7d7d7]"
     />
   );
 }
@@ -33,7 +33,7 @@ function A(props: React.ComponentProps<"a">) {
     return (
       <Link
         href={href}
-        className="text-[#77a8ff] underline decoration-[#2d4d8d] underline-offset-4"
+        className="text-link underline decoration-[#2d4d8d] underline-offset-4"
         {...props}
       />
     );
@@ -42,7 +42,7 @@ function A(props: React.ComponentProps<"a">) {
   return (
     <a
       {...props}
-      className="text-[#77a8ff] underline decoration-[#2d4d8d] underline-offset-4"
+      className="text-link underline decoration-[#2d4d8d] underline-offset-4"
       target="_blank"
       rel="noreferrer"
     />

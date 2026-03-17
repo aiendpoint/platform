@@ -1,32 +1,69 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   Design Token — Color System
+   Variables defined here are automatically available as:
+     • Tailwind utilities  →  bg-canvas  text-fg  border-line  …
+     • CSS custom props    →  var(--color-canvas)  var(--color-fg)  …
+───────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Surface / Background */
+  --color-canvas:  #111111;   /* page background                     */
+  --color-surface: #1a1a1a;   /* cards, elevated elements            */
+  --color-code:    #0d0d0d;   /* code blocks, darkest insets         */
+  --color-inset:   #131313;   /* inline code, form inputs            */
+
+  /* Borders */
+  --color-line:       #222222; /* primary borders                    */
+  --color-line-dim:   #333333; /* hover / secondary borders          */
+  --color-line-faint: #1f1f1f; /* subtle table separators            */
+
+  /* Text / Foreground */
+  --color-fg:     #e5e5e5;   /* primary text                        */
+  --color-dim:    #bbbbbb;   /* slightly muted text                 */
+  --color-muted:  #888888;   /* secondary / meta text               */
+  --color-subtle: #555555;   /* tertiary / placeholder text         */
+  --color-faint:  #444444;   /* dimmed / disabled text              */
+  --color-ghost:  #666666;   /* very dim / hint text                */
+
+  /* Accent — Blue */
+  --color-accent:       #3b82f6; /* primary CTA, focus rings        */
+  --color-accent-hover: #2563eb; /* hover state                     */
+  --color-accent-soft:  #60a5fa; /* soft links, hover text          */
+  --color-link:         #77a8ff; /* in-content / docs links         */
+
+  /* Semantic */
+  --color-success: #22c55e;
+  --color-error:   #ef4444;
+  --color-warning: #f59e0b;
+  --color-purple:  #a855f7;
+}
+
+/* ─── Global base ──────────────────────────────────────────────────────────── */
+
 :root {
   color-scheme: dark;
-  --color-background: oklch(0.145 0 0);
-  --color-card: oklch(0.182 0 0);
-  --color-border: oklch(0.269 0 0);
-  --color-text: #e5e5e5;
-  --color-muted: #888888;
-  --color-accent: #3b82f6;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background-color: var(--color-background);
-  color: #e5e5e5;
+  background-color: var(--color-canvas);
+  color: var(--color-fg);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+/* ─── Scrollbar ────────────────────────────────────────────────────────────── */
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #111; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #444; }
+::-webkit-scrollbar-track { background: var(--color-canvas); }
+::-webkit-scrollbar-thumb { background: var(--color-line-dim); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-faint); }
 
 pre, code { font-family: var(--font-geist-mono), monospace; }
+
+/* ─── Docs prose (MDX content) ─────────────────────────────────────────────── */
 
 .docs-prose {
   max-width: 52rem;
@@ -43,7 +80,7 @@ pre, code { font-family: var(--font-geist-mono), monospace; }
   font-size: 1.875rem;
   line-height: 1.2;
   font-weight: 600;
-  color: #f3f4f6;
+  color: var(--color-fg);
   letter-spacing: -0.02em;
 }
 
@@ -52,14 +89,14 @@ pre, code { font-family: var(--font-geist-mono), monospace; }
   margin-bottom: 0.75rem;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #f3f4f6;
+  color: var(--color-fg);
 }
 
 .docs-prose p,
 .docs-prose ol,
 .docs-prose ul {
   margin-top: 1rem;
-  color: #a3a3a3;
+  color: var(--color-muted);
   line-height: 1.8;
 }
 
@@ -74,23 +111,23 @@ pre, code { font-family: var(--font-geist-mono), monospace; }
 
 .docs-prose table {
   margin-top: 1rem;
-  border: 1px solid #222;
+  border: 1px solid var(--color-line);
   border-radius: 1rem;
   overflow: hidden;
 }
 
 .docs-prose th,
 .docs-prose td {
-  border-bottom: 1px solid #1f1f1f;
+  border-bottom: 1px solid var(--color-line-faint);
   padding: 0.8rem 1rem;
 }
 
 .docs-prose th {
-  background: #111;
-  color: #f1f1f1;
+  background: var(--color-canvas);
+  color: var(--color-fg);
   font-weight: 500;
 }
 
 .docs-prose td {
-  background: #0d0d0d;
+  background: var(--color-code);
 }

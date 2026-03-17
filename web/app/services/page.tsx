@@ -85,14 +85,14 @@ export default function ServicesPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-[#e5e5e5]">Services</h1>
-          <p className="text-[#888] mt-1">
+          <h1 className="text-3xl font-bold text-fg">Services</h1>
+          <p className="text-muted mt-1">
             {loading ? "Loading…" : `${total} AI-ready service${total !== 1 ? "s" : ""}`}
           </p>
         </div>
         <Link
           href="/register"
-          className="bg-[#3b82f6] hover:bg-[#2563eb] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
         >
           + Register
         </Link>
@@ -105,7 +105,7 @@ export default function ServicesPage() {
           value={q}
           onChange={(e) => { setQ(e.target.value); setPage(1); }}
           placeholder="Search services…"
-          className="w-full bg-[#111] border border-[#222] rounded-lg px-4 py-2.5 text-[#e5e5e5] placeholder-[#444] focus:outline-none focus:border-[#444] text-sm transition-colors"
+          className="w-full bg-canvas border border-line rounded-lg px-4 py-2.5 text-fg placeholder-faint focus:outline-none focus:border-faint text-sm transition-colors"
         />
       </div>
 
@@ -114,15 +114,15 @@ export default function ServicesPage() {
         {/* Category */}
         {categories.filter((c) => c.count > 0).length > 0 && (
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs text-[#444] w-14 shrink-0">Category</span>
+            <span className="text-xs text-faint w-14 shrink-0">Category</span>
             {categories.filter((c) => c.count > 0).map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => handleCategory(cat.id)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                   category === cat.id
-                    ? "bg-[#3b82f6] border-[#3b82f6] text-white"
-                    : "bg-[#111] border-[#222] text-[#888] hover:border-[#333] hover:text-[#e5e5e5]"
+                    ? "bg-accent border-accent text-white"
+                    : "bg-canvas border-line text-muted hover:border-line-dim hover:text-fg"
                 }`}
               >
                 {cat.label}
@@ -134,15 +134,15 @@ export default function ServicesPage() {
 
         {/* Auth type */}
         <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs text-[#444] w-14 shrink-0">Auth</span>
+          <span className="text-xs text-faint w-14 shrink-0">Auth</span>
           {AUTH_FILTERS.map((a) => (
             <button
               key={a.id}
               onClick={() => handleAuthType(a.id)}
               className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                 authType === a.id
-                  ? "bg-[#3b82f6] border-[#3b82f6] text-white"
-                  : "bg-[#111] border-[#222] text-[#888] hover:border-[#333] hover:text-[#e5e5e5]"
+                  ? "bg-accent border-accent text-white"
+                  : "bg-canvas border-line text-muted hover:border-line-dim hover:text-fg"
               }`}
             >
               {a.label}
@@ -153,15 +153,15 @@ export default function ServicesPage() {
         {/* Sort + clear */}
         <div className="flex flex-wrap gap-2 items-center justify-between">
           <div className="flex gap-2 items-center">
-            <span className="text-xs text-[#444] w-14 shrink-0">Sort</span>
+            <span className="text-xs text-faint w-14 shrink-0">Sort</span>
             {SORT_OPTIONS.map((s) => (
               <button
                 key={s.id}
                 onClick={() => handleSort(s.id)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                   sort === s.id
-                    ? "bg-[#222] border-[#444] text-[#e5e5e5]"
-                    : "bg-[#111] border-[#222] text-[#555] hover:border-[#333] hover:text-[#888]"
+                    ? "bg-line border-faint text-fg"
+                    : "bg-canvas border-line text-subtle hover:border-line-dim hover:text-muted"
                 }`}
               >
                 {s.label}
@@ -171,7 +171,7 @@ export default function ServicesPage() {
           {hasFilters && (
             <button
               onClick={() => { setQ(""); setCategory(""); setAuthType(""); setSort("newest"); setPage(1); }}
-              className="text-xs text-[#555] hover:text-[#888] transition-colors"
+              className="text-xs text-subtle hover:text-muted transition-colors"
             >
               × Clear all
             </button>
@@ -183,22 +183,22 @@ export default function ServicesPage() {
       {loading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-[#111] border border-[#222] rounded-lg p-5 h-40 animate-pulse" />
+            <div key={i} className="bg-canvas border border-line rounded-lg p-5 h-40 animate-pulse" />
           ))}
         </div>
       ) : services.length === 0 ? (
         <div className="text-center py-24">
-          <p className="text-[#555] text-lg mb-2">No services found</p>
+          <p className="text-subtle text-lg mb-2">No services found</p>
           {(q || category || authType || sort !== "newest") && (
             <button
               onClick={() => { setQ(""); setCategory(""); setAuthType(""); setSort("newest"); setPage(1); }}
-              className="text-sm text-[#3b82f6] hover:text-[#60a5fa] transition-colors mt-1"
+              className="text-sm text-accent hover:text-accent-soft transition-colors mt-1"
             >
               Clear filters
             </button>
           )}
           {!q && !category && !authType && (
-            <Link href="/register" className="inline-block mt-4 text-sm text-[#3b82f6] hover:text-[#60a5fa] transition-colors">
+            <Link href="/register" className="inline-block mt-4 text-sm text-accent hover:text-accent-soft transition-colors">
               Register the first service →
             </Link>
           )}
@@ -217,17 +217,17 @@ export default function ServicesPage() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-4 py-2 text-sm border border-[#222] rounded-lg text-[#888] hover:text-[#e5e5e5] hover:border-[#333] disabled:opacity-30 transition-colors"
+            className="px-4 py-2 text-sm border border-line rounded-lg text-muted hover:text-fg hover:border-line-dim disabled:opacity-30 transition-colors"
           >
             ← Prev
           </button>
-          <span className="text-sm text-[#555] tabular-nums">
+          <span className="text-sm text-subtle tabular-nums">
             {page} / {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => p + 1)}
             disabled={page >= totalPages}
-            className="px-4 py-2 text-sm border border-[#222] rounded-lg text-[#888] hover:text-[#e5e5e5] hover:border-[#333] disabled:opacity-30 transition-colors"
+            className="px-4 py-2 text-sm border border-line rounded-lg text-muted hover:text-fg hover:border-line-dim disabled:opacity-30 transition-colors"
           >
             Next →
           </button>

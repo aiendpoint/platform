@@ -126,7 +126,7 @@ function NeighborCard({
   return (
     <Link
       href={href}
-      className={`rounded-2xl border border-[#222] bg-[#101010] p-4 transition-colors hover:border-[#2b2b2b] hover:bg-[#121212] ${
+      className={`rounded-2xl border border-line bg-[#101010] p-4 transition-colors hover:border-[#2b2b2b] hover:bg-[#121212] ${
         alignRight ? "text-left sm:text-right" : "text-left"
       }`}
     >

@@ -13,10 +13,10 @@ const links = [
 export function Navbar() {
   const path = usePathname();
   return (
-    <header className="sticky top-0 z-50 border-b border-[#222] bg-background backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-line bg-background backdrop-blur-sm">
       <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-        <Link href="/" className="font-mono font-bold text-[#e5e5e5] hover:text-white transition-colors">
-          aiendpoint<span className="text-[#3b82f6]">.dev</span>
+        <Link href="/" className="font-mono font-bold text-fg hover:text-white transition-colors">
+          aiendpoint<span className="text-accent">.dev</span>
         </Link>
         <nav className="flex items-center gap-1">
           {links.map(({ href, label }) => (
@@ -25,8 +25,8 @@ export function Navbar() {
               href={href}
               className={`px-3 py-1.5 rounded text-sm transition-colors ${
                 path.startsWith(href)
-                  ? "bg-[#1a1a1a] text-[#e5e5e5]"
-                  : "text-[#888] hover:text-[#e5e5e5]"
+                  ? "bg-surface text-fg"
+                  : "text-muted hover:text-fg"
               }`}
             >
               {label}
@@ -36,7 +36,7 @@ export function Navbar() {
             href="https://github.com/aiendpoint/platform"
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-1 p-1.5 rounded text-[#555] hover:text-[#e5e5e5] transition-colors"
+            className="ml-1 p-1.5 rounded text-subtle hover:text-fg transition-colors"
             aria-label="GitHub"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -45,7 +45,7 @@ export function Navbar() {
           </a>
           <Link
             href="/register"
-            className="ml-2 px-3 py-1.5 rounded text-sm bg-[#3b82f6] text-white hover:bg-[#2563eb] transition-colors"
+            className="ml-2 px-3 py-1.5 rounded text-sm bg-accent text-white hover:bg-accent-hover transition-colors"
           >
             Register →
           </Link>
