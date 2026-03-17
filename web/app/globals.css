@@ -20,12 +20,12 @@
   --color-line-faint: #1f1f1f; /* subtle table separators            */
 
   /* Text / Foreground */
-  --color-fg:     #e5e5e5;   /* primary text                        */
-  --color-dim:    #bbbbbb;   /* slightly muted text                 */
-  --color-muted:  #888888;   /* secondary / meta text               */
-  --color-subtle: #555555;   /* tertiary / placeholder text         */
-  --color-faint:  #444444;   /* dimmed / disabled text              */
-  --color-ghost:  #666666;   /* very dim / hint text                */
+  --color-fg:     #f0f0f0;   /* primary text                        */
+  --color-dim:    #cccccc;   /* slightly muted text                 */
+  --color-muted:  #9e9e9e;   /* secondary / meta text               */
+  --color-subtle: #757575;   /* tertiary / placeholder text         */
+  --color-faint:  #636363;   /* dimmed / disabled text              */
+  --color-ghost:  #848484;   /* very dim / hint text                */
 
   /* Accent — Blue */
   --color-accent:       #3b82f6; /* primary CTA, focus rings        */
