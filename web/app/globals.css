@@ -15,9 +15,9 @@
   --color-inset:   #131313;   /* inline code, form inputs            */
 
   /* Borders */
-  --color-line:       #222222; /* primary borders                    */
-  --color-line-dim:   #333333; /* hover / secondary borders          */
-  --color-line-faint: #1f1f1f; /* subtle table separators            */
+  --color-line:       #2e2e2e; /* primary borders                    */
+  --color-line-dim:   #3e3e3e; /* hover / secondary borders          */
+  --color-line-faint: #2a2a2a; /* subtle table separators            */
 
   /* Text / Foreground */
   --color-fg:     #f0f0f0;   /* primary text                        */
@@ -70,6 +70,12 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: var(--color-faint); }
 
 pre, code { font-family: var(--font-geist-mono), monospace; }
+
+/* ─── Copy icon swap animation ─────────────────────────────────────────────── */
+
+.copy-icon {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
 
 /* ─── Docs prose (MDX content) ─────────────────────────────────────────────── */
 
