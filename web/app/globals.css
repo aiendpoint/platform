@@ -33,6 +33,14 @@
   --color-accent-soft:  #60a5fa; /* soft links, hover text          */
   --color-link:         #77a8ff; /* in-content / docs links         */
 
+  /* Docs navigation chrome */
+  --color-docs-panel:        #0f0f10; /* sidebar & TOC panel background    */
+  --color-docs-active:       #16181d; /* active nav item background        */
+  --color-docs-badge-bg:     #0e1522; /* section badge background          */
+  --color-docs-badge-border: #20232b; /* section badge border              */
+  --color-docs-badge-text:   #89a9e6; /* section badge text color          */
+  --color-label:             #5c5c5c; /* uppercase tracking label text     */
+
   /* Semantic */
   --color-success: #22c55e;
   --color-error:   #ef4444;
