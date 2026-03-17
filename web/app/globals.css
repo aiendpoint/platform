@@ -19,13 +19,15 @@
   --color-line-dim:   #3e3e3e; /* hover / secondary borders          */
   --color-line-faint: #2a2a2a; /* subtle table separators            */
 
-  /* Text / Foreground */
-  --color-fg:     #f0f0f0;   /* primary text                        */
-  --color-dim:    #cccccc;   /* slightly muted text                 */
-  --color-muted:  #9e9e9e;   /* secondary / meta text               */
-  --color-subtle: #757575;   /* tertiary / placeholder text         */
-  --color-faint:  #636363;   /* dimmed / disabled text              */
-  --color-ghost:  #848484;   /* very dim / hint text                */
+  /* Text / Foreground
+     Reference: nextjs.org/docs dark mode
+       primary #ededed (93%) · inactive nav #a1a1a1 (63%) · secondary #888888 (53%) */
+  --color-fg:     #f0f0f0;   /* 94% — primary text         ≈ nextjs #ededed       */
+  --color-dim:    #cccccc;   /* 80% — slightly muted                              */
+  --color-muted:  #b0b0b0;   /* 69% — body/meta text                              */
+  --color-ghost:  #a1a1a1;   /* 63% — inactive nav, descriptions  = nextjs #a1a1a1 */
+  --color-subtle: #888888;   /* 53% — placeholder, icons          ≈ nextjs #888888 */
+  --color-faint:  #707070;   /* 44% — disabled text                               */
 
   /* Accent — Blue */
   --color-accent:       #3b82f6; /* primary CTA, focus rings        */
@@ -39,7 +41,7 @@
   --color-docs-badge-bg:     #0e1522; /* section badge background          */
   --color-docs-badge-border: #20232b; /* section badge border              */
   --color-docs-badge-text:   #89a9e6; /* section badge text color          */
-  --color-label:             #5c5c5c; /* uppercase tracking label text     */
+  --color-label:             #6e6e6e; /* uppercase tracking label text     */
 
   /* Semantic */
   --color-success: #22c55e;
