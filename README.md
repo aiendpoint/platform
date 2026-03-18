@@ -42,11 +42,31 @@ AI agents read it directly — no scraping, no guessing, no documentation parsin
 
 ---
 
-## Quick Example
+## Try it now
+
+The registry itself exposes `/ai`. Run this and you'll see exactly what the standard looks like:
 
 ```bash
-curl https://yourservice.com/ai
+curl https://api.aiendpoint.dev/ai | jq .
 ```
+
+Browse registered services:
+
+```bash
+curl "https://api.aiendpoint.dev/api/services" | jq '.data[] | {name: .name, url: .url, score: .score}'
+```
+
+Validate any endpoint:
+
+```bash
+curl "https://api.aiendpoint.dev/api/validate?url=https://api.aiendpoint.dev" | jq '{passed, score, grade}'
+```
+
+---
+
+## Quick Example
+
+Add this route to your service:
 
 ```json
 {
@@ -77,8 +97,12 @@ curl https://yourservice.com/ai
 
 ### MCP Server — search the registry from Claude or Cursor
 
+Run with your preferred package manager — no global install needed:
+
 ```bash
-npx -y @aiendpoint/mcp-server
+npx -y @aiendpoint/mcp-server   # npm
+pnpm dlx @aiendpoint/mcp-server  # pnpm
+bunx @aiendpoint/mcp-server      # bun
 ```
 
 Add to `claude_desktop_config.json` or `.cursor/mcp.json`:
@@ -256,11 +280,11 @@ curl "https://api.aiendpoint.dev/api/validate?url=https://yourservice.com"
 
 ## Contributing
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a PR.
+Contributions are welcome! Open an issue or PR on GitHub.
 
 ### Ways to contribute
 
-- **Implement `/ai`** on your service and register it
+- **Implement `/ai`** on your service and [register it](https://aiendpoint.dev/register)
 - **Improve the spec** — open a discussion issue first
 - **Add demo servers** in other languages/frameworks
 - **Fix bugs or improve the registry/frontend**
