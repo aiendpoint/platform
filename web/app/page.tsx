@@ -113,7 +113,7 @@ export default async function Home() {
               ))}
             </div>
             <p className="text-3xl font-bold font-mono text-error">~50,000<span className="text-base text-subtle ml-1">tokens</span></p>
-            <p className="text-xs text-faint mt-1">typical page · 95% is noise</p>
+            <p className="text-xs text-faint mt-1">complex page · up to 50k · mostly noise</p>
           </div>
 
           {/* After */}

@@ -9,8 +9,8 @@
 Every time an AI agent visits your site, it processes tens of thousands of tokens — HTML, scripts, styles, ads — just to find the few hundred tokens it actually needed. `/ai` ends that.
 
 ```
-AI agent reads a webpage  →  ~50,000 tokens  (95% noise)
-AI agent reads /ai        →     ~800 tokens  (0% noise)
+AI agent reads a webpage  →  10,000–50,000 tokens  (mostly noise)
+AI agent reads /ai        →          ~800 tokens  (0% noise)
 ```
 
 ---

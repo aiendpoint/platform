@@ -16,7 +16,17 @@ export const metadata = {
 
 Every field in the `/ai` spec exists to reduce token consumption without losing information. This isn't an optimization — it's the reason the spec exists.
 
-**Why it matters:** An AI agent processing a typical webpage spends ~50,000 tokens before reaching useful data. A well-written `/ai` response delivers the same actionable information in under 1,000 tokens.
+**Why it matters:** When an AI agent fetches a webpage, it receives raw HTML — inline scripts, stylesheets, navigation, ads, footers — before it can extract anything useful. A well-written `/ai` response delivers the same actionable information in under 1,000 tokens.
+
+| Page type | Typical HTML size | Token cost |
+|---|---|---|
+| Simple blog / docs page | ~50 KB | ~12,000–15,000 |
+| SaaS landing page | ~100–200 KB | ~25,000–50,000 |
+| E-commerce product page | ~300–500 KB | ~75,000–125,000 |
+| News article | ~80–150 KB | ~20,000–37,000 |
+| **`/ai` endpoint** | **~3 KB** | **~800** |
+
+The contrast holds across every page type — `/ai` is 10–100× cheaper than scraping.
 
 ### Writing good descriptions
 
