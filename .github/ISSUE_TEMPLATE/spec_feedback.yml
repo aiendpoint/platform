@@ -1,0 +1,62 @@
+name: Spec Feedback
+description: Propose a change or raise a question about the /ai endpoint spec
+labels: ["spec"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The `/ai` spec is the foundation of this project — changes here affect everyone who implements it.
+        Please describe your feedback in detail. Breaking changes to v1 will not be accepted; propose as v2.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Feedback type
+      options:
+        - Ambiguity / unclear wording
+        - Missing field or capability
+        - Field should be required / optional
+        - Breaking change proposal (v2)
+        - Question
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: field
+    attributes:
+      label: Which field or section?
+      description: e.g. `capabilities[].params`, `auth.type`, `token_hints`
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior / wording
+      description: What does the spec currently say or do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed change
+      description: What should it say or do instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Rationale
+      description: Why would this make the spec better for AI agents or implementors?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: backwards
+    attributes:
+      label: Compatibility
+      options:
+        - label: This change is backwards-compatible with v1 implementations

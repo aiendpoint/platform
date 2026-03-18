@@ -1,0 +1,47 @@
+name: Feature Request
+description: Suggest an improvement or new capability
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Feature requests are welcome. For spec changes, please use the **Spec Feedback** template instead.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Registry API
+        - Web frontend
+        - MCP server
+        - Claude Code skill
+        - Validator
+        - Demo servers
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or motivation
+      description: What are you trying to do that's currently difficult or impossible?
+      placeholder: As an AI agent developer, I want to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What would you like to see?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds or other approaches you've thought about?
