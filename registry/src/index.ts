@@ -11,6 +11,7 @@ import { serviceDetailRoute }  from './routes/services/detail.js'
 import { serviceRegisterRoute } from './routes/services/register.js'
 import { convertRoute }         from './routes/convert.js'
 import { convertWebpageRoute }  from './routes/convert-webpage.js'
+import { communityRoute }       from './routes/community.js'
 
 const app = Fastify({
   logger: {
@@ -45,6 +46,7 @@ await app.register(serviceDetailRoute)
 await app.register(serviceRegisterRoute)
 await app.register(convertRoute)
 await app.register(convertWebpageRoute)
+await app.register(communityRoute)
 
 // ─── 404 handler ──────────────────────────────────────────────────────────
 app.setNotFoundHandler((req, reply) => {
@@ -70,6 +72,8 @@ try {
   app.log.info(`  GET /api/validate?url=...`)
   app.log.info(`  POST /api/convert/openapi`)
   app.log.info(`  POST /api/convert/webpage`)
+  app.log.info(`  GET  /api/community/:url`)
+  app.log.info(`  POST /api/community`)
 } catch (err) {
   app.log.error(err)
   process.exit(1)

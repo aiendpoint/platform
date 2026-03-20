@@ -55,6 +55,27 @@ export async function aiRoute(app: FastifyInstance) {
           method: 'GET',
           params: {},
           returns: 'categories[] {id, label, count}'
+        },
+        {
+          id: 'get_community_spec',
+          description: 'Lookup a community-generated /ai spec for a website that has no native /ai endpoint',
+          endpoint: '/api/community/:url',
+          method: 'GET',
+          params: {
+            url: 'string, required — URL-encoded website URL (e.g. https%3A%2F%2Fgithub.com)'
+          },
+          returns: 'url, ai_spec{...}, source, confidence, contributors, ttl, claimed'
+        },
+        {
+          id: 'submit_community_spec',
+          description: 'Submit a community-generated /ai spec for a website',
+          endpoint: '/api/community',
+          method: 'POST',
+          params: {
+            url: 'string, required — website URL',
+            ai_spec: 'object, required — /ai spec JSON following the v1.0 schema'
+          },
+          returns: 'id, url, status, confidence, message'
         }
       ],
       auth: { type: 'none' },
@@ -64,7 +85,7 @@ export async function aiRoute(app: FastifyInstance) {
         delta_support: false
       },
       meta: {
-        last_updated: '2026-03-17',
+        last_updated: '2026-03-21',
         status: '/health'
       }
     })
