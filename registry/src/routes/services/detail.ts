@@ -30,8 +30,7 @@ export async function serviceDetailRoute(app: FastifyInstance) {
     db.from('services')
       .update({ view_count: service.view_count + 1 })
       .eq('id', id)
-      .then(() => {})
-      .catch((err: Error) => console.error('[detail] view_count update failed:', err.message))
+      .then(() => {}, (err: Error) => console.error('[detail] view_count update failed:', err.message))
 
     reply.send({
       id:            service.id,
