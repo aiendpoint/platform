@@ -1,0 +1,37 @@
+export const metadata = {
+  title: "Changelog",
+  description: "Release history for the AIEndpoint MCP server and registry.",
+  section: "Project",
+  order: 9,
+  href: "/docs/changelog",
+  toc: [
+    { id: "mcp-server-0-3-0", title: "MCP Server 0.3.0" },
+    { id: "mcp-server-0-2-0", title: "MCP Server 0.2.0" },
+  ],
+};
+
+<h2 id="mcp-server-0-3-0">MCP Server 0.3.0 <span className="text-sm text-ghost font-normal ml-2">2026-03-21</span></h2>
+
+### New tools
+
+- **`aiendpoint_discover`** — Auto-discover `/ai` spec for any website via 3-step fallback:
+  1. Direct `/ai` endpoint fetch
+  2. Community registry cache lookup
+  3. Site metadata collection for agent-side spec generation
+- **`aiendpoint_submit_community_spec`** — Submit agent-generated `/ai` specs to the community registry so future agents benefit from cached results
+
+### Registry API
+
+- `GET /api/community/:url` — Lookup community-generated specs
+- `POST /api/community` — Submit specs with confidence scoring, rate limiting (10/hr), and TTL-based expiration
+
+---
+
+<h2 id="mcp-server-0-2-0">MCP Server 0.2.0 <span className="text-sm text-ghost font-normal ml-2">2026-03-17</span></h2>
+
+Initial public release.
+
+- `aiendpoint_search_services` — Search the registry by keyword, category, auth type
+- `aiendpoint_fetch_ai_spec` — Fetch `/ai` spec directly from any URL
+- `aiendpoint_validate_service` — Validate `/ai` compliance with 0–100 scoring
+- stdio transport for Claude Desktop, Cursor, Claude Code

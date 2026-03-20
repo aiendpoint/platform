@@ -127,7 +127,7 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
     ...options,
     headers: {
       'Accept': 'application/json',
-      'User-Agent': 'AIEndpoint-MCP/0.2.0',
+      'User-Agent': 'AIEndpoint-MCP/0.3.0',
       ...options?.headers,
     },
     signal: AbortSignal.timeout(15_000),
@@ -168,7 +168,7 @@ function formatCapability(cap: AiCapability): string {
 
 const server = new McpServer({
   name: 'aiendpoint-mcp-server',
-  version: '0.2.0',
+  version: '0.3.0',
 })
 
 // ── Tool 0: discover ─────────────────────────────────────────────────────────
@@ -300,7 +300,7 @@ Returns:
 
     try {
       const res = await fetch(base, {
-        headers: { 'User-Agent': 'AIEndpoint-MCP/0.2.0' },
+        headers: { 'User-Agent': 'AIEndpoint-MCP/0.3.0' },
         signal: AbortSignal.timeout(10_000),
         redirect: 'follow',
       })
