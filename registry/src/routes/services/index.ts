@@ -95,8 +95,8 @@ export async function servicesListRoute(app: FastifyInstance) {
       query = query.order('created_at', { ascending: false })
     }
 
+    // Fetch ALL owner services (no range — we need full list to merge with community)
     const { data, error, count } = await query
-      .range(offset, offset + limitNum - 1)
 
     if (error) {
       return reply.status(500).send({ error: 'Failed to fetch services', code: 'INTERNAL_ERROR' })
@@ -121,16 +121,15 @@ export async function servicesListRoute(app: FastifyInstance) {
     // ── Merge community specs ───────────────────────────────────────────
     let communityQuery = db
       .from('community_specs')
-      .select('id, url, domain, ai_spec, confidence, contributors, discover_count, created_at, updated_at', { count: 'exact' })
+      .select('id, url, domain, ai_spec, confidence, contributors, discover_count, created_at, updated_at')
       .eq('status', 'active')
 
     if (q) {
       communityQuery = communityQuery.or(`url.ilike.%${q}%,domain.ilike.%${q}%`)
     }
 
-    const { data: communityData, count: communityCount } = await communityQuery
+    const { data: communityData } = await communityQuery
       .order('discover_count', { ascending: false })
-      .range(0, limitNum - 1)
 
     const communityServices: ServiceListItem[] = (communityData ?? []).map(row => {
       const spec = row.ai_spec as Record<string, unknown>
@@ -152,14 +151,13 @@ export async function servicesListRoute(app: FastifyInstance) {
       }
     })
 
-    // Merge: owner services first, then community (avoid duplicates by URL)
+    // Merge: deduplicate by URL, then sort
     const ownerUrls = new Set(services.map(s => s.url))
     const merged = [
       ...services,
       ...communityServices.filter(s => !ownerUrls.has(s.url)),
     ]
 
-    // Sort merged list
     if (sort === 'score') {
       merged.sort((a, b) => b.score - a.score)
     } else if (sort === 'name') {
@@ -168,9 +166,11 @@ export async function servicesListRoute(app: FastifyInstance) {
       merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     }
 
-    const totalMerged = (count ?? 0) + (communityCount ?? 0)
+    // Paginate the merged list
+    const totalMerged = merged.length
+    const paged = merged.slice(offset, offset + limitNum)
 
-    const response = { total: totalMerged, page: pageNum, limit: limitNum, services: merged.slice(0, limitNum) }
+    const response = { total: totalMerged, page: pageNum, limit: limitNum, services: paged }
 
     await cacheSet(cacheKey, response, SERVICES_TTL)
 
