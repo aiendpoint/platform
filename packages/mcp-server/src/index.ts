@@ -6,6 +6,7 @@
  * to web services via the AIEndpoint registry (aiendpoint.dev).
  *
  * Tools:
+ *   aiendpoint_discover         — Auto-discover /ai spec for any website (direct → registry → generate)
  *   aiendpoint_search_services  — Search registered /ai-enabled services
  *   aiendpoint_fetch_ai_spec    — Fetch the /ai spec from any URL directly
  *   aiendpoint_validate_service — Validate a service's /ai endpoint compliance
@@ -80,6 +81,27 @@ interface TokenEfficiency {
   score: number
 }
 
+interface CommunitySpecResponse {
+  url: string
+  ai_spec: AiSpec
+  source: 'community'
+  confidence: number
+  contributors: number
+  created_at: string
+  updated_at: string
+  ttl: number
+  claimed: boolean
+}
+
+interface CommunitySubmitResponse {
+  id: string
+  url: string
+  status: string
+  confidence: number
+  message: string
+  previous_confidence?: number
+}
+
 interface ValidateResponse {
   url: string
   ai_url: string | null
@@ -148,6 +170,327 @@ const server = new McpServer({
   name: 'aiendpoint-mcp-server',
   version: '0.2.0',
 })
+
+// ── Tool 0: discover ─────────────────────────────────────────────────────────
+
+server.registerTool(
+  'aiendpoint_discover',
+  {
+    title: 'Auto-discover /ai Spec for Any Website',
+    description: `Discover the /ai spec for any website through a 3-step fallback:
+
+1. Try fetching the site's /ai endpoint directly
+2. Check the AIEndpoint community registry for a cached spec
+3. If neither exists, return site metadata so you (the agent) can generate a spec
+
+Use this tool when you want to understand what any website can do — even if it hasn't implemented /ai yet.
+
+After Step 3, you should:
+  a. Generate an /ai spec JSON based on the returned site metadata
+  b. Call aiendpoint_submit_community_spec to save it to the registry for future agents
+
+Args:
+  - url (string, required): Website URL (e.g. "https://github.com")
+  - force_refresh (boolean, optional): Skip cache and re-discover (default: false)
+
+Returns:
+  - source: "direct" (site has /ai), "registry" (community cache hit), or "needs_generation" (you need to generate)
+  - ai_spec: The /ai spec (if source is direct or registry)
+  - site_meta: Page title, description, detected links (if source is needs_generation)
+  - confidence: Spec confidence score 0-100`,
+
+    inputSchema: z.object({
+      url: z.string().url().describe('Website URL to discover'),
+      force_refresh: z.boolean().default(false).describe('Skip cache and re-discover'),
+    }).strict(),
+
+    annotations: {
+      readOnlyHint:    true,
+      destructiveHint: false,
+      idempotentHint:  true,
+      openWorldHint:   true,
+    },
+  },
+  async ({ url, force_refresh }) => {
+    const base = url.replace(/\/+$/, '')
+
+    // ── Step 1: Try direct /ai fetch ────────────────────────────────────
+    if (!force_refresh) {
+      try {
+        const aiUrl = `${base}/ai`
+        const spec = await apiFetch<AiSpec>(aiUrl)
+        if (spec.aiendpoint && spec.service?.name) {
+          const caps = spec.capabilities ?? []
+          const text = [
+            `## ${spec.service.name} (direct /ai)`,
+            spec.service.description || '',
+            '',
+            `- **Source**: direct (site implements /ai)`,
+            `- **Confidence**: 100`,
+            `- **Auth**: ${spec.auth?.type ?? 'unknown'}`,
+            `- **Capabilities**: ${caps.length}`,
+            '',
+            ...caps.map(formatCapability),
+          ].join('\n')
+
+          return {
+            content: [{ type: 'text' as const, text: truncate(text) }],
+            structuredContent: {
+              source: 'direct',
+              confidence: 100,
+              ai_spec: spec,
+              cached: false,
+            },
+          }
+        }
+      } catch {
+        // Step 1 failed, continue to Step 2
+      }
+    }
+
+    // ── Step 2: Check community registry ────────────────────────────────
+    if (!force_refresh) {
+      try {
+        const encoded = encodeURIComponent(base)
+        const community = await apiFetch<CommunitySpecResponse>(
+          `${REGISTRY_BASE}/api/community/${encoded}`
+        )
+        if (community.ai_spec) {
+          const spec = community.ai_spec
+          const caps = spec.capabilities ?? []
+          const text = [
+            `## ${spec.service.name} (community registry)`,
+            spec.service.description || '',
+            '',
+            `- **Source**: community registry`,
+            `- **Confidence**: ${community.confidence}/100`,
+            `- **Contributors**: ${community.contributors}`,
+            `- **Auth**: ${spec.auth?.type ?? 'unknown'}`,
+            `- **Capabilities**: ${caps.length}`,
+            '',
+            ...caps.map(formatCapability),
+            '',
+            community.claimed
+              ? '*This spec has been verified by the site owner.*'
+              : '*Community-generated spec — not verified by site owner.*',
+          ].join('\n')
+
+          return {
+            content: [{ type: 'text' as const, text: truncate(text) }],
+            structuredContent: {
+              source: 'registry',
+              confidence: community.confidence,
+              ai_spec: spec,
+              cached: true,
+              ttl: community.ttl,
+              contributors: community.contributors,
+              claimed: community.claimed,
+            },
+          }
+        }
+      } catch {
+        // Step 2 failed (404 or network), continue to Step 3
+      }
+    }
+
+    // ── Step 3: Collect site metadata for agent-side generation ──────────
+    let siteTitle = ''
+    let siteDescription = ''
+    let detectedLinks: string[] = []
+
+    try {
+      const res = await fetch(base, {
+        headers: { 'User-Agent': 'AIEndpoint-MCP/0.2.0' },
+        signal: AbortSignal.timeout(10_000),
+        redirect: 'follow',
+      })
+
+      if (res.ok) {
+        const html = await res.text()
+        // Extract title
+        const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i)
+        if (titleMatch) siteTitle = titleMatch[1].trim()
+
+        // Extract meta description
+        const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i)
+          ?? html.match(/<meta[^>]*content=["']([^"']*)["'][^>]*name=["']description["']/i)
+        if (descMatch) siteDescription = descMatch[1].trim()
+
+        // Extract og:description as fallback
+        if (!siteDescription) {
+          const ogMatch = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']*)["']/i)
+            ?? html.match(/<meta[^>]*content=["']([^"']*)["'][^>]*property=["']og:description["']/i)
+          if (ogMatch) siteDescription = ogMatch[1].trim()
+        }
+
+        // Extract og:title as fallback
+        if (!siteTitle) {
+          const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']*)["']/i)
+          if (ogTitleMatch) siteTitle = ogTitleMatch[1].trim()
+        }
+
+        // Detect API-like links
+        const linkRegex = /href=["'](\/api\/[^"']*|\/v[0-9]+\/[^"']*|\/docs[^"']*|\/developer[^"']*)/gi
+        let match: RegExpExecArray | null
+        const linkSet = new Set<string>()
+        while ((match = linkRegex.exec(html)) !== null && linkSet.size < 20) {
+          linkSet.add(match[1])
+        }
+        detectedLinks = [...linkSet]
+      }
+    } catch {
+      // Site fetch failed — still return what we can
+    }
+
+    const text = [
+      `## No /ai spec found for ${base}`,
+      '',
+      `The site does not have a /ai endpoint and no community spec exists yet.`,
+      '',
+      `### Site metadata`,
+      siteTitle ? `- **Title**: ${siteTitle}` : '- **Title**: (not detected)',
+      siteDescription ? `- **Description**: ${siteDescription}` : '- **Description**: (not detected)',
+      detectedLinks.length > 0
+        ? `- **Detected API paths**: ${detectedLinks.slice(0, 10).join(', ')}`
+        : '- **Detected API paths**: none',
+      '',
+      `### Next steps`,
+      `Based on the site metadata above, generate an /ai spec in this format:`,
+      '```json',
+      `{`,
+      `  "aiendpoint": "1.0",`,
+      `  "service": { "name": "...", "description": "...", "category": [...] },`,
+      `  "capabilities": [{ "id": "...", "description": "...", "endpoint": "...", "method": "GET", "params": {...}, "returns": "..." }],`,
+      `  "auth": { "type": "none|apikey|bearer|oauth2" }`,
+      `}`,
+      '```',
+      '',
+      `Then call **aiendpoint_submit_community_spec** with the URL and generated spec to save it for future agents.`,
+    ].join('\n')
+
+    return {
+      content: [{ type: 'text' as const, text }],
+      structuredContent: {
+        source: 'needs_generation',
+        confidence: 0,
+        site_meta: {
+          title: siteTitle || null,
+          description: siteDescription || null,
+          detected_links: detectedLinks,
+        },
+      },
+    }
+  }
+)
+
+// ── Tool 0b: submit_community_spec ──────────────────────────────────────────
+
+server.registerTool(
+  'aiendpoint_submit_community_spec',
+  {
+    title: 'Submit Community /ai Spec',
+    description: `Submit a generated /ai spec to the AIEndpoint community registry.
+
+Use this tool AFTER aiendpoint_discover returns source="needs_generation" and you have generated a spec.
+
+The spec will be validated and scored for confidence. Higher-confidence specs replace lower ones. The spec is then available to all future agents via the registry.
+
+Args:
+  - url (string, required): The website URL this spec describes
+  - ai_spec (object, required): The /ai spec JSON you generated
+
+Returns:
+  - status: "active" (new), "updated" (replaced lower confidence), "unchanged" (existing is better)
+  - confidence: The confidence score assigned to this spec`,
+
+    inputSchema: z.object({
+      url: z.string().url().describe('Website URL this spec describes'),
+      ai_spec: z.object({
+        aiendpoint: z.string(),
+        service: z.object({
+          name: z.string(),
+          description: z.string(),
+          category: z.array(z.string()).optional(),
+          language: z.array(z.string()).optional(),
+        }),
+        capabilities: z.array(z.object({
+          id: z.string(),
+          description: z.string(),
+          endpoint: z.string(),
+          method: z.string(),
+          params: z.record(z.string()).optional(),
+          returns: z.string().optional(),
+        })).min(1),
+        auth: z.object({
+          type: z.string(),
+          header: z.string().optional(),
+          docs: z.string().optional(),
+        }).optional(),
+        token_hints: z.object({
+          compact_mode: z.boolean().optional(),
+          field_filtering: z.boolean().optional(),
+          delta_support: z.boolean().optional(),
+        }).optional(),
+        rate_limits: z.object({
+          requests_per_minute: z.number().optional(),
+          agent_tier_available: z.boolean().optional(),
+        }).optional(),
+        meta: z.object({
+          last_updated: z.string().optional(),
+          changelog: z.string().optional(),
+          status: z.string().optional(),
+        }).optional(),
+      }).describe('The /ai spec JSON'),
+    }).strict(),
+
+    annotations: {
+      readOnlyHint:    false,
+      destructiveHint: false,
+      idempotentHint:  false,
+      openWorldHint:   true,
+    },
+  },
+  async ({ url, ai_spec }) => {
+    try {
+      const result = await apiFetch<CommunitySubmitResponse>(
+        `${REGISTRY_BASE}/api/community`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, ai_spec }),
+        }
+      )
+
+      const text = [
+        `## Community Spec Submitted`,
+        '',
+        `- **URL**: ${result.url}`,
+        `- **Status**: ${result.status}`,
+        `- **Confidence**: ${result.confidence}/100`,
+        result.previous_confidence !== undefined
+          ? `- **Previous confidence**: ${result.previous_confidence}/100`
+          : '',
+        `- **Message**: ${result.message}`,
+        '',
+        'The spec is now available in the registry for all future agents.',
+      ].filter(Boolean).join('\n')
+
+      return {
+        content: [{ type: 'text' as const, text }],
+        structuredContent: result as unknown as Record<string, unknown>,
+      }
+    } catch (err) {
+      const msg = (err as Error).message
+      if (msg.includes('429')) {
+        return { content: [{ type: 'text' as const, text: 'Rate limit exceeded — try again later (max 10 submissions per hour).' }] }
+      }
+      if (msg.includes('409')) {
+        return { content: [{ type: 'text' as const, text: 'This service already has an official /ai endpoint registered by its owner. No community spec needed.' }] }
+      }
+      return { content: [{ type: 'text' as const, text: `Error submitting community spec: ${msg}` }] }
+    }
+  }
+)
 
 // ── Tool 1: search_services ───────────────────────────────────────────────────
 

@@ -5,14 +5,51 @@ export const metadata = {
   order: 5,
   href: "/docs/mcp-server",
   toc: [
+    { id: "how-it-works", title: "How it works" },
     { id: "install", title: "Install" },
     { id: "claude-desktop", title: "Claude Desktop" },
     { id: "cursor", title: "Cursor" },
     { id: "claude-code", title: "Claude Code" },
+    { id: "available-tools", title: "Available tools" },
   ],
 };
 
 import { McpInstallTabs, McpConfigTabs, McpClaudeCodeTabs } from "@/components/McpTabs";
+
+<h2 id="how-it-works">How it works</h2>
+
+The MCP server gives your AI agent a 3-step fallback to understand any website:
+
+```
+Your agent visits site.com
+        │
+        ▼
+  ① Check site.com/ai directly
+        │
+   found? ──→ use it (source: "direct", ~800 tokens)
+        │
+       no
+        ▼
+  ② Check AIEndpoint registry for cached spec
+        │
+   found? ──→ use it (source: "registry")
+        │
+       no
+        ▼
+  ③ Analyze the site → generate /ai spec → save to registry
+        │
+        ▼
+  Next agent gets a cache hit at step ②
+```
+
+**Step ①** costs nothing extra — a single HTTP fetch.
+**Step ②** is a registry lookup — fast and free.
+**Step ③** uses your agent's own context to generate the spec.
+The generated spec is contributed back to the community registry so every future agent benefits.
+
+This means the MCP is useful on **every website**, not just those that have implemented `/ai` yet.
+
+---
 
 <h2 id="install">Install</h2>
 
@@ -55,3 +92,22 @@ Or scope to a single project:
 ```bash
 claude mcp add --scope project aiendpoint -- npx -y @aiendpoint/mcp-server
 ```
+
+<h2 id="available-tools">Available tools</h2>
+
+Once installed, your agent has access to these tools:
+
+| Tool | What it does |
+|---|---|
+| `aiendpoint_discover` | **Auto-discover** any website. Tries `/ai` → registry cache → auto-generate. One tool for everything. |
+| `aiendpoint_search_services` | Search the registry by keyword, category, or auth type. Returns matching services with scores. |
+| `aiendpoint_fetch_ai_spec` | Fetch a specific site's `/ai` endpoint directly. |
+| `aiendpoint_validate_service` | Validate whether a site correctly implements the `/ai` spec. Returns a 0–100 score. |
+
+### Example prompts
+
+After setting up the MCP server, try asking your agent:
+
+- **"What can github.com do?"** → `aiendpoint_discover` checks `/ai`, falls back to registry or generates a spec
+- **"Find me a free weather API"** → `aiendpoint_search_services` queries the registry
+- **"Does stripe.com have a valid /ai endpoint?"** → `aiendpoint_validate_service` runs the checker
