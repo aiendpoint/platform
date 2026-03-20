@@ -8,8 +8,18 @@ const AUTH_LABELS: Record<string, { label: string; color: string }> = {
   oauth2:  { label: "OAuth2",   color: "text-muted" },
 };
 
+function getFaviconUrl(url: string): string {
+  try {
+    const domain = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+  } catch {
+    return "";
+  }
+}
+
 export function ServiceCard({ service }: { service: ServiceListItem }) {
   const auth = AUTH_LABELS[service.auth_type] ?? { label: service.auth_type, color: "text-muted" };
+  const faviconUrl = getFaviconUrl(service.url);
 
   return (
     <Link
@@ -17,9 +27,21 @@ export function ServiceCard({ service }: { service: ServiceListItem }) {
       className="block bg-canvas border border-line rounded-lg p-5 hover:border-line-dim hover:bg-surface transition-all group"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h3 className="font-semibold text-fg group-hover:text-white transition-colors truncate">
-          {service.name}
-        </h3>
+        <div className="flex items-center gap-2 min-w-0">
+          {faviconUrl && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={faviconUrl}
+              alt=""
+              width={16}
+              height={16}
+              className="shrink-0 rounded-sm"
+            />
+          )}
+          <h3 className="font-semibold text-fg group-hover:text-white transition-colors truncate">
+            {service.name}
+          </h3>
+        </div>
         {service.is_verified && (
           <span className="shrink-0 text-xs bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded-full">
             ✓ verified
