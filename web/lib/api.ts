@@ -110,8 +110,6 @@ export async function getServices(params?: {
   if (params?.page)      qs.set("page", String(params.page));
   if (params?.limit)     qs.set("limit", String(params.limit));
 
-  console.log(API_URL);
-
   const res = await fetch(`${API_URL}/api/services?${qs}`, { next: { revalidate: 30 } });
   if (!res.ok) throw new Error("Failed to fetch services");
   return res.json();
