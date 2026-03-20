@@ -30,7 +30,7 @@ export default async function Home() {
           <span className="text-dim">AI agents are a fundamentally different client.</span>
         </p>
         <p className="text-sm text-subtle max-w-xl mx-auto mb-8">
-          Every time an AI agent visits your site, it processes tens of thousands of tokens —
+          Every time an AI agent visits your site, it processes 10,000–50,000 tokens —
           HTML, scripts, styles, ads — just to find the few hundred tokens it actually needed.
           <code className="text-accent mx-1">/ai</code> ends that.
         </p>
@@ -112,8 +112,8 @@ export default async function Home() {
                 </div>
               ))}
             </div>
-            <p className="text-3xl font-bold font-mono text-error">~50,000<span className="text-base text-subtle ml-1">tokens</span></p>
-            <p className="text-xs text-faint mt-1">complex page · up to 50k · mostly noise</p>
+            <p className="text-3xl font-bold font-mono text-error">10k–50k<span className="text-base text-subtle ml-1">tokens</span></p>
+            <p className="text-xs text-faint mt-1">varies by page complexity · mostly noise</p>
           </div>
 
           {/* After */}
@@ -188,10 +188,10 @@ export default async function Home() {
           >
             <p className="text-xs font-mono text-faint mb-3">I'm building an AI agent</p>
             <h3 className="font-semibold text-fg mb-2 group-hover:text-accent transition-colors">
-              Search the registry →
+              Install MCP &amp; auto-discover →
             </h3>
             <p className="text-sm text-subtle leading-relaxed">
-              Install the MCP server. Ask your agent to find services by category. No scraping, no hallucinated endpoints.
+              Your agent checks <code className="text-muted">/ai</code> first, falls back to the registry, and auto-generates specs for unknown sites. Zero config.
             </p>
           </Link>
           <Link
@@ -249,7 +249,7 @@ export default async function Home() {
             <div>
               <h2 className="text-lg font-bold text-fg">Use with your AI agent</h2>
               <p className="text-sm text-subtle mt-1">
-                Discover registered services from Claude, Cursor, or Claude Code.
+                Auto-discover any website's capabilities from Claude, Cursor, or Claude Code.
               </p>
             </div>
             <Link
