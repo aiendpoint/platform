@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ServiceListItem } from "@/lib/api";
 
 const AUTH_LABELS: Record<string, { label: string; color: string }> = {
@@ -11,7 +12,7 @@ const AUTH_LABELS: Record<string, { label: string; color: string }> = {
 function getFaviconUrl(url: string): string {
   try {
     const domain = new URL(url).hostname;
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
   } catch {
     return "";
   }
@@ -29,13 +30,13 @@ export function ServiceCard({ service }: { service: ServiceListItem }) {
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
           {faviconUrl && (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
+            <Image
               src={faviconUrl}
               alt=""
-              width={16}
-              height={16}
-              className="shrink-0 rounded-sm"
+              width={32}
+              height={32}
+              className="shrink-0 rounded-full"
+              unoptimized
             />
           )}
           <h3 className="font-semibold text-fg group-hover:text-white transition-colors truncate">
@@ -72,7 +73,7 @@ export function ServiceCard({ service }: { service: ServiceListItem }) {
               {service.discover_count} discoveries
             </span>
           )}
-          <span className="font-mono truncate max-w-[140px]">{new URL(service.url).hostname}</span>
+          <span className="font-mono truncate max-w-35">{new URL(service.url).hostname}</span>
         </div>
       </div>
     </Link>

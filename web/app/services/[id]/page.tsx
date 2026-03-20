@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { getService, getCommunityService, type ServiceDetail, type CommunityServiceDetail } from "@/lib/api";
 import { CapabilityCard } from "@/components/CapabilityCard";
 
@@ -81,13 +82,13 @@ export default function ServiceDetailPage() {
       <div className="flex items-start justify-between gap-4 mb-8">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`https://www.google.com/s2/favicons?domain=${new URL(service.url).hostname}&sz=32`}
+            <Image
+              src={`https://www.google.com/s2/favicons?domain=${new URL(service.url).hostname}&sz=64`}
               alt=""
-              width={28}
-              height={28}
-              className="shrink-0 rounded"
+              width={32}
+              height={32}
+              className="shrink-0 rounded-full"
+              unoptimized
             />
             <h1 className="text-3xl font-bold text-fg">{service.name}</h1>
             {service.source === "community" ? (
