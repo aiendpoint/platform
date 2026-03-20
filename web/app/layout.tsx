@@ -3,6 +3,9 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
+
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -28,6 +31,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
           <p className="mt-4 text-xs text-subtle">AIEndpoint Spec v1.0 — Apache 2.0</p>
         </footer>
+        <SpeedInsights />
+        <Analytics />
       </body>
       {googleAnalyticsId ? <GoogleAnalytics gaId={googleAnalyticsId} /> : null}
     </html>
