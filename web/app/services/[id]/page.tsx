@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getService, type ServiceDetail } from "@/lib/api";
+import { getService, getCommunityService, type ServiceDetail, type CommunityServiceDetail } from "@/lib/api";
 import { CapabilityCard } from "@/components/CapabilityCard";
 
 type Tab = "capabilities" | "details" | "badge" | "raw";
+type ServiceData = (ServiceDetail & { source?: string }) | (CommunityServiceDetail);
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -19,16 +20,21 @@ const AUTH_COLORS: Record<string, string> = {
 
 export default function ServiceDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [service, setService] = useState<ServiceDetail | null>(null);
+  const [service, setService] = useState<ServiceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("capabilities");
 
   useEffect(() => {
     if (!id) return;
+    // Try owner service first, fall back to community spec
     getService(id)
       .then(setService)
-      .catch((e) => setError(e instanceof Error ? e.message : "Service not found"))
+      .catch(() =>
+        getCommunityService(id)
+          .then(setService)
+          .catch((e) => setError(e instanceof Error ? e.message : "Service not found"))
+      )
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -52,10 +58,11 @@ export default function ServiceDetailPage() {
     );
   }
 
+  const isCommunity = service.source === "community";
   const tabs: { id: Tab; label: string }[] = [
     { id: "capabilities", label: `Capabilities (${service.capabilities.length})` },
     { id: "details",      label: "Details" },
-    { id: "badge",        label: "Badge" },
+    ...(!isCommunity ? [{ id: "badge" as Tab, label: "Badge" }] : []),
     { id: "raw",          label: "Raw spec" },
   ];
 
@@ -75,15 +82,23 @@ export default function ServiceDetailPage() {
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
             <h1 className="text-3xl font-bold text-fg">{service.name}</h1>
-            {service.is_verified && (
-              <span className="text-xs bg-success/10 text-success border border-success/20 px-2.5 py-1 rounded-full">
-                ✓ AI-Ready
+            {service.source === "community" ? (
+              <span className="text-xs bg-purple/10 text-purple border border-purple/20 px-2.5 py-1 rounded-full">
+                community
               </span>
-            )}
-            {service.is_official && (
-              <span className="text-xs bg-accent/10 text-accent border border-accent/20 px-2.5 py-1 rounded-full">
-                ★ Official
-              </span>
+            ) : (
+              <>
+                {"is_verified" in service && service.is_verified && (
+                  <span className="text-xs bg-success/10 text-success border border-success/20 px-2.5 py-1 rounded-full">
+                    ✓ AI-Ready
+                  </span>
+                )}
+                {"is_official" in service && service.is_official && (
+                  <span className="text-xs bg-accent/10 text-accent border border-accent/20 px-2.5 py-1 rounded-full">
+                    ★ Official
+                  </span>
+                )}
+              </>
             )}
           </div>
           <p className="text-muted leading-relaxed">{service.description}</p>
@@ -109,7 +124,16 @@ export default function ServiceDetailPage() {
             {c}
           </span>
         ))}
-        <span className="text-subtle text-xs">spec v{service.spec_version}</span>
+        {"spec_version" in service && (
+          <span className="text-subtle text-xs">spec v{service.spec_version}</span>
+        )}
+        {service.source === "community" && "confidence" in service && (
+          <>
+            <span className="text-subtle text-xs">confidence: {service.confidence}/100</span>
+            <span className="text-subtle text-xs">{service.discover_count} discoveries</span>
+            <span className="text-subtle text-xs">{service.contributors} contributors</span>
+          </>
+        )}
       </div>
 
       {/* Tabs */}
@@ -148,13 +172,18 @@ export default function ServiceDetailPage() {
             <tbody className="divide-y divide-surface">
               {[
                 { label: "URL",           value: service.url },
-                { label: "AI endpoint",   value: service.ai_url },
+                ...(!isCommunity && "ai_url" in service ? [{ label: "AI endpoint", value: service.ai_url }] : []),
                 { label: "Auth type",     value: service.auth_type },
                 { label: "Auth docs",     value: service.auth_docs_url ?? "—" },
                 { label: "Languages",     value: service.language?.join(", ") ?? "en" },
-                { label: "Tags",          value: service.tags?.join(", ") || "—" },
+                ...(!isCommunity && "tags" in service ? [{ label: "Tags", value: service.tags?.join(", ") || "—" }] : []),
                 { label: "Status",        value: service.status },
-                { label: "Spec version",  value: service.spec_version },
+                ...(isCommunity && "confidence" in service ? [
+                  { label: "Confidence",     value: `${service.confidence}/100` },
+                  { label: "Discoveries",    value: String(service.discover_count) },
+                  { label: "Contributors",   value: String(service.contributors) },
+                ] : []),
+                ...(!isCommunity && "spec_version" in service ? [{ label: "Spec version", value: service.spec_version }] : []),
                 { label: "Registered",    value: new Date(service.created_at).toLocaleDateString() },
                 { label: "Updated",       value: new Date(service.updated_at).toLocaleDateString() },
               ].map(({ label, value }) => (
@@ -211,11 +240,11 @@ export default function ServiceDetailPage() {
         <div className="bg-code border border-line rounded-lg overflow-hidden">
           <div className="flex items-center px-4 py-3 border-b border-line">
             <span className="text-xs text-subtle font-mono">
-              GET {service.ai_url}
+              {isCommunity ? `Community spec for ${service.url}` : `GET ${(service as ServiceDetail).ai_url ?? service.url}`}
             </span>
           </div>
           <pre className="p-6 text-xs font-mono text-muted overflow-x-auto leading-relaxed whitespace-pre">
-            {JSON.stringify(service, null, 2)}
+            {JSON.stringify(isCommunity && "raw_spec" in service ? service.raw_spec : service, null, 2)}
           </pre>
         </div>
       )}
