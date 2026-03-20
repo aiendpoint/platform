@@ -63,6 +63,61 @@ function checkRateLimit(ip: string): boolean {
 
 export async function communityRoute(app: FastifyInstance) {
 
+  // ── GET /api/community/id/:id ────────────────────────────────────────
+
+  app.get<{ Params: { id: string } }>('/api/community/id/:id', async (req, reply) => {
+    const { id } = req.params
+
+    const { data, error } = await db
+      .from('community_specs')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error || !data) {
+      return reply.status(404).send({ error: 'Community spec not found', code: 'NOT_FOUND' })
+    }
+
+    const spec = data as CommunitySpec
+    const aiSpec = spec.ai_spec as unknown as Record<string, unknown>
+    const svc = aiSpec?.['service'] as Record<string, unknown> | undefined
+    const caps = (aiSpec?.['capabilities'] ?? []) as Array<Record<string, unknown>>
+    const auth = aiSpec?.['auth'] as Record<string, unknown> | undefined
+
+    return reply.send({
+      id:              spec.id,
+      name:            (svc?.['name'] as string) ?? spec.domain,
+      description:     (svc?.['description'] as string) ?? '',
+      url:             spec.url,
+      domain:          spec.domain,
+      categories:      (svc?.['category'] as string[]) ?? [],
+      language:        (svc?.['language'] as string[]) ?? ['en'],
+      auth_type:       (auth?.['type'] as string) ?? 'none',
+      auth_docs_url:   (auth?.['docs'] as string) ?? null,
+      confidence:      spec.confidence,
+      contributors:    spec.contributors,
+      discover_count:  spec.discover_count ?? 0,
+      source:          'community',
+      status:          spec.status,
+      claimed:         spec.claimed,
+      created_at:      spec.created_at,
+      updated_at:      spec.updated_at,
+      ttl:             spec.ttl,
+      capabilities:    caps.map(c => ({
+        capability_id: c['id'] ?? '',
+        description:   c['description'] ?? '',
+        endpoint:      c['endpoint'] ?? '',
+        method:        c['method'] ?? 'GET',
+        params:        (c['params'] as Record<string, string>) ?? {},
+        returns:       (c['returns'] as string) ?? null,
+      })),
+      token_hints:     (aiSpec?.['token_hints'] as Record<string, boolean>) ?? null,
+      rate_limits:     (aiSpec?.['rate_limits'] as Record<string, unknown>) ?? null,
+      meta:            (aiSpec?.['meta'] as Record<string, string>) ?? null,
+      raw_spec:        spec.ai_spec,
+    })
+  })
+
   // ── GET /api/community/:url ────────────────────────────────────────────
 
   app.get<{ Params: { url: string } }>('/api/community/:url', async (req, reply) => {

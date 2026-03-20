@@ -110,6 +110,8 @@ export async function getServices(params?: {
   if (params?.page)      qs.set("page", String(params.page));
   if (params?.limit)     qs.set("limit", String(params.limit));
 
+  console.log(API_URL);
+
   const res = await fetch(`${API_URL}/api/services?${qs}`, { next: { revalidate: 30 } });
   if (!res.ok) throw new Error("Failed to fetch services");
   return res.json();
@@ -118,6 +120,38 @@ export async function getServices(params?: {
 export async function getService(id: string): Promise<ServiceDetail> {
   const res = await fetch(`${API_URL}/api/services/${id}`, { next: { revalidate: 30 } });
   if (!res.ok) throw new Error("Service not found");
+  return res.json();
+}
+
+export interface CommunityServiceDetail {
+  id: string;
+  name: string;
+  description: string;
+  url: string;
+  domain: string;
+  categories: string[];
+  language: string[];
+  auth_type: string;
+  auth_docs_url: string | null;
+  confidence: number;
+  contributors: number;
+  discover_count: number;
+  source: "community";
+  status: string;
+  claimed: boolean;
+  created_at: string;
+  updated_at: string;
+  ttl: number;
+  capabilities: Capability[];
+  token_hints: Record<string, boolean> | null;
+  rate_limits: Record<string, unknown> | null;
+  meta: Record<string, string> | null;
+  raw_spec: Record<string, unknown>;
+}
+
+export async function getCommunityService(id: string): Promise<CommunityServiceDetail> {
+  const res = await fetch(`${API_URL}/api/community/id/${id}`, { next: { revalidate: 30 } });
+  if (!res.ok) throw new Error("Community spec not found");
   return res.json();
 }
 
