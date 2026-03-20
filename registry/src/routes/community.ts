@@ -78,16 +78,23 @@ export async function communityRoute(app: FastifyInstance) {
     const cacheKey = `community:v1:${normalized.origin}`
     const cached = await cacheGet<CommunitySpec>(cacheKey)
     if (cached) {
+      // Increment discover_count (fire-and-forget)
+      db.from('community_specs')
+        .update({ discover_count: (cached.discover_count ?? 0) + 1 })
+        .eq('url', normalized.origin)
+        .then(() => {}, () => {})
+
       return reply.send({
-        url:          cached.url,
-        ai_spec:      cached.ai_spec,
-        source:       'community' as const,
-        confidence:   cached.confidence,
-        contributors: cached.contributors,
-        created_at:   cached.created_at,
-        updated_at:   cached.updated_at,
-        ttl:          cached.ttl,
-        claimed:      cached.claimed,
+        url:            cached.url,
+        ai_spec:        cached.ai_spec,
+        source:         'community' as const,
+        confidence:     cached.confidence,
+        contributors:   cached.contributors,
+        discover_count: (cached.discover_count ?? 0) + 1,
+        created_at:     cached.created_at,
+        updated_at:     cached.updated_at,
+        ttl:            cached.ttl,
+        claimed:        cached.claimed,
       })
     }
 
@@ -117,16 +124,23 @@ export async function communityRoute(app: FastifyInstance) {
       return reply.status(404).send({ error: 'not_found' })
     }
 
+    // Increment discover_count (fire-and-forget)
+    db.from('community_specs')
+      .update({ discover_count: (spec.discover_count ?? 0) + 1 })
+      .eq('id', spec.id)
+      .then(() => {}, () => {})
+
     // Cache for remaining TTL
     const remainingTtl = Math.max(60, Math.floor((expiresAt - Date.now()) / 1000))
     await cacheSet(cacheKey, spec, Math.min(remainingTtl, 3600)) // max 1hr in cache
 
     return reply.send({
-      url:          spec.url,
-      ai_spec:      spec.ai_spec,
-      source:       'community' as const,
-      confidence:   spec.confidence,
-      contributors: spec.contributors,
+      url:            spec.url,
+      ai_spec:        spec.ai_spec,
+      source:         'community' as const,
+      confidence:     spec.confidence,
+      contributors:   spec.contributors,
+      discover_count: (spec.discover_count ?? 0) + 1,
       created_at:   spec.created_at,
       updated_at:   spec.updated_at,
       ttl:          spec.ttl,

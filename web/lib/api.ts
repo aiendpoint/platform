@@ -12,6 +12,8 @@ export interface ServiceListItem {
   score: number;
   spec_version: string;
   created_at: string;
+  source?: "owner" | "community";
+  discover_count?: number;
 }
 
 export interface ServiceDetail extends ServiceListItem {
