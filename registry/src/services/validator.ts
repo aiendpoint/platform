@@ -266,7 +266,7 @@ function computeTokenEfficiency(
 
   // 3. Capability description conciseness (3pts)
   const avgCapDesc = capabilities.length > 0
-    ? capabilities.reduce((sum, cap) => {
+    ? capabilities.reduce((sum: number, cap) => {
         const c = cap as Record<string, unknown>
         return sum + (typeof c['description'] === 'string' ? c['description'].length : 0)
       }, 0) / capabilities.length
