@@ -13,6 +13,7 @@ export interface CommunitySpec {
   ai_spec: AiEndpointSpec
   confidence: number
   contributors: number
+  discover_count: number
   source_hints: Record<string, unknown> | null
   ttl: number
   status: CommunitySpecStatus
@@ -29,6 +30,7 @@ export interface CommunitySpecResponse {
   source: 'community'
   confidence: number
   contributors: number
+  discover_count: number
   created_at: string
   updated_at: string
   ttl: number

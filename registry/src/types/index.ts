@@ -116,6 +116,8 @@ export interface ServiceListItem {
   score: number
   spec_version: string
   created_at: string
+  source?: string
+  discover_count?: number
 }
 
 export interface ApiError {

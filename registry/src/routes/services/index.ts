@@ -103,20 +103,74 @@ export async function servicesListRoute(app: FastifyInstance) {
     }
 
     const services: ServiceListItem[] = (data ?? []).map(row => ({
-      id:           row.id,
-      name:         row.name,
-      description:  row.description,
-      url:          row.url,
-      ai_url:       row.ai_url,
-      categories:   row.categories,
-      auth_type:    row.auth_type,
-      is_verified:  row.is_verified,
-      score:        row.score ?? 0,
-      spec_version: row.spec_version,
-      created_at:   row.created_at
+      id:             row.id,
+      name:           row.name,
+      description:    row.description,
+      url:            row.url,
+      ai_url:         row.ai_url,
+      categories:     row.categories,
+      auth_type:      row.auth_type,
+      is_verified:    row.is_verified,
+      score:          row.score ?? 0,
+      spec_version:   row.spec_version,
+      created_at:     row.created_at,
+      source:         'owner',
+      discover_count: 0,
     }))
 
-    const response = { total: count ?? 0, page: pageNum, limit: limitNum, services }
+    // ── Merge community specs ───────────────────────────────────────────
+    let communityQuery = db
+      .from('community_specs')
+      .select('id, url, domain, ai_spec, confidence, contributors, discover_count, created_at, updated_at', { count: 'exact' })
+      .eq('status', 'active')
+
+    if (q) {
+      communityQuery = communityQuery.or(`url.ilike.%${q}%,domain.ilike.%${q}%`)
+    }
+
+    const { data: communityData, count: communityCount } = await communityQuery
+      .order('discover_count', { ascending: false })
+      .range(0, limitNum - 1)
+
+    const communityServices: ServiceListItem[] = (communityData ?? []).map(row => {
+      const spec = row.ai_spec as Record<string, unknown>
+      const svc = spec?.['service'] as Record<string, unknown> | undefined
+      return {
+        id:             row.id,
+        name:           (svc?.['name'] as string) ?? row.domain,
+        description:    (svc?.['description'] as string) ?? '',
+        url:            row.url,
+        ai_url:         '',
+        categories:     (svc?.['category'] as string[]) ?? [],
+        auth_type:      (((spec?.['auth'] as Record<string, unknown>)?.['type'] as string) ?? 'none') as import('../../types/index.js').AuthType,
+        is_verified:    false,
+        score:          row.confidence ?? 0,
+        spec_version:   (spec?.['aiendpoint'] as string) ?? '1.0',
+        created_at:     row.created_at,
+        source:         'community',
+        discover_count: row.discover_count ?? 0,
+      }
+    })
+
+    // Merge: owner services first, then community (avoid duplicates by URL)
+    const ownerUrls = new Set(services.map(s => s.url))
+    const merged = [
+      ...services,
+      ...communityServices.filter(s => !ownerUrls.has(s.url)),
+    ]
+
+    // Sort merged list
+    if (sort === 'score') {
+      merged.sort((a, b) => b.score - a.score)
+    } else if (sort === 'name') {
+      merged.sort((a, b) => a.name.localeCompare(b.name))
+    } else {
+      merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    }
+
+    const totalMerged = (count ?? 0) + (communityCount ?? 0)
+
+    const response = { total: totalMerged, page: pageNum, limit: limitNum, services: merged.slice(0, limitNum) }
 
     await cacheSet(cacheKey, response, SERVICES_TTL)
 

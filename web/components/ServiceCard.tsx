@@ -25,6 +25,11 @@ export function ServiceCard({ service }: { service: ServiceListItem }) {
             ✓ verified
           </span>
         )}
+        {service.source === "community" && (
+          <span className="shrink-0 text-xs bg-purple/10 text-purple border border-purple/20 px-2 py-0.5 rounded-full">
+            community
+          </span>
+        )}
       </div>
 
       <p className="text-sm text-muted line-clamp-2 mb-3">{service.description}</p>
@@ -39,7 +44,14 @@ export function ServiceCard({ service }: { service: ServiceListItem }) {
 
       <div className="flex items-center justify-between text-xs text-ghost">
         <span className={auth.color}>{auth.label}</span>
-        <span className="font-mono truncate max-w-[140px]">{new URL(service.url).hostname}</span>
+        <div className="flex items-center gap-2">
+          {(service.discover_count ?? 0) > 0 && (
+            <span className="text-faint" title="Discovered by AI agents">
+              {service.discover_count} discoveries
+            </span>
+          )}
+          <span className="font-mono truncate max-w-[140px]">{new URL(service.url).hostname}</span>
+        </div>
       </div>
     </Link>
   );
