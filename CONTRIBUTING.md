@@ -22,16 +22,7 @@ The spec is the foundation — changes here affect everyone.
 - Breaking changes to v1 are not accepted; propose as v2
 - Schema changes must include updated examples and validator logic
 
-### 3. Add demo servers
-
-Demo servers in [`demos/`](demos/) show how to implement `/ai` in different languages and frameworks. We'd love more:
-
-- Go, Ruby, PHP, Java, .NET, Rust
-- Framework-specific: Django, Rails, Laravel, Spring Boot, Axum, …
-
-Each demo should be self-contained, runnable with one command, and include a README.
-
-### 4. Fix bugs or improve the registry / frontend
+### 3. Fix bugs or improve the registry / frontend
 
 See open [Issues](https://github.com/aiendpoint/platform/issues). Issues labeled `good first issue` are a good starting point.
 
@@ -43,7 +34,6 @@ See open [Issues](https://github.com/aiendpoint/platform/issues). Issues labeled
 
 - Node.js 18+
 - pnpm 8+
-- Python 3.10+ (weather demo only)
 
 ### Install
 
@@ -105,7 +95,7 @@ docs(spec): clarify token_hints field semantics
 refactor(validator): extract token efficiency scoring
 ```
 
-Scopes: `registry`, `web`, `spec`, `mcp-server`, `skill`, `demos`
+Scopes: `registry`, `web`, `spec`, `mcp-server`, `skill`
 
 ---
 

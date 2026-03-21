@@ -110,8 +110,16 @@ export async function serviceRegisterRoute(app: FastifyInstance) {
       await db.from('capabilities').insert(capRows)
     }
 
-    // Invalidate cached service list (new service should appear immediately)
+    // Supersede community spec if one exists for this URL
+    await db
+      .from('community_specs')
+      .update({ status: 'superseded', service_id: service.id })
+      .eq('url', normalizedUrl)
+      .eq('status', 'active')
+
+    // Invalidate cached service list and community cache
     await cacheDelPattern('services:v1:*')
+    await cacheDelPattern(`community:v1:${normalizedUrl}`)
 
     // Save validation record
     await db.from('validations').insert({

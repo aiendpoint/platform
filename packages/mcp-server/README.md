@@ -150,7 +150,7 @@ Once connected, you can ask your AI assistant:
 
 - *"Find payment APIs that don't require auth"*
 - *"Search for Korean e-commerce services"*
-- *"What endpoints does news-demo.aiendpoint.dev expose?"*
+- *"What can github.com do?"*
 - *"Is github.com's /ai endpoint valid?"*
 - *"Find developer tools in the registry"*
 

@@ -25,9 +25,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="border-t border-line mt-20 py-8 px-6 text-center text-muted text-sm">
           <div className="max-w-5xl mx-auto flex flex-wrap justify-center gap-6">
             <a href="https://github.com/aiendpoint/platform" className="hover:text-fg transition-colors">GitHub</a>
-            <a href="/docs" className="hover:text-fg transition-colors">Spec</a>
+            <a href="/docs/spec" className="hover:text-fg transition-colors">Spec</a>
             <a href="/docs" className="hover:text-fg transition-colors">Docs</a>
             <a href="/validate" className="hover:text-fg transition-colors">Validator</a>
+            <a href="https://github.com/aiendpoint/platform/discussions" className="hover:text-fg transition-colors">Discussions</a>
+            <a href="mailto:contact@aiendpoint.dev" className="hover:text-fg transition-colors">Contact</a>
           </div>
           <p className="mt-4 text-xs text-subtle">AIEndpoint Spec v1.0 — Apache 2.0</p>
         </footer>
