@@ -179,10 +179,10 @@ export default function ServiceDetailPage() {
             type="button"
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2 text-sm rounded-t transition-colors ${
+            className={`px-4 py-2 text-sm rounded-t transition-colors cursor-pointer ${
               tab === t.id
                 ? "text-fg border-b-2 border-accent -mb-px bg-code"
-                : "text-subtle hover:text-muted"
+                : "text-subtle hover:text-muted hover:border-b hover:border-accent/80 hover:-mb-px"
             }`}
           >
             {t.label}
