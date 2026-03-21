@@ -627,7 +627,7 @@ Returns:
   - rate_limits (if provided)
 
 Examples:
-  - url="https://news-demo.aiendpoint.dev" → fetches https://news-demo.aiendpoint.dev/ai
+  - url="https://api.aiendpoint.dev" → fetches https://api.aiendpoint.dev/ai
   - url="https://stripe.com" → fetches https://stripe.com/ai (if they implement the standard)`,
 
     inputSchema: z.object({

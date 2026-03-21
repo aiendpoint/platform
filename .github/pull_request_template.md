@@ -15,7 +15,7 @@
 - [ ] Tested manually (registry and/or web running locally, changed code path exercised)
 - [ ] Updated docs if behavior visible to users or implementors changed
 - [ ] Spec change: updated `spec/v1/schema.json` and `registry/src/services/validator.ts`
-- [ ] Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) with correct scope (`registry`, `web`, `spec`, `mcp-server`, `skill`, `demos`)
+- [ ] Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) with correct scope (`registry`, `web`, `spec`, `mcp-server`, `skill`)
 
 ## Related issue
 

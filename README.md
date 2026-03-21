@@ -165,12 +165,11 @@ aiendpoint/platform (monorepo)
 ├── spec/
 │   ├── v1/schema.json          # JSON Schema (the canonical spec)
 │   └── examples/               # Reference implementations
-├── demos/
-│   ├── news/                   # Node.js + Express demo (port 3001)
-│   ├── weather/                # Python + FastAPI demo (port 3002)
-│   └── fx/                     # Cloudflare Workers demo (port 3003)
+├── packages/
+│   └── mcp-server/             # MCP server (npm: @aiendpoint/mcp-server)
 ├── registry/                   # Fastify API backend (port 4000)
 ├── web/                        # Next.js 16 frontend
+├── scripts/                    # Seeding & maintenance scripts
 ├── supabase/
 │   └── migrations/             # PostgreSQL schema
 └── docs/                       # Architecture & planning docs
@@ -197,7 +196,6 @@ aiendpoint/platform (monorepo)
 
 - Node.js 18+
 - pnpm 8+
-- Python 3.10+ (for weather demo)
 
 ### 1. Clone & install
 
@@ -231,11 +229,6 @@ cd registry && npm run dev
 
 # Web frontend (port 3000)
 cd web && npm run dev
-
-# Demo servers (optional)
-cd demos/news && node index.js          # port 3001
-cd demos/weather && uvicorn main:app --port 3002
-cd demos/fx && npx wrangler dev --port 3003
 ```
 
 ---
@@ -316,7 +309,6 @@ Contributions are welcome! Open an issue or PR on GitHub.
 
 - **Implement `/ai`** on your service and [register it](https://aiendpoint.dev/register)
 - **Improve the spec** — open a discussion issue first
-- **Add demo servers** in other languages/frameworks
 - **Fix bugs or improve the registry/frontend**
 
 ### Development workflow
@@ -335,7 +327,6 @@ cd web && npm run build
 ## Roadmap
 
 - [x] Spec v1.0 definition
-- [x] Demo servers (Node.js, Python, Cloudflare Workers)
 - [x] Registry API (Fastify + Supabase)
 - [x] Web frontend (Next.js 16)
 - [x] Vercel + Railway deployment
