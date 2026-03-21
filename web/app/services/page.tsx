@@ -7,6 +7,12 @@ import { ServiceCard } from "@/components/ServiceCard";
 
 const LIMIT = 12;
 
+function formatCount(n: number): string {
+  if (n >= 10000) return `${(n / 1000).toFixed(0)}K`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  return String(n);
+}
+
 const AUTH_FILTERS = [
   { id: "none",   label: "No auth" },
   { id: "apikey", label: "API Key" },
@@ -87,7 +93,7 @@ export default function ServicesPage() {
         <div>
           <h1 className="text-3xl font-bold text-fg">Services</h1>
           <p className="text-muted mt-1">
-            {loading ? "Loading…" : `${total} AI-ready service${total !== 1 ? "s" : ""}`}
+            {loading ? "Loading…" : `${formatCount(total)} indexed service${total !== 1 ? "s" : ""}`}
           </p>
         </div>
         <Link
