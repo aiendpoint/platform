@@ -1,0 +1,34 @@
+# AIEndpoint
+
+> Open standard for AI agent service discovery. Like robots.txt told crawlers where not to go, /ai tells AI agents what your service can do.
+
+AIEndpoint defines a convention: any web service places a JSON endpoint at `yoursite.com/ai` describing its capabilities, authentication, and rate limits — in ~800 tokens instead of 10,000–50,000 from scraping HTML.
+
+The registry at aiendpoint.dev indexes services implementing the standard, and an MCP server auto-discovers capabilities for any website.
+
+## Docs
+
+- [Spec v1.0](https://aiendpoint.dev/docs/spec): The /ai endpoint specification
+- [Quick Start](https://aiendpoint.dev/docs/quick-start): Implement /ai in 10 minutes
+- [Concepts](https://aiendpoint.dev/docs/concepts): Token efficiency, capability design, auth model, versioning
+- [MCP Server](https://aiendpoint.dev/docs/mcp-server): Auto-discover any website from Claude, Cursor, or Claude Code
+- [Validation](https://aiendpoint.dev/docs/validation): How the 0–100 compliance scoring works
+- [Changelog](https://aiendpoint.dev/docs/changelog): Release history
+
+## API
+
+- [Registry API](https://api.aiendpoint.dev/ai): The registry's own /ai endpoint (JSON)
+- [Search services](https://api.aiendpoint.dev/api/services): Browse registered services
+- [Validate](https://api.aiendpoint.dev/api/validate?url=https://api.aiendpoint.dev): Check /ai compliance
+- [Community specs](https://api.aiendpoint.dev/api/community/): Lookup community-generated specs
+
+## Links
+
+- [GitHub](https://github.com/aiendpoint/platform): Source code (Apache 2.0)
+- [npm](https://www.npmjs.com/package/@aiendpoint/mcp-server): MCP server package
+- [Contributing](https://github.com/aiendpoint/platform/blob/main/CONTRIBUTING.md): How to contribute
+
+## Optional
+
+- [Roadmap](https://aiendpoint.dev/docs/roadmap): What's next
+- [Why](https://aiendpoint.dev/why): Why we built this
