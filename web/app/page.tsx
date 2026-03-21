@@ -2,11 +2,7 @@ import Link from "next/link";
 import { ServiceCard } from "@/components/ServiceCard";
 import { getServices } from "@/lib/api";
 
-function formatCount(n: number): string {
-  if (n >= 10000) return `${(n / 1000).toFixed(0)}K`;
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-  return String(n);
-}
+import { formatCount } from "@/lib/numbers";
 
 async function loadRecentServices() {
   try {

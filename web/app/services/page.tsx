@@ -5,13 +5,9 @@ import Link from "next/link";
 import { getServices, getCategories, type ServiceListItem, type Category } from "@/lib/api";
 import { ServiceCard } from "@/components/ServiceCard";
 
-const LIMIT = 12;
+import { formatCount } from "@/lib/numbers";
 
-function formatCount(n: number): string {
-  if (n >= 10000) return `${(n / 1000).toFixed(0)}K`;
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-  return String(n);
-}
+const LIMIT = 12;
 
 const AUTH_FILTERS = [
   { id: "none",   label: "No auth" },
