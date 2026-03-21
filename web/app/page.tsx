@@ -165,6 +165,53 @@ export default async function Home() {
         </div>
       </div>
 
+      {/* How auto-discovery works */}
+      <section className="max-w-5xl mx-auto px-6 py-20">
+        <h2 className="text-2xl font-bold text-fg text-center mb-3">
+          Works on <span className="text-accent">every</span> website
+        </h2>
+        <p className="text-sm text-subtle text-center max-w-2xl mx-auto mb-10">
+          Install the MCP server once. Your AI agent auto-discovers what any site can do —
+          even if the site hasn't implemented <code className="text-muted">/ai</code> yet.
+        </p>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="bg-canvas border border-line rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-6 h-6 rounded-full bg-success/10 text-success text-xs font-bold flex items-center justify-center">1</span>
+              <p className="text-sm font-semibold text-fg">Direct check</p>
+            </div>
+            <p className="text-sm text-subtle leading-relaxed">
+              Agent fetches <code className="text-muted">site.com/ai</code> directly.
+              If the site implements the standard, done — ~800 tokens, 100% accurate.
+            </p>
+          </div>
+          <div className="bg-canvas border border-line rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-6 h-6 rounded-full bg-accent/10 text-accent text-xs font-bold flex items-center justify-center">2</span>
+              <p className="text-sm font-semibold text-fg">Community registry</p>
+            </div>
+            <p className="text-sm text-subtle leading-relaxed">
+              No <code className="text-muted">/ai</code>? Check if another agent already generated a spec.
+              100+ popular services are pre-indexed and growing.
+            </p>
+          </div>
+          <div className="bg-canvas border border-line rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-6 h-6 rounded-full bg-purple/10 text-purple text-xs font-bold flex items-center justify-center">3</span>
+              <p className="text-sm font-semibold text-fg">Agent generates</p>
+            </div>
+            <p className="text-sm text-subtle leading-relaxed">
+              Still nothing? Your agent analyzes the site and creates the spec.
+              It's saved to the registry — <span className="text-muted">every future agent benefits</span>.
+            </p>
+          </div>
+        </div>
+        <p className="text-center text-xs text-faint mt-6">
+          Your AI agent pays the generation cost once. The community shares the result forever.{" "}
+          <Link href="/docs/mcp-server" className="text-accent hover:underline">Learn more →</Link>
+        </p>
+      </section>
+
       {/* Start here — persona cards */}
       <section className="max-w-5xl mx-auto px-6 py-20">
         <h2 className="text-2xl font-bold text-fg text-center mb-3">Start here</h2>
