@@ -48,6 +48,7 @@ const RATE_LIMIT_MAX = 10       // max POSTs per window
 const RATE_LIMIT_WINDOW = 3600_000  // 1 hour
 
 function checkRateLimit(ip: string): boolean {
+  if (process.env.NODE_ENV !== 'production') return true
   const now = Date.now()
   const entry = rateLimitMap.get(ip)
   if (!entry || now > entry.resetAt) {
