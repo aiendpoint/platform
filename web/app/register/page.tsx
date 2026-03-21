@@ -1,15 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { validateUrl, registerService, type ValidationResult } from "@/lib/api";
 import { ValidateBadge } from "@/components/ValidateBadge";
 
 type Step = "input" | "validating" | "validated" | "registering" | "done" | "error";
 
-export default function RegisterPage() {
+function RegisterForm() {
+  const searchParams = useSearchParams();
   const [url, setUrl] = useState("");
   const [email, setEmail] = useState("");
+  const [fromCommunity, setFromCommunity] = useState(false);
+
+  useEffect(() => {
+    const urlParam = searchParams.get("url");
+    if (urlParam) {
+      setUrl(urlParam);
+      setFromCommunity(true);
+    }
+  }, [searchParams]);
   const [step, setStep] = useState<Step>("input");
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [registeredId, setRegisteredId] = useState<string | null>(null);
@@ -108,6 +119,18 @@ export default function RegisterPage() {
           </p>
         </div>
 
+        {/* Community upgrade notice */}
+        {fromCommunity && step === "input" && (
+          <div className="bg-purple/5 border border-purple/20 rounded-lg p-4">
+            <p className="text-sm text-fg font-medium mb-1">Upgrading from community spec</p>
+            <p className="text-xs text-subtle leading-relaxed">
+              A community-generated spec exists for this URL. By registering officially,
+              your verified <code className="text-muted">/ai</code> endpoint will replace the community version.
+              You'll get a verification badge and full control over the spec.
+            </p>
+          </div>
+        )}
+
         {/* Validation result */}
         {result && (step === "validated" || step === "registering") && (
           <>
@@ -165,5 +188,13 @@ export default function RegisterPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="max-w-2xl mx-auto px-6 py-16"><div className="h-8 w-64 bg-canvas rounded animate-pulse" /></div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }
