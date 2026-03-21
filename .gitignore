@@ -34,4 +34,5 @@ Thumbs.db
 .claude/
 /docs
 /ai-work
+start.sh
 skills-lock.json
