@@ -2,6 +2,12 @@ import Link from "next/link";
 import { ServiceCard } from "@/components/ServiceCard";
 import { getServices } from "@/lib/api";
 
+function formatCount(n: number): string {
+  if (n >= 10000) return `${(n / 1000).toFixed(0)}K`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  return String(n);
+}
+
 async function loadRecentServices() {
   try {
     return await getServices({ limit: 6 });
@@ -151,8 +157,8 @@ export default async function Home() {
       <div className="border-t border-b border-line bg-code">
         <div className="max-w-5xl mx-auto px-6 py-6 grid grid-cols-3 divide-x divide-line text-center">
           <div className="px-8">
-            <p className="text-3xl font-bold font-mono text-fg">{total}</p>
-            <p className="text-sm text-muted mt-1">Registered services</p>
+            <p className="text-3xl font-bold font-mono text-fg">{formatCount(total)}</p>
+            <p className="text-sm text-muted mt-1">Indexed services</p>
           </div>
           <div className="px-8">
             <p className="text-3xl font-bold font-mono text-fg">1.0</p>
