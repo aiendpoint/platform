@@ -91,6 +91,9 @@ importers:
       '@next/third-parties':
         specifier: ^16.2.0
         version: 16.2.0(next@16.2.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.99.1
       '@vercel/analytics':
         specifier: ^2.0.1
         version: 2.0.1(next@16.2.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)

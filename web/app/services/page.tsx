@@ -1,86 +1,48 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
-import { getServices, getCategories, type ServiceListItem, type Category } from "@/lib/api";
 import { ServiceCard } from "@/components/ServiceCard";
-
+import { ServicesFilter } from "@/components/ServicesFilter";
+import { getServicesSSR, getCategoriesSSR } from "@/lib/services";
 import { formatCount } from "@/lib/numbers";
 
-const LIMIT = 12;
+interface Props {
+  searchParams: Promise<{
+    q?: string;
+    category?: string;
+    auth_type?: string;
+    sort?: string;
+    page?: string;
+  }>;
+}
 
-const AUTH_FILTERS = [
-  { id: "none",   label: "No auth" },
-  { id: "apikey", label: "API Key" },
-  { id: "bearer", label: "Bearer" },
-  { id: "oauth2", label: "OAuth2" },
-];
+export default async function ServicesPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const page = parseInt(params.page ?? "1", 10);
 
-const SORT_OPTIONS = [
-  { id: "newest", label: "Newest" },
-  { id: "score",  label: "Best score" },
-  { id: "name",   label: "A–Z" },
-] as const;
-
-export default function ServicesPage() {
-  const [services, setServices] = useState<ServiceListItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [q, setQ] = useState("");
-  const [category, setCategory] = useState("");
-  const [authType, setAuthType] = useState("");
-  const [sort, setSort] = useState<"newest" | "score" | "name">("newest");
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-
-  // Load categories once
-  useEffect(() => {
-    getCategories()
-      .then(({ categories }) => setCategories(categories))
-      .catch(() => {});
-  }, []);
-
-  // Load services whenever filters change
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    getServices({
-      q: q || undefined,
-      category: category || undefined,
-      auth_type: authType || undefined,
-      sort,
+  const [{ services, total, totalPages }, categories] = await Promise.all([
+    getServicesSSR({
+      q: params.q,
+      category: params.category,
+      auth_type: params.auth_type,
+      sort: params.sort,
       page,
-      limit: LIMIT,
-    })
-      .then((data) => {
-        if (!cancelled) {
-          setServices(data.services);
-          setTotal(data.total);
-        }
-      })
-      .catch(() => { if (!cancelled) setServices([]); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [q, category, authType, sort, page]);
+    }),
+    getCategoriesSSR(),
+  ]);
 
-  const handleCategory = (cat: string) => {
-    setCategory(cat === category ? "" : cat);
-    setPage(1);
-  };
+  const hasFilters = !!(params.q || params.category || params.auth_type || (params.sort && params.sort !== "newest"));
 
-  const handleAuthType = (auth: string) => {
-    setAuthType(auth === authType ? "" : auth);
-    setPage(1);
-  };
-
-  const handleSort = (s: "newest" | "score" | "name") => {
-    setSort(s);
-    setPage(1);
-  };
-
-  const hasFilters = !!(q || category || authType || sort !== "newest");
-
-  const totalPages = Math.ceil(total / LIMIT);
+  // Build pagination URLs
+  function pageUrl(p: number): string {
+    const sp = new URLSearchParams();
+    if (params.q) sp.set("q", params.q);
+    if (params.category) sp.set("category", params.category);
+    if (params.auth_type) sp.set("auth_type", params.auth_type);
+    if (params.sort && params.sort !== "newest") sp.set("sort", params.sort);
+    if (p > 1) sp.set("page", String(p));
+    const qs = sp.toString();
+    return `/services${qs ? `?${qs}` : ""}`;
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
@@ -89,7 +51,7 @@ export default function ServicesPage() {
         <div>
           <h1 className="text-3xl font-bold text-fg">Services</h1>
           <p className="text-muted mt-1">
-            {loading ? "Loading…" : `${formatCount(total)} indexed service${total !== 1 ? "s" : ""}`}
+            {formatCount(total)} indexed service{total !== 1 ? "s" : ""}
           </p>
         </div>
         <Link
@@ -100,106 +62,24 @@ export default function ServicesPage() {
         </Link>
       </div>
 
-      {/* Search */}
-      <div className="mb-5">
-        <input
-          type="search"
-          value={q}
-          onChange={(e) => { setQ(e.target.value); setPage(1); }}
-          placeholder="Search services…"
-          className="w-full bg-canvas border border-line rounded-lg px-4 py-2.5 text-fg placeholder-faint focus:outline-none focus:border-faint text-sm transition-colors"
-        />
-      </div>
-
-      {/* Filters */}
-      <div className="space-y-3 mb-8">
-        {/* Category */}
-        {categories.filter((c) => c.count > 0).length > 0 && (
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs text-faint w-14 shrink-0">Category</span>
-            {categories.filter((c) => c.count > 0).map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategory(cat.id)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                  category === cat.id
-                    ? "bg-accent border-accent text-white"
-                    : "bg-canvas border-line text-muted hover:border-line-dim hover:text-fg"
-                }`}
-              >
-                {cat.label}
-                <span className="ml-1 opacity-50">({cat.count})</span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Auth type */}
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs text-faint w-14 shrink-0">Auth</span>
-          {AUTH_FILTERS.map((a) => (
-            <button
-              key={a.id}
-              onClick={() => handleAuthType(a.id)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                authType === a.id
-                  ? "bg-accent border-accent text-white"
-                  : "bg-canvas border-line text-muted hover:border-line-dim hover:text-fg"
-              }`}
-            >
-              {a.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Sort + clear */}
-        <div className="flex flex-wrap gap-2 items-center justify-between">
-          <div className="flex gap-2 items-center">
-            <span className="text-xs text-faint w-14 shrink-0">Sort</span>
-            {SORT_OPTIONS.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => handleSort(s.id)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                  sort === s.id
-                    ? "bg-line border-faint text-fg"
-                    : "bg-canvas border-line text-subtle hover:border-line-dim hover:text-muted"
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-          {hasFilters && (
-            <button
-              onClick={() => { setQ(""); setCategory(""); setAuthType(""); setSort("newest"); setPage(1); }}
-              className="text-xs text-subtle hover:text-muted transition-colors"
-            >
-              × Clear all
-            </button>
-          )}
-        </div>
-      </div>
+      {/* Filters (client component) */}
+      <Suspense fallback={null}>
+        <ServicesFilter categories={categories} />
+      </Suspense>
 
       {/* Grid */}
-      {loading ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-canvas border border-line rounded-lg p-5 h-40 animate-pulse" />
-          ))}
-        </div>
-      ) : services.length === 0 ? (
+      {services.length === 0 ? (
         <div className="text-center py-24">
           <p className="text-subtle text-lg mb-2">No services found</p>
-          {(q || category || authType || sort !== "newest") && (
-            <button
-              onClick={() => { setQ(""); setCategory(""); setAuthType(""); setSort("newest"); setPage(1); }}
+          {hasFilters && (
+            <Link
+              href="/services"
               className="text-sm text-accent hover:text-accent-soft transition-colors mt-1"
             >
               Clear filters
-            </button>
+            </Link>
           )}
-          {!q && !category && !authType && (
+          {!hasFilters && (
             <Link href="/register" className="inline-block mt-4 text-sm text-accent hover:text-accent-soft transition-colors">
               Register the first service →
             </Link>
@@ -216,23 +96,33 @@ export default function ServicesPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3 mt-10">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="px-4 py-2 text-sm border border-line rounded-lg text-muted hover:text-fg hover:border-line-dim disabled:opacity-30 transition-colors"
-          >
-            ← Prev
-          </button>
+          {page > 1 ? (
+            <Link
+              href={pageUrl(page - 1)}
+              className="px-4 py-2 text-sm border border-line rounded-lg text-muted hover:text-fg hover:border-line-dim transition-colors"
+            >
+              ← Prev
+            </Link>
+          ) : (
+            <span className="px-4 py-2 text-sm border border-line rounded-lg text-muted opacity-30">
+              ← Prev
+            </span>
+          )}
           <span className="text-sm text-subtle tabular-nums">
             {page} / {totalPages}
           </span>
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            disabled={page >= totalPages}
-            className="px-4 py-2 text-sm border border-line rounded-lg text-muted hover:text-fg hover:border-line-dim disabled:opacity-30 transition-colors"
-          >
-            Next →
-          </button>
+          {page < totalPages ? (
+            <Link
+              href={pageUrl(page + 1)}
+              className="px-4 py-2 text-sm border border-line rounded-lg text-muted hover:text-fg hover:border-line-dim transition-colors"
+            >
+              Next →
+            </Link>
+          ) : (
+            <span className="px-4 py-2 text-sm border border-line rounded-lg text-muted opacity-30">
+              Next →
+            </span>
+          )}
         </div>
       )}
     </div>
