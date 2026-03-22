@@ -27,7 +27,8 @@ export async function getServicesSSR(params: ServicesParams): Promise<ServicesRe
   let communityCountQ = db.from("community_specs").select("id", { count: "exact", head: true }).eq("status", "active");
 
   if (params.q) {
-    ownerCountQ = ownerCountQ.or(`name.ilike.${params.q}%,description.ilike.%${params.q}%,url.ilike.${params.q}%`);
+    // description 검색은 노이즈가 많아 제외 (필요 시 복원: description.ilike.%${params.q}%)
+    ownerCountQ = ownerCountQ.or(`name.ilike.${params.q}%,url.ilike.${params.q}%`);
     communityCountQ = communityCountQ.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
   }
   if (params.category) ownerCountQ = ownerCountQ.overlaps("categories", [params.category]);
@@ -46,7 +47,7 @@ export async function getServicesSSR(params: ServicesParams): Promise<ServicesRe
     .eq("status", "active")
     .is("deleted_at", null);
 
-  if (params.q) ownerQuery = ownerQuery.or(`name.ilike.${params.q}%,description.ilike.%${params.q}%,url.ilike.${params.q}%`);
+  if (params.q) ownerQuery = ownerQuery.or(`name.ilike.${params.q}%,url.ilike.${params.q}%`);
   if (params.category) ownerQuery = ownerQuery.overlaps("categories", [params.category]);
   if (params.auth_type) ownerQuery = ownerQuery.eq("auth_type", params.auth_type);
 
