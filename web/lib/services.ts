@@ -1,7 +1,11 @@
+import { unstable_cache } from "next/cache";
 import { db } from "./supabase";
 import type { ServiceListItem } from "./api";
 
 const PAGE_SIZE = 12;
+
+// Cache TTL in seconds. Set SERVICES_CACHE_TTL=0 to disable caching.
+const CACHE_TTL = parseInt(process.env.SERVICES_CACHE_TTL ?? "300", 10); // default 5 min
 
 export interface ServicesParams {
   q?: string;
@@ -18,7 +22,7 @@ export interface ServicesResult {
   totalPages: number;
 }
 
-export async function getServicesSSR(params: ServicesParams): Promise<ServicesResult> {
+async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> {
   const page = Math.max(1, params.page ?? 1);
   const offset = (page - 1) * PAGE_SIZE;
 
@@ -123,7 +127,26 @@ export async function getServicesSSR(params: ServicesParams): Promise<ServicesRe
   };
 }
 
-export async function getCategoriesSSR(): Promise<{ id: string; label: string; count: number }[]> {
+/**
+ * Cached wrapper for getServicesSSR.
+ * Cache key includes all params so each filter+page combo is cached separately.
+ * Set SERVICES_CACHE_TTL=0 in env to disable caching (instant rollback).
+ */
+export async function getServicesSSR(params: ServicesParams): Promise<ServicesResult> {
+  if (CACHE_TTL <= 0) return _getServicesSSR(params);
+
+  const cacheKey = `services:${params.q ?? ""}:${params.category ?? ""}:${params.auth_type ?? ""}:${params.sort ?? ""}:${params.page ?? 1}`;
+
+  const cached = unstable_cache(
+    () => _getServicesSSR(params),
+    [cacheKey],
+    { revalidate: CACHE_TTL, tags: ["services"] }
+  );
+
+  return cached();
+}
+
+async function _getCategoriesSSR(): Promise<{ id: string; label: string; count: number }[]> {
   const { data } = await db
     .from("services")
     .select("categories")
@@ -140,4 +163,16 @@ export async function getCategoriesSSR(): Promise<{ id: string; label: string; c
   return [...counts.entries()]
     .map(([id, count]) => ({ id, label: id, count }))
     .sort((a, b) => b.count - a.count);
+}
+
+export async function getCategoriesSSR(): Promise<{ id: string; label: string; count: number }[]> {
+  if (CACHE_TTL <= 0) return _getCategoriesSSR();
+
+  const cached = unstable_cache(
+    () => _getCategoriesSSR(),
+    ["categories"],
+    { revalidate: CACHE_TTL, tags: ["categories"] }
+  );
+
+  return cached();
 }
