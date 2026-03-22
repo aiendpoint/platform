@@ -22,11 +22,18 @@ export async function getServicesSSR(params: ServicesParams): Promise<ServicesRe
   const page = Math.max(1, params.page ?? 1);
   const offset = (page - 1) * PAGE_SIZE;
 
-  // ── Count totals ────────────────────────────────────────────────────
-  const [{ count: ownerCount }, { count: communityCount }] = await Promise.all([
-    db.from("services").select("id", { count: "exact", head: true }).eq("status", "active").is("deleted_at", null),
-    db.from("community_specs").select("id", { count: "exact", head: true }).eq("status", "active"),
-  ]);
+  // ── Count totals (with same filters as data queries) ────────────
+  let ownerCountQ = db.from("services").select("id", { count: "exact", head: true }).eq("status", "active").is("deleted_at", null);
+  let communityCountQ = db.from("community_specs").select("id", { count: "exact", head: true }).eq("status", "active");
+
+  if (params.q) {
+    ownerCountQ = ownerCountQ.or(`name.ilike.%${params.q}%,description.ilike.%${params.q}%`);
+    communityCountQ = communityCountQ.or(`url.ilike.%${params.q}%,domain.ilike.%${params.q}%`);
+  }
+  if (params.category) ownerCountQ = ownerCountQ.overlaps("categories", [params.category]);
+  if (params.auth_type) ownerCountQ = ownerCountQ.eq("auth_type", params.auth_type);
+
+  const [{ count: ownerCount }, { count: communityCount }] = await Promise.all([ownerCountQ, communityCountQ]);
 
   const totalOwner = ownerCount ?? 0;
   const totalCommunity = communityCount ?? 0;
@@ -39,15 +46,9 @@ export async function getServicesSSR(params: ServicesParams): Promise<ServicesRe
     .eq("status", "active")
     .is("deleted_at", null);
 
-  if (params.q) {
-    ownerQuery = ownerQuery.or(`name.ilike.%${params.q}%,description.ilike.%${params.q}%`);
-  }
-  if (params.category) {
-    ownerQuery = ownerQuery.overlaps("categories", [params.category]);
-  }
-  if (params.auth_type) {
-    ownerQuery = ownerQuery.eq("auth_type", params.auth_type);
-  }
+  if (params.q) ownerQuery = ownerQuery.or(`name.ilike.%${params.q}%,description.ilike.%${params.q}%`);
+  if (params.category) ownerQuery = ownerQuery.overlaps("categories", [params.category]);
+  if (params.auth_type) ownerQuery = ownerQuery.eq("auth_type", params.auth_type);
 
   if (params.sort === "score") {
     ownerQuery = ownerQuery.order("score", { ascending: false });
@@ -86,9 +87,7 @@ export async function getServicesSSR(params: ServicesParams): Promise<ServicesRe
       .select("id, url, domain, ai_spec, confidence, contributors, discover_count, created_at")
       .eq("status", "active");
 
-    if (params.q) {
-      communityQuery = communityQuery.or(`url.ilike.%${params.q}%,domain.ilike.%${params.q}%`);
-    }
+    if (params.q) communityQuery = communityQuery.or(`url.ilike.%${params.q}%,domain.ilike.%${params.q}%`);
 
     const { data: communityData } = await communityQuery
       .order("discover_count", { ascending: false })
