@@ -12,8 +12,12 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 const googleAnalyticsId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://aiendpoint.dev"),
   title: "AIEndpoint — The /ai Standard",
   description: "Search and discover AI-ready services. Register your service and get the AI-Ready badge.",
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
