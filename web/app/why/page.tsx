@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Why /ai — AIEndpoint",
   description:
     "The web was built for human browsers. AI agents are a fundamentally different client. Here's why that changes everything.",
+  alternates: { canonical: "/why" },
 };
 
 export default function WhyPage() {

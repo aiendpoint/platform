@@ -1,290 +1,124 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
-import { getService, getCommunityService, type ServiceDetail, type CommunityServiceDetail } from "@/lib/api";
-import { CapabilityCard } from "@/components/CapabilityCard";
+import { notFound } from "next/navigation";
+import { db } from "@/lib/supabase";
+import { ServiceDetailContent } from "@/components/ServiceDetailContent";
+import type { ServiceDetail, CommunityServiceDetail } from "@/lib/api";
 
-type Tab = "capabilities" | "details" | "badge" | "raw";
-type ServiceData = (ServiceDetail & { source?: string }) | (CommunityServiceDetail);
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-
-const AUTH_COLORS: Record<string, string> = {
-  none:   "text-success",
-  apikey: "text-warning",
-  bearer: "text-warning",
-  oauth2: "text-muted",
+type Props = {
+  params: Promise<{ id: string }>;
 };
 
-export default function ServiceDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const [service, setService] = useState<ServiceData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("capabilities");
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
 
-  useEffect(() => {
-    if (!id) return;
-    // Try owner service first, fall back to community spec
-    getService(id)
-      .then(setService)
-      .catch(() =>
-        getCommunityService(id)
-          .then(setService)
-          .catch((e) => setError(e instanceof Error ? e.message : "Service not found"))
-      )
-      .finally(() => setLoading(false));
-  }, [id]);
+  // Try owner service
+  const { data: service } = await db
+    .from("services")
+    .select("name, description, url")
+    .eq("id", id)
+    .single();
 
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-16">
-        <div className="h-8 w-64 bg-canvas rounded animate-pulse mb-4" />
-        <div className="h-4 w-48 bg-canvas rounded animate-pulse" />
-      </div>
-    );
+  if (service) {
+    return {
+      title: `${service.name} — AIEndpoint`,
+      description: service.description,
+      alternates: { canonical: `/services/${id}` },
+    };
   }
 
-  if (error || !service) {
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-        <p className="text-error mb-4">{error ?? "Service not found"}</p>
-        <Link href="/services" className="text-sm text-accent hover:text-accent-soft transition-colors">
-          ← Back to services
-        </Link>
-      </div>
-    );
+  // Try community spec
+  const { data: community } = await db
+    .from("community_specs")
+    .select("domain, ai_spec")
+    .eq("id", id)
+    .single();
+
+  if (community) {
+    const spec = community.ai_spec as Record<string, unknown>;
+    const svc = spec?.["service"] as Record<string, unknown> | undefined;
+    return {
+      title: `${(svc?.["name"] as string) ?? community.domain} — AIEndpoint`,
+      description: (svc?.["description"] as string) ?? "",
+      alternates: { canonical: `/services/${id}` },
+    };
   }
 
-  const isCommunity = service.source === "community";
-  const tabs: { id: Tab; label: string }[] = [
-    { id: "capabilities", label: `Capabilities (${service.capabilities.length})` },
-    { id: "details",      label: "Details" },
-    ...(!isCommunity ? [{ id: "badge" as Tab, label: "Badge" }] : []),
-    { id: "raw",          label: "Raw spec" },
-  ];
+  return { title: "Service — AIEndpoint" };
+}
 
-  const badgeUrl = `${API_URL}/api/badge/${id}.svg`;
+async function loadService(id: string): Promise<(ServiceDetail & { source: string }) | CommunityServiceDetail | null> {
+  // Try owner service
+  const { data: service } = await db
+    .from("services")
+    .select("*, capabilities(*)")
+    .eq("id", id)
+    .eq("status", "active")
+    .is("deleted_at", null)
+    .single();
 
-  return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
-      {/* Breadcrumb */}
-      <div className="text-sm text-subtle mb-6">
-        <Link href="/services" className="hover:text-muted transition-colors">Services</Link>
-        <span className="mx-2">›</span>
-        <span className="text-muted">{service.name}</span>
-      </div>
+  if (service) {
+    return {
+      ...service,
+      source: "owner",
+    } as ServiceDetail & { source: string };
+  }
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-8">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <Image
-              src={`https://www.google.com/s2/favicons?domain=${new URL(service.url).hostname}&sz=64`}
-              alt=""
-              width={32}
-              height={32}
-              className="shrink-0 rounded-full"
-              unoptimized
-            />
-            <h1 className="text-3xl font-bold text-fg">{service.name}</h1>
-            {service.source === "community" ? (
-              <span className="text-xs bg-purple/10 text-purple border border-purple/20 px-2.5 py-1 rounded-full">
-                community
-              </span>
-            ) : (
-              <>
-                {"is_verified" in service && service.is_verified && (
-                  <span className="text-xs bg-success/10 text-success border border-success/20 px-2.5 py-1 rounded-full">
-                    ✓ AI-Ready
-                  </span>
-                )}
-                {"is_official" in service && service.is_official && (
-                  <span className="text-xs bg-accent/10 text-accent border border-accent/20 px-2.5 py-1 rounded-full">
-                    ★ Official
-                  </span>
-                )}
-              </>
-            )}
-          </div>
-          <p className="text-muted leading-relaxed">{service.description}</p>
-        </div>
-        <a
-          href={service.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 text-sm border border-line text-muted hover:text-fg hover:border-line-dim px-4 py-2 rounded-lg transition-colors"
-        >
-          Visit site ↗
-        </a>
-      </div>
+  // Try community spec
+  const { data: community } = await db
+    .from("community_specs")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-      {/* Community claim banner */}
-      {isCommunity && (
-        <div className="bg-purple/5 border border-purple/20 rounded-lg p-5 mb-8">
-          <p className="text-sm text-fg font-medium mb-2">This is a community-generated spec</p>
-          <p className="text-sm text-subtle leading-relaxed mb-4">
-            This <code className="text-muted">/ai</code> spec was auto-generated by an AI agent, not by the site owner.
-            It may be incomplete or inaccurate.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={`/register?url=${encodeURIComponent(service.url)}`}
-              className="text-sm bg-accent hover:bg-accent-hover text-white font-medium px-4 py-2 rounded-lg transition-colors"
-            >
-              Own this site? Register officially
-            </Link>
-            <Link
-              href="/docs/quick-start"
-              className="text-sm border border-line text-muted hover:text-fg hover:border-line-dim px-4 py-2 rounded-lg transition-colors"
-            >
-              How to implement /ai
-            </Link>
-          </div>
-        </div>
-      )}
+  if (!community) return null;
 
-      {/* Meta row */}
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm mb-8 pb-8 border-b border-line">
-        <a href={service.url} target="_blank" rel="noopener noreferrer" className="font-mono text-subtle text-xs border-b border-b-line pb-0.5 hover:border-b-line-dim hover:text-fg transition-colors">
-          {service.url}
-        </a>
-        <span className={AUTH_COLORS[service.auth_type] ?? "text-muted"}>
-          {service.auth_type === "none" ? "No auth required" : service.auth_type}
-        </span>
-        {service.categories.map((c) => (
-          <span key={c} className="text-xs bg-canvas border border-line text-muted px-2 py-0.5 rounded">
-            {c}
-          </span>
-        ))}
-        {"spec_version" in service && (
-          <span className="text-subtle text-xs">spec v{service.spec_version}</span>
-        )}
-        {service.source === "community" && "confidence" in service && (
-          <>
-            <span className="text-subtle text-xs">confidence: {service.confidence}/100</span>
-            <span className="text-subtle text-xs">{service.discover_count} discoveries</span>
-            <span className="text-subtle text-xs">{service.contributors} contributors</span>
-          </>
-        )}
-      </div>
+  const spec = community.ai_spec as Record<string, unknown>;
+  const svc = spec?.["service"] as Record<string, unknown> | undefined;
+  const caps = (spec?.["capabilities"] ?? []) as Array<Record<string, unknown>>;
+  const auth = spec?.["auth"] as Record<string, unknown> | undefined;
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-line">
-        {tabs.map((t) => (
-          <button
-            type="button"
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`px-4 py-2 text-sm rounded-t transition-colors cursor-pointer ${
-              tab === t.id
-                ? "text-fg border-b-2 border-accent -mb-px bg-code"
-                : "text-subtle hover:text-muted hover:border-b hover:border-accent/80 hover:-mb-px"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+  return {
+    id: community.id,
+    name: (svc?.["name"] as string) ?? community.domain,
+    description: (svc?.["description"] as string) ?? "",
+    url: community.url,
+    domain: community.domain,
+    categories: (svc?.["category"] as string[]) ?? [],
+    language: (svc?.["language"] as string[]) ?? ["en"],
+    auth_type: (auth?.["type"] as string) ?? "none",
+    auth_docs_url: (auth?.["docs"] as string) ?? null,
+    confidence: community.confidence,
+    contributors: community.contributors,
+    discover_count: community.discover_count ?? 0,
+    source: "community" as const,
+    status: community.status,
+    claimed: community.claimed,
+    created_at: community.created_at,
+    updated_at: community.updated_at,
+    ttl: community.ttl,
+    capabilities: caps.map((c) => ({
+      capability_id: (c["id"] as string) ?? "",
+      description: (c["description"] as string) ?? "",
+      endpoint: (c["endpoint"] as string) ?? "",
+      method: (c["method"] as string) ?? "GET",
+      params: (c["params"] as Record<string, string>) ?? {},
+      returns: (c["returns"] as string) ?? null,
+    })),
+    token_hints: (spec?.["token_hints"] as Record<string, boolean>) ?? null,
+    rate_limits: (spec?.["rate_limits"] as Record<string, unknown>) ?? null,
+    meta: (spec?.["meta"] as Record<string, string>) ?? null,
+    raw_spec: community.ai_spec as Record<string, unknown>,
+  } satisfies CommunityServiceDetail;
+}
 
-      {/* Tab content */}
-      {tab === "capabilities" && (
-        <div className="space-y-4">
-          {service.capabilities.length === 0 ? (
-            <p className="text-subtle text-sm">No capabilities listed.</p>
-          ) : (
-            service.capabilities.map((cap) => (
-              <CapabilityCard key={cap.capability_id} cap={cap} />
-            ))
-          )}
-        </div>
-      )}
+export default async function ServiceDetailPage({ params }: Props) {
+  const { id } = await params;
+  const service = await loadService(id);
 
-      {tab === "details" && (
-        <div className="space-y-6">
-          <table className="w-full text-sm">
-            <tbody className="divide-y divide-surface">
-              {[
-                { label: "URL",           value: service.url },
-                ...(!isCommunity && "ai_url" in service ? [{ label: "AI endpoint", value: service.ai_url }] : []),
-                { label: "Auth type",     value: service.auth_type },
-                { label: "Auth docs",     value: service.auth_docs_url ?? "—" },
-                { label: "Languages",     value: service.language?.join(", ") ?? "en" },
-                ...(!isCommunity && "tags" in service ? [{ label: "Tags", value: service.tags?.join(", ") || "—" }] : []),
-                { label: "Status",        value: service.status },
-                ...(isCommunity && "confidence" in service ? [
-                  { label: "Confidence",     value: `${service.confidence}/100` },
-                  { label: "Discoveries",    value: String(service.discover_count) },
-                  { label: "Contributors",   value: String(service.contributors) },
-                ] : []),
-                ...(!isCommunity && "spec_version" in service ? [{ label: "Spec version", value: service.spec_version }] : []),
-                { label: "Registered",    value: new Date(service.created_at).toLocaleDateString() },
-                { label: "Updated",       value: new Date(service.updated_at).toLocaleDateString() },
-              ].map(({ label, value }) => (
-                <tr key={label}>
-                  <td className="py-3 text-subtle w-36 pr-4">{label}</td>
-                  <td className="py-3 text-muted font-mono text-xs break-all">{value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+  if (!service) {
+    notFound();
+  }
 
-          {service.token_hints && Object.keys(service.token_hints).length > 0 && (
-            <div>
-              <p className="text-xs text-subtle uppercase tracking-wider mb-3">Token hints</p>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(service.token_hints).map(([k, v]) => (
-                  <span key={k} className={`text-xs px-2 py-1 rounded border ${v ? "border-success/20 text-success bg-success/5" : "border-line text-subtle"}`}>
-                    {k}: {String(v)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {tab === "badge" && (
-        <div className="space-y-6">
-          <div className="bg-canvas border border-line rounded-lg p-6">
-            <p className="text-xs text-subtle uppercase tracking-wider mb-4">Preview</p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={badgeUrl} alt="AI-Ready badge" className="mb-6" />
-
-            <p className="text-xs text-subtle uppercase tracking-wider mb-3">Embed</p>
-            <div className="space-y-3">
-              {[
-                { label: "Markdown", code: `[![AI-Ready](${badgeUrl})](https://aiendpoint.dev/services/${id})` },
-                { label: "HTML",     code: `<a href="https://aiendpoint.dev/services/${id}"><img src="${badgeUrl}" alt="AI-Ready" /></a>` },
-                { label: "Direct",   code: badgeUrl },
-              ].map(({ label, code }) => (
-                <div key={label}>
-                  <p className="text-xs text-subtle mb-1">{label}</p>
-                  <code className="block text-xs font-mono text-muted bg-code border border-line rounded p-3 break-all">
-                    {code}
-                  </code>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {tab === "raw" && (
-        <div className="bg-code border border-line rounded-lg overflow-hidden">
-          <div className="flex items-center px-4 py-3 border-b border-line">
-            <span className="text-xs text-subtle font-mono">
-              {isCommunity ? `Community spec for ${service.url}` : `GET ${(service as ServiceDetail).ai_url ?? service.url}`}
-            </span>
-          </div>
-          <pre className="p-6 text-xs font-mono text-muted overflow-x-auto leading-relaxed whitespace-pre">
-            {JSON.stringify(isCommunity && "raw_spec" in service ? service.raw_spec : service, null, 2)}
-          </pre>
-        </div>
-      )}
-    </div>
-  );
+  return <ServiceDetailContent service={service} />;
 }

@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ServiceCard } from "@/components/ServiceCard";
 import { getServices } from "@/lib/api";
-
 import { formatCount } from "@/lib/numbers";
+
+export const metadata: Metadata = {
+  title: "AIEndpoint — The /ai Standard for AI Agents",
+  description: "Open standard so AI agents can discover what any web service does. Like robots.txt for AI. 10x–100x fewer tokens than scraping HTML.",
+  alternates: { canonical: "/" },
+};
 
 async function loadRecentServices() {
   try {
