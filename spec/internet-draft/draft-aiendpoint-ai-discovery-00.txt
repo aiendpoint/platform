@@ -3,7 +3,7 @@
 
 
 
-Internet Engineering Task Force                          [Author Name]
+Internet Engineering Task Force                         Y. Choi
 Internet-Draft                                            AIEndpoint
 Intended status: Standards Track                      23 March 2026
 Expires: 23 September 2026
@@ -1374,7 +1374,7 @@ Acknowledgements
 
 Authors' Addresses
 
-   [Author Name]
+   Yeongjae Choi
    AIEndpoint
-   Email: [author@email.com]
+   Email: bejoyfuuul@gmail.com
    URI:   https://aiendpoint.dev
