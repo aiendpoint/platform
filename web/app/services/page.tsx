@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Services — AIEndpoint",
+  description: "Browse and search AI-ready web services indexed by the AIEndpoint registry. Filter by category, auth type, and more.",
+  alternates: { canonical: "/services" },
+};
 import { ServiceCard } from "@/components/ServiceCard";
 import { ServicesFilter } from "@/components/ServicesFilter";
 import { getServicesSSR, getCategoriesSSR } from "@/lib/services";
