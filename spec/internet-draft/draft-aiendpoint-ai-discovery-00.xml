@@ -1,0 +1,1721 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="rfc2629.xslt"?>
+<!DOCTYPE rfc [
+  <!ENTITY RFC2119 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml">
+  <!ENTITY RFC3629 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.3629.xml">
+  <!ENTITY RFC5646 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.5646.xml">
+  <!ENTITY RFC6125 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.6125.xml">
+  <!ENTITY RFC6749 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.6749.xml">
+  <!ENTITY RFC6750 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.6750.xml">
+  <!ENTITY RFC8174 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml">
+  <!ENTITY RFC8259 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8259.xml">
+  <!ENTITY RFC8446 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8446.xml">
+  <!ENTITY RFC8615 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8615.xml">
+  <!ENTITY RFC9110 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.9110.xml">
+  <!ENTITY RFC9111 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.9111.xml">
+  <!ENTITY RFC9309 SYSTEM "https://bib.ietf.org/public/rfc/bibxml/reference.RFC.9309.xml">
+]>
+
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude"
+     ipr="trust200902"
+     docName="draft-aiendpoint-ai-discovery-00"
+     category="std"
+     submissionType="IETF"
+     consensus="true"
+     xml:lang="en"
+     version="3">
+
+  <front>
+    <title abbrev="AI Discovery Endpoint">
+      The AI Discovery Endpoint: A Structured Mechanism for
+      AI Agent Service Discovery and Capability Exposure
+    </title>
+
+    <seriesInfo name="Internet-Draft" value="draft-aiendpoint-ai-discovery-00"/>
+
+    <author fullname="Yeongjae Choi" initials="Y." surname="Choi">
+      <organization>AIEndpoint</organization>
+      <address>
+        <email>bejoyfuuul@gmail.com</email>
+        <uri>https://www.aiendpoint.dev</uri>
+      </address>
+    </author>
+
+    <date year="2026" month="March" day="23"/>
+
+    <area>Applications and Real-Time</area>
+    <workgroup>Internet Engineering Task Force</workgroup>
+
+    <keyword>AI</keyword>
+    <keyword>agent</keyword>
+    <keyword>discovery</keyword>
+    <keyword>well-known</keyword>
+    <keyword>LLM</keyword>
+    <keyword>capability</keyword>
+
+    <abstract>
+      <t>
+        This document defines a lightweight mechanism by which web services
+        expose a machine-readable description of their capabilities to
+        autonomous AI agents.  The mechanism consists of a well-known
+        resource, served at "/.well-known/ai", that returns a structured
+        JSON document describing the service's identity, available actions,
+        authentication requirements, and operational hints optimized for
+        large language model (LLM) token efficiency.
+      </t>
+      <t>
+        The specification addresses the absence of a standardized method
+        for AI agents to programmatically discover what a web service can
+        do and how to invoke its capabilities, without resorting to
+        parsing human-oriented documentation or HTML content.
+      </t>
+    </abstract>
+  </front>
+
+  <middle>
+
+    <!-- ============================================================ -->
+    <!-- Section 1: Introduction                                       -->
+    <!-- ============================================================ -->
+
+    <section anchor="introduction" numbered="true" toc="default">
+      <name>Introduction</name>
+
+      <t>
+        The rapid proliferation of autonomous AI agents — software systems
+        powered by large language models (LLMs) that perform tasks on
+        behalf of users — has created a fundamental interoperability gap
+        on the World Wide Web.  While the web has well-established
+        mechanisms for communicating with human users (HTML) and search
+        engine crawlers (robots.txt <xref target="RFC9309"/>, sitemaps),
+        no equivalent standard exists for AI agents seeking to discover
+        and invoke the capabilities of web services.
+      </t>
+
+      <t>
+        Today, when an AI agent attempts to interact with a web service,
+        it must resort to one or more of the following strategies:
+      </t>
+
+      <ul spacing="normal">
+        <li>
+          Parsing HTML pages designed for human consumption, extracting
+          structured meaning from unstructured content at significant
+          computational cost (typically 8,000-15,000 LLM tokens per page).
+        </li>
+        <li>
+          Reading API documentation scattered across multiple pages,
+          often requiring the agent to navigate hyperlinks, interpret
+          natural language descriptions, and resolve ambiguities.
+        </li>
+        <li>
+          Using pre-configured tool definitions maintained by the agent's
+          developer, which become stale as services evolve and cannot
+          scale to the breadth of services on the web.
+        </li>
+        <li>
+          Attempting trial-and-error API calls, which waste computational
+          resources and risk triggering rate limits or unintended side
+          effects.
+        </li>
+      </ul>
+
+      <t>
+        These approaches are inefficient, error-prone, and fundamentally
+        unscalable.  A single service discovery interaction that could be
+        accomplished in 200-500 LLM tokens with a structured response
+        instead requires 3,000-15,000 tokens of unstructured content
+        parsing — a 10x to 30x overhead.
+      </t>
+
+      <t>
+        This document defines the AI Discovery Endpoint, a mechanism
+        whereby a web service publishes a single, structured JSON document
+        at a well-known location.  This document describes the service's
+        identity, enumerates its capabilities as discrete invocable
+        actions, specifies authentication requirements, and provides
+        operational hints that enable AI agents to interact with the
+        service efficiently.
+      </t>
+
+      <t>The design prioritizes:</t>
+
+      <ul spacing="normal">
+        <li>
+          Simplicity: A developer <bcp14>SHOULD</bcp14> be able to
+          implement a conformant endpoint in under 30 minutes using
+          any web framework.
+        </li>
+        <li>
+          Token efficiency: The response format is optimized to convey
+          maximum information in minimum LLM tokens.
+        </li>
+        <li>
+          Universality: The mechanism requires only HTTP and JSON — no
+          custom protocols, transport layers, or runtime dependencies.
+        </li>
+        <li>
+          Backward compatibility: Future versions of this specification
+          will extend the schema additively; fields defined in this
+          version will not be removed or have their semantics altered.
+        </li>
+      </ul>
+
+      <section anchor="requirements-language" numbered="true" toc="default">
+        <name>Requirements Language</name>
+        <t>
+          The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+          "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>",
+          "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>",
+          "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>",
+          "<bcp14>NOT RECOMMENDED</bcp14>", "<bcp14>MAY</bcp14>", and
+          "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted
+          as described in BCP 14 <xref target="RFC2119"/>
+          <xref target="RFC8174"/> when, and only when, they appear in
+          all capitals, as shown here.
+        </t>
+      </section>
+
+      <section anchor="terminology" numbered="true" toc="default">
+        <name>Terminology</name>
+
+        <dl>
+          <dt>AI Agent:</dt>
+          <dd>
+            An autonomous software system, typically powered by a large
+            language model, that performs tasks on behalf of a user by
+            discovering and invoking web services programmatically.
+          </dd>
+
+          <dt>AI Discovery Document:</dt>
+          <dd>
+            The JSON document served at the AI Discovery Endpoint,
+            conforming to the schema defined in this specification.
+          </dd>
+
+          <dt>Capability:</dt>
+          <dd>
+            A discrete, invocable action that a web service exposes to
+            AI agents, described by an identifier, an HTTP endpoint,
+            a method, and parameter/return specifications.
+          </dd>
+
+          <dt>Service Provider:</dt>
+          <dd>
+            The operator of a web service that publishes an AI Discovery
+            Document.
+          </dd>
+
+          <dt>Token:</dt>
+          <dd>
+            The fundamental unit of text processing in a large language
+            model.  The efficiency of AI agent interactions is measured
+            in tokens consumed.
+          </dd>
+        </dl>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 2: The AI Discovery Resource                          -->
+    <!-- ============================================================ -->
+
+    <section anchor="resource" numbered="true" toc="default">
+      <name>The AI Discovery Resource</name>
+
+      <section anchor="resource-location" numbered="true" toc="default">
+        <name>Resource Location</name>
+
+        <t>
+          A service provider that implements this specification
+          <bcp14>MUST</bcp14> serve the AI Discovery Document at the
+          following well-known URI <xref target="RFC8615"/>:
+        </t>
+
+        <artwork type="example"><![CDATA[
+/.well-known/ai
+]]></artwork>
+
+        <t>
+          The complete URI is constructed by appending "/.well-known/ai"
+          to the authority (scheme and host) of the service.  For example,
+          for a service at "https://example.com", the AI Discovery
+          Document is located at:
+        </t>
+
+        <artwork type="example"><![CDATA[
+https://example.com/.well-known/ai
+]]></artwork>
+
+        <t>
+          A service provider <bcp14>MAY</bcp14> additionally serve an
+          identical copy of the AI Discovery Document at the path "/ai"
+          on the same authority, as a convenience alias.  When both
+          locations are served, the content <bcp14>MUST</bcp14> be
+          identical.  An AI agent that receives differing content from
+          the two locations <bcp14>MUST</bcp14> treat the
+          "/.well-known/ai" response as authoritative.
+        </t>
+
+        <t>
+          The AI Discovery Document <bcp14>MUST NOT</bcp14> be served
+          at a path that includes query parameters or fragment
+          identifiers.  The resource is a single, complete document.
+        </t>
+      </section>
+
+      <section anchor="access-method" numbered="true" toc="default">
+        <name>Access Method</name>
+
+        <t>
+          The AI Discovery Document <bcp14>MUST</bcp14> be accessible
+          via an HTTP GET request <xref target="RFC9110"/>.
+        </t>
+
+        <t>
+          The server <bcp14>MUST NOT</bcp14> require authentication to
+          access the AI Discovery Document itself.  The purpose of the
+          document is to enable discovery; requiring authentication to
+          discover what authentication is needed creates a circular
+          dependency.
+        </t>
+
+        <t>
+          The server <bcp14>SHOULD</bcp14> respond to requests within
+          3 seconds under normal operating conditions.  AI agents
+          <bcp14>MAY</bcp14> treat responses exceeding 10 seconds as
+          unavailable.
+        </t>
+
+        <t>
+          The server <bcp14>MUST</bcp14> respond with HTTP status code
+          200 (OK) when the AI Discovery Document is available and the
+          request is valid.
+        </t>
+
+        <t>
+          If the server does not implement this specification, it
+          <bcp14>SHOULD</bcp14> respond with HTTP status code 404
+          (Not Found).  An AI agent receiving a 404 response
+          <bcp14>MUST</bcp14> conclude that the service does not
+          publish an AI Discovery Document.
+        </t>
+
+        <t>
+          The server <bcp14>MAY</bcp14> respond with HTTP status code
+          301 (Moved Permanently) or 302 (Found) to redirect to another
+          location.  An AI agent <bcp14>MUST</bcp14> follow redirects
+          up to a maximum of 5 consecutive redirections.  The agent
+          <bcp14>MUST NOT</bcp14> follow redirects that change the
+          scheme from "https" to "http".
+        </t>
+      </section>
+
+      <section anchor="media-type" numbered="true" toc="default">
+        <name>Media Type</name>
+
+        <t>
+          The AI Discovery Document <bcp14>MUST</bcp14> be served with
+          the media type "application/json" <xref target="RFC8259"/>.
+        </t>
+
+        <t>
+          Servers <bcp14>SHOULD</bcp14> include the "charset=utf-8"
+          parameter:
+        </t>
+
+        <artwork type="example"><![CDATA[
+Content-Type: application/json; charset=utf-8
+]]></artwork>
+      </section>
+
+      <section anchor="character-encoding" numbered="true" toc="default">
+        <name>Character Encoding</name>
+
+        <t>
+          The AI Discovery Document <bcp14>MUST</bcp14> be encoded in
+          UTF-8 <xref target="RFC3629"/>.  This ensures consistent
+          handling of non-ASCII characters in service descriptions,
+          capability names, and other textual fields, which is
+          particularly important for services operating in multilingual
+          environments.
+        </t>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 3: Response Schema                                    -->
+    <!-- ============================================================ -->
+
+    <section anchor="schema" numbered="true" toc="default">
+      <name>Response Schema</name>
+
+      <t>
+        The AI Discovery Document is a single JSON object
+        <xref target="RFC8259"/> containing the fields defined in
+        this section.
+      </t>
+
+      <section anchor="top-level" numbered="true" toc="default">
+        <name>Top-Level Structure</name>
+
+        <t>
+          The top-level JSON object <bcp14>MUST</bcp14> contain the
+          following fields:
+        </t>
+
+        <dl>
+          <dt>aiendpoint:</dt>
+          <dd>
+            (string, REQUIRED)  The version of this specification to
+            which the document conforms.  For documents conforming to
+            this specification, the value <bcp14>MUST</bcp14> be "1.0".
+          </dd>
+
+          <dt>service:</dt>
+          <dd>
+            (object, REQUIRED)  An object describing the identity of
+            the service.  See <xref target="service-object"/>.
+          </dd>
+
+          <dt>capabilities:</dt>
+          <dd>
+            (array, REQUIRED)  A non-empty array of capability objects,
+            each describing a discrete action the service exposes to AI
+            agents.  See <xref target="capabilities-array"/>.
+          </dd>
+        </dl>
+
+        <t>
+          The top-level JSON object <bcp14>MAY</bcp14> contain the
+          following fields:
+        </t>
+
+        <dl>
+          <dt>auth:</dt>
+          <dd>
+            (object, OPTIONAL)  An object describing the authentication
+            requirements of the service.
+            See <xref target="auth-object"/>.
+          </dd>
+
+          <dt>token_hints:</dt>
+          <dd>
+            (object, OPTIONAL)  An object providing hints for AI agents
+            on how to reduce token consumption when invoking the
+            service's capabilities.
+            See <xref target="token-hints-object"/>.
+          </dd>
+
+          <dt>rate_limits:</dt>
+          <dd>
+            (object, OPTIONAL)  An object describing the rate limiting
+            policy of the service.
+            See <xref target="rate-limits-object"/>.
+          </dd>
+
+          <dt>meta:</dt>
+          <dd>
+            (object, OPTIONAL)  An object containing metadata about
+            the AI Discovery Document itself.
+            See <xref target="meta-object"/>.
+          </dd>
+        </dl>
+
+        <t>
+          A conformant AI Discovery Document <bcp14>MUST NOT</bcp14>
+          contain fields not defined in this specification at the top
+          level.  This constraint ensures that future versions of the
+          specification can introduce new top-level fields without
+          conflicting with proprietary extensions.  Service providers
+          requiring custom metadata <bcp14>SHOULD</bcp14> use the
+          "meta" object for this purpose.
+        </t>
+      </section>
+
+      <section anchor="service-object" numbered="true" toc="default">
+        <name>The "service" Object</name>
+
+        <t>
+          The "service" object describes the identity and classification
+          of the service.  It <bcp14>MUST</bcp14> contain the following
+          fields:
+        </t>
+
+        <dl>
+          <dt>name:</dt>
+          <dd>
+            <t>
+              (string, REQUIRED)  The human-readable name of the service.
+              This value <bcp14>SHOULD</bcp14> be the commonly recognized
+              name of the service (e.g., "GitHub", "Stripe",
+              "OpenWeatherMap").  The value <bcp14>MUST</bcp14> be
+              between 1 and 100 characters in length.
+            </t>
+          </dd>
+
+          <dt>description:</dt>
+          <dd>
+            <t>
+              (string, REQUIRED)  A concise, factual description of what
+              the service does.  This description is intended for machine
+              consumption and <bcp14>SHOULD</bcp14> be written in a
+              declarative style that prioritizes clarity over marketing
+              language.  The value <bcp14>MUST</bcp14> be between 1 and
+              300 characters in length.
+            </t>
+            <t>
+              Authors <bcp14>SHOULD</bcp14> aim for descriptions under
+              200 characters to optimize token consumption.
+            </t>
+          </dd>
+        </dl>
+
+        <t>
+          The "service" object <bcp14>MAY</bcp14> contain the following
+          fields:
+        </t>
+
+        <dl>
+          <dt>category:</dt>
+          <dd>
+            <t>
+              (array of strings, OPTIONAL)  One or more category labels
+              that classify the service for discovery purposes.  The
+              following category values are defined in this version of
+              the specification: "productivity", "ecommerce", "finance",
+              "news", "weather", "maps", "search", "data",
+              "communication", "calendar", "storage", "media", "health",
+              "education", "travel", "food", "government", "developer".
+            </t>
+            <t>
+              Service providers <bcp14>SHOULD</bcp14> select from the
+              above list to maximize interoperability with discovery
+              systems.  Future versions of this specification
+              <bcp14>MAY</bcp14> define additional categories.  A
+              discovery system encountering an unrecognized category
+              value <bcp14>SHOULD</bcp14> ignore it without error.
+            </t>
+            <t>
+              The array <bcp14>MUST</bcp14> contain at least one element
+              if present, and <bcp14>MUST NOT</bcp14> contain duplicate
+              values.
+            </t>
+          </dd>
+
+          <dt>language:</dt>
+          <dd>
+            <t>
+              (array of strings, OPTIONAL)  The natural languages
+              supported by the service, expressed as BCP 47
+              <xref target="RFC5646"/> language tags.  If omitted, the
+              default value is ["en"].
+            </t>
+            <t>
+              The array <bcp14>MUST</bcp14> contain at least one element
+              if present, and <bcp14>MUST NOT</bcp14> contain duplicate
+              values.
+            </t>
+          </dd>
+        </dl>
+      </section>
+
+      <section anchor="capabilities-array" numbered="true" toc="default">
+        <name>The "capabilities" Array</name>
+
+        <t>
+          The "capabilities" array is the core of the AI Discovery
+          Document.  Each element describes a single, discrete action
+          that an AI agent can invoke.
+        </t>
+
+        <t>
+          The array <bcp14>MUST</bcp14> contain at least one element.
+        </t>
+
+        <t>
+          Service providers <bcp14>SHOULD</bcp14> limit the array to
+          capabilities that are meaningful for AI agent consumption.
+          Internal endpoints, administrative functions, and endpoints
+          that require complex multi-step human interaction
+          <bcp14>SHOULD</bcp14> be omitted.
+        </t>
+
+        <t>
+          Each capability object <bcp14>MUST</bcp14> contain the
+          following fields:
+        </t>
+
+        <dl>
+          <dt>id:</dt>
+          <dd>
+            <t>
+              (string, REQUIRED)  A unique identifier for this capability
+              within the service.  The identifier <bcp14>MUST</bcp14>
+              match the regular expression ^[a-z][a-z0-9_]*$ (lowercase
+              ASCII letters, digits, and underscores, beginning with a
+              letter).  The identifier <bcp14>MUST</bcp14> be between 1
+              and 64 characters in length.
+            </t>
+            <t>
+              The identifier serves as a stable reference for the
+              capability.  Service providers <bcp14>SHOULD NOT</bcp14>
+              change the identifier of an existing capability, as AI
+              agents and external systems may reference it.
+            </t>
+          </dd>
+
+          <dt>description:</dt>
+          <dd>
+            <t>
+              (string, REQUIRED)  A concise description of what this
+              capability does.  The value <bcp14>MUST</bcp14> be between
+              1 and 200 characters in length.
+            </t>
+            <t>
+              This description is the primary mechanism by which an AI
+              agent determines whether a capability is relevant to its
+              task.  Authors <bcp14>SHOULD</bcp14> write descriptions
+              that are specific and actionable.
+            </t>
+          </dd>
+
+          <dt>endpoint:</dt>
+          <dd>
+            <t>
+              (string, REQUIRED)  The URI or URI path at which this
+              capability is accessible.  The value <bcp14>MUST</bcp14>
+              be non-empty.
+            </t>
+            <t>
+              If the value begins with "/" (U+002F), it is a relative
+              path and <bcp14>MUST</bcp14> be resolved against the
+              authority of the AI Discovery Document's URI.  If the
+              value is an absolute URI (beginning with a scheme), it is
+              used as-is.  This allows services to expose capabilities
+              hosted on different domains or subdomains.
+            </t>
+          </dd>
+
+          <dt>method:</dt>
+          <dd>
+            (string, REQUIRED)  The HTTP method used to invoke this
+            capability.  The value <bcp14>MUST</bcp14> be one of:
+            "GET", "POST", "PUT", "DELETE", "PATCH".
+          </dd>
+        </dl>
+
+        <t>
+          Each capability object <bcp14>MAY</bcp14> contain the
+          following fields:
+        </t>
+
+        <dl>
+          <dt>params:</dt>
+          <dd>
+            <t>
+              (object, OPTIONAL)  A JSON object describing the parameters
+              accepted by this capability's endpoint.  Each key is a
+              parameter name, and each value is a string describing the
+              parameter in a compact, structured format.
+            </t>
+            <t>
+              The parameter description string <bcp14>SHOULD</bcp14>
+              follow this pattern:
+            </t>
+            <artwork type="example"><![CDATA[
+<type>, <requirement>[, <constraints>] [-- <description>]
+]]></artwork>
+            <t>Where:</t>
+            <ul spacing="normal">
+              <li>&lt;type&gt; is the data type: "string", "integer",
+                "number", "boolean", or "array"</li>
+              <li>&lt;requirement&gt; is "required" or "optional"</li>
+              <li>&lt;constraints&gt; are optional qualifiers such as
+                "default 10", "max 50", "min 1", or enumerated values
+                separated by "|"</li>
+              <li>&lt;description&gt; is an optional natural language
+                description, separated by an em dash or double
+                hyphen (--)</li>
+            </ul>
+          </dd>
+
+          <dt>returns:</dt>
+          <dd>
+            <t>
+              (string, OPTIONAL)  A compact description of the response
+              structure.  The value <bcp14>MUST NOT</bcp14> exceed 300
+              characters in length.
+            </t>
+            <t>
+              Authors <bcp14>SHOULD</bcp14> use a concise structural
+              notation that conveys the shape of the response, e.g.,
+              "products[] {id, name, price, stock}".
+            </t>
+          </dd>
+        </dl>
+      </section>
+
+      <section anchor="auth-object" numbered="true" toc="default">
+        <name>The "auth" Object</name>
+
+        <t>
+          The "auth" object describes how an AI agent must authenticate
+          when invoking the service's capabilities.
+        </t>
+
+        <t>
+          When present, the "auth" object <bcp14>MUST</bcp14> contain
+          the following field:
+        </t>
+
+        <dl>
+          <dt>type:</dt>
+          <dd>
+            <t>
+              (string, REQUIRED)  The authentication mechanism required
+              by the service.  The value <bcp14>MUST</bcp14> be one of:
+            </t>
+            <dl>
+              <dt>"none":</dt>
+              <dd>No authentication is required.  All capabilities are
+                publicly accessible.</dd>
+              <dt>"apikey":</dt>
+              <dd>Authentication via a static API key, typically passed
+                in an HTTP header.</dd>
+              <dt>"bearer":</dt>
+              <dd>Authentication via a bearer token (e.g., JWT), passed
+                in the Authorization header as defined in
+                <xref target="RFC6750"/>.</dd>
+              <dt>"oauth2":</dt>
+              <dd>Authentication via the OAuth 2.0 framework
+                <xref target="RFC6749"/>.</dd>
+            </dl>
+          </dd>
+        </dl>
+
+        <t>
+          The "auth" object <bcp14>MAY</bcp14> contain the following
+          fields:
+        </t>
+
+        <dl>
+          <dt>header:</dt>
+          <dd>
+            (string, OPTIONAL)  The name of the HTTP header in which
+            the authentication credential is passed.  This field is
+            most useful for "apikey" authentication where the header
+            name varies across services (e.g., "X-API-Key", "Api-Key",
+            "Authorization").  For "bearer" authentication, the header
+            is implicitly "Authorization" and this field
+            <bcp14>MAY</bcp14> be omitted.
+          </dd>
+
+          <dt>docs:</dt>
+          <dd>
+            (string, OPTIONAL)  A URI pointing to human-readable
+            documentation for the service's authentication process.
+          </dd>
+        </dl>
+
+        <t>
+          If the "auth" object is omitted entirely, an AI agent
+          <bcp14>SHOULD</bcp14> assume that authentication may be
+          required.  Service providers are therefore
+          <bcp14>RECOMMENDED</bcp14> to include the "auth" object
+          even when no authentication is required, with type set
+          to "none".
+        </t>
+      </section>
+
+      <section anchor="token-hints-object" numbered="true" toc="default">
+        <name>The "token_hints" Object</name>
+
+        <t>
+          The "token_hints" object provides signals to AI agents about
+          features the service supports to reduce the token cost of
+          capability invocations.
+        </t>
+
+        <t>
+          All fields in the "token_hints" object are boolean and
+          OPTIONAL.  If the object is omitted, all fields default
+          to false.
+        </t>
+
+        <dl>
+          <dt>compact_mode:</dt>
+          <dd>
+            (boolean, default false)  If true, the service's capability
+            endpoints accept a query parameter "compact=true" that
+            causes the response to include only essential fields,
+            omitting verbose or supplementary data.
+          </dd>
+
+          <dt>field_filtering:</dt>
+          <dd>
+            (boolean, default false)  If true, the service's capability
+            endpoints accept a query parameter "fields" whose value is
+            a comma-separated list of field names.  The response
+            includes only the specified fields.
+          </dd>
+
+          <dt>delta_support:</dt>
+          <dd>
+            (boolean, default false)  If true, the service's capability
+            endpoints accept a query parameter "since" whose value is
+            an ISO 8601 timestamp.  The response includes only records
+            created or modified after the specified timestamp.
+          </dd>
+        </dl>
+      </section>
+
+      <section anchor="rate-limits-object" numbered="true" toc="default">
+        <name>The "rate_limits" Object</name>
+
+        <t>
+          The "rate_limits" object informs AI agents of the service's
+          rate limiting policy, enabling agents to plan their request
+          patterns to avoid throttling.
+        </t>
+
+        <dl>
+          <dt>requests_per_minute:</dt>
+          <dd>
+            (integer, OPTIONAL)  The maximum number of requests an AI
+            agent may make per minute under the default access tier.
+            The value <bcp14>MUST</bcp14> be a positive integer.
+            This is an advisory limit.  AI agents <bcp14>SHOULD</bcp14>
+            use this value to pace their requests.
+          </dd>
+
+          <dt>agent_tier_available:</dt>
+          <dd>
+            (boolean, OPTIONAL)  If true, the service offers a higher
+            rate limit tier specifically for AI agents.  Details of how
+            to access this tier are available at the URI specified in
+            "auth.docs".
+          </dd>
+        </dl>
+      </section>
+
+      <section anchor="meta-object" numbered="true" toc="default">
+        <name>The "meta" Object</name>
+
+        <t>
+          The "meta" object contains metadata about the AI Discovery
+          Document itself (not the service it describes).  All fields
+          are OPTIONAL.
+        </t>
+
+        <dl>
+          <dt>last_updated:</dt>
+          <dd>
+            (string, OPTIONAL)  The date on which the AI Discovery
+            Document was last modified, expressed in ISO 8601 format
+            (YYYY-MM-DD or YYYY-MM-DDThh:mm:ssZ).
+          </dd>
+
+          <dt>changelog:</dt>
+          <dd>
+            (string, OPTIONAL)  A URI pointing to a changelog or
+            release notes page for the service.
+          </dd>
+
+          <dt>status:</dt>
+          <dd>
+            (string, OPTIONAL)  A URI pointing to a service status page.
+            AI agents <bcp14>MAY</bcp14> consult this URI before
+            invoking capabilities on a service that appears to be
+            experiencing errors.
+          </dd>
+        </dl>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 4: Processing Rules                                   -->
+    <!-- ============================================================ -->
+
+    <section anchor="processing" numbered="true" toc="default">
+      <name>Processing Rules</name>
+
+      <t>
+        This section defines how AI agents and other consumers
+        <bcp14>SHOULD</bcp14> process the AI Discovery Document.
+      </t>
+
+      <section anchor="fetching" numbered="true" toc="default">
+        <name>Fetching</name>
+
+        <t>
+          An AI agent attempting to discover the capabilities of a
+          service at a given authority <bcp14>SHOULD</bcp14> perform
+          the following steps:
+        </t>
+
+        <ol spacing="normal">
+          <li>
+            Construct the well-known URI by appending "/.well-known/ai"
+            to the authority (e.g.,
+            "https://example.com/.well-known/ai").
+          </li>
+          <li>Issue an HTTP GET request to the constructed URI.</li>
+          <li>
+            If the response status is 200 (OK) and the Content-Type
+            header indicates "application/json", parse the response
+            body as a JSON object.
+          </li>
+          <li>
+            Validate that the parsed object contains the required fields
+            "aiendpoint", "service", and "capabilities" as defined in
+            <xref target="schema"/>.
+          </li>
+          <li>
+            If validation succeeds, the service is considered to have a
+            valid AI Discovery Document.  The agent <bcp14>MAY</bcp14>
+            proceed to invoke the service's capabilities as described.
+          </li>
+        </ol>
+
+        <t>
+          If the response status is 404 (Not Found), the agent
+          <bcp14>MAY</bcp14> optionally attempt to fetch the resource
+          at "/ai" as a fallback.  However, the "/.well-known/ai"
+          location is authoritative, and agents <bcp14>MUST NOT</bcp14>
+          treat a response from "/ai" as valid if the "/.well-known/ai"
+          location returns a different response.
+        </t>
+
+        <t>
+          An agent <bcp14>MUST NOT</bcp14> issue requests to any
+          capability endpoint described in the AI Discovery Document
+          without first confirming that the document is valid and that
+          the capability's method, endpoint, and parameters are
+          well-formed.
+        </t>
+      </section>
+
+      <section anchor="caching" numbered="true" toc="default">
+        <name>Caching</name>
+
+        <t>
+          The AI Discovery Document is expected to change infrequently.
+          Service providers <bcp14>SHOULD</bcp14> include appropriate
+          HTTP caching headers <xref target="RFC9111"/> in the response.
+          A Cache-Control max-age value of 86400 (24 hours) is
+          <bcp14>RECOMMENDED</bcp14> for most services.
+        </t>
+
+        <artwork type="example"><![CDATA[
+Cache-Control: public, max-age=86400
+]]></artwork>
+
+        <t>
+          AI agents <bcp14>SHOULD</bcp14> respect standard HTTP caching
+          semantics.  When the "meta.last_updated" field is present, an
+          agent <bcp14>MAY</bcp14> compare it against a previously
+          stored value to determine whether the document has changed.
+        </t>
+      </section>
+
+      <section anchor="error-handling" numbered="true" toc="default">
+        <name>Error Handling</name>
+
+        <t>
+          AI agents <bcp14>MUST</bcp14> handle the following error
+          conditions gracefully:
+        </t>
+
+        <dl>
+          <dt>HTTP 404 (Not Found):</dt>
+          <dd>
+            The service does not implement this specification.  The
+            agent <bcp14>MUST NOT</bcp14> retry the request for the
+            same authority within a reasonable period
+            (<bcp14>RECOMMENDED</bcp14>: 24 hours).
+          </dd>
+
+          <dt>HTTP 5xx (Server Error):</dt>
+          <dd>
+            The service may be temporarily unavailable.  The agent
+            <bcp14>MAY</bcp14> retry after an appropriate delay,
+            using exponential backoff with a maximum of 3 retry
+            attempts.
+          </dd>
+
+          <dt>HTTP 429 (Too Many Requests):</dt>
+          <dd>
+            The agent has exceeded the service's rate limit.  The
+            agent <bcp14>MUST</bcp14> respect the Retry-After header
+            if present.
+          </dd>
+
+          <dt>Invalid JSON:</dt>
+          <dd>
+            If the response body cannot be parsed as valid JSON, the
+            agent <bcp14>MUST</bcp14> treat the service as not
+            implementing this specification.
+          </dd>
+
+          <dt>Schema Violation:</dt>
+          <dd>
+            If the parsed JSON does not contain the required fields,
+            the agent <bcp14>SHOULD</bcp14> treat the document as
+            invalid.  An agent <bcp14>MAY</bcp14> attempt to use
+            partially valid documents at its own risk.
+          </dd>
+        </dl>
+      </section>
+
+      <section anchor="version-negotiation" numbered="true" toc="default">
+        <name>Version Negotiation</name>
+
+        <t>
+          This specification defines version "1.0" of the AI Discovery
+          Document.  The "aiendpoint" field identifies the version.
+        </t>
+
+        <t>
+          An AI agent that encounters an "aiendpoint" value it does not
+          recognize <bcp14>SHOULD</bcp14> still attempt to parse the
+          document using the rules of the highest version it supports.
+          Because this specification mandates additive-only changes
+          across versions, a version 1.0 agent can safely process a
+          version 1.1 document by ignoring unknown fields.
+        </t>
+
+        <t>
+          An AI agent <bcp14>MUST NOT</bcp14> reject a document solely
+          because the "aiendpoint" value is higher than the version it
+          supports.
+        </t>
+      </section>
+
+      <section anchor="size-limits" numbered="true" toc="default">
+        <name>Size Limits</name>
+
+        <t>
+          An AI Discovery Document <bcp14>SHOULD NOT</bcp14> exceed
+          64 kilobytes in size.  Service providers whose capabilities
+          would exceed this limit <bcp14>SHOULD</bcp14> consider
+          splitting their service into logical sub-services, each with
+          its own AI Discovery Document.
+        </t>
+
+        <t>
+          An AI agent <bcp14>MAY</bcp14> refuse to process a document
+          that exceeds 256 kilobytes.
+        </t>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 5: Token Efficiency Considerations                    -->
+    <!-- ============================================================ -->
+
+    <section anchor="token-efficiency" numbered="true" toc="default">
+      <name>Token Efficiency Considerations</name>
+
+      <t>
+        A primary design goal of this specification is to minimize the
+        number of LLM tokens required for an AI agent to discover and
+        understand a service's capabilities.
+      </t>
+
+      <t>
+        As of this writing, leading LLMs consume approximately 1 token
+        per 4 characters of English text and 1 token per 1-2 characters
+        of JSON structural elements.  Non-Latin scripts (e.g., CJK
+        characters) typically consume 1-3 tokens per character.
+      </t>
+
+      <t>
+        A well-formed AI Discovery Document for a service with 5
+        capabilities is expected to consume between 200 and 800 tokens.
+        By contrast, extracting equivalent information from a typical
+        HTML documentation page requires 3,000 to 15,000 tokens — an
+        overhead factor of 10x to 30x.
+      </t>
+
+      <t>This efficiency gain is achieved through several design choices:</t>
+
+      <ul spacing="normal">
+        <li>
+          Compact parameter descriptions: Parameters are described in a
+          single string that encodes type, requirement, constraints, and
+          description in a compact notation, rather than a verbose schema
+          format as in OpenAPI.
+        </li>
+        <li>
+          Structural response descriptions: The "returns" field uses a
+          concise notation (e.g., "products[] {id, name, price}") rather
+          than a full JSON Schema definition.
+        </li>
+        <li>
+          Absence of examples: Unlike OpenAPI, this specification does
+          not include example request/response pairs in the discovery
+          document.  AI agents are expected to infer usage from parameter
+          and return descriptions.
+        </li>
+        <li>
+          Fixed vocabulary: Category values and authentication types use
+          a closed vocabulary, eliminating the need for agents to
+          interpret free-form text in these fields.
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 6: Security Considerations                            -->
+    <!-- ============================================================ -->
+
+    <section anchor="security" numbered="true" toc="default">
+      <name>Security Considerations</name>
+
+      <t>
+        The AI Discovery Document inherently exposes information about
+        a service's internal structure and capabilities.  Service
+        providers <bcp14>MUST</bcp14> carefully consider the security
+        implications of this disclosure.
+      </t>
+
+      <section anchor="info-disclosure" numbered="true" toc="default">
+        <name>Information Disclosure</name>
+
+        <t>
+          The AI Discovery Document reveals the existence, paths,
+          methods, and parameter structures of API endpoints.  While
+          this information may already be available through documentation
+          or reverse engineering, the structured, machine-readable format
+          significantly lowers the barrier for automated reconnaissance.
+        </t>
+
+        <t>
+          Service providers <bcp14>MUST NOT</bcp14> include endpoints
+          in the "capabilities" array that they do not intend to be
+          publicly discoverable.  Administrative endpoints, internal
+          APIs, and endpoints under development <bcp14>MUST</bcp14>
+          be excluded.
+        </t>
+      </section>
+
+      <section anchor="credential-exposure" numbered="true" toc="default">
+        <name>Authentication Credential Exposure</name>
+
+        <t>
+          The "auth" object describes the authentication mechanism but
+          <bcp14>MUST NOT</bcp14> contain actual credentials, secrets,
+          tokens, or keys.  The "header" field specifies the name of
+          the header in which a credential is passed, not the credential
+          itself.
+        </t>
+
+        <t>
+          An AI agent that stores or caches AI Discovery Documents
+          <bcp14>MUST</bcp14> ensure that no credentials are written
+          into the cached document, even if the agent possesses
+          credentials for the service.
+        </t>
+
+        <t>
+          When the "auth.type" is "none", the service provider asserts
+          that no authentication is required.  Service providers
+          <bcp14>MUST NOT</bcp14> use "none" for endpoints that handle
+          sensitive data, perform write operations, or incur costs.
+        </t>
+      </section>
+
+      <section anchor="abuse" numbered="true" toc="default">
+        <name>Abuse by Automated Agents</name>
+
+        <t>
+          The AI Discovery Document facilitates automated interaction
+          with web services.  This creates a potential vector for abuse,
+          including:
+        </t>
+
+        <ul spacing="normal">
+          <li>
+            Automated enumeration of capabilities across many services
+            for reconnaissance purposes.
+          </li>
+          <li>
+            Rapid, programmatic invocation of capabilities at scale,
+            potentially exceeding the service's intended usage patterns.
+          </li>
+          <li>
+            Exploitation of capabilities that were not designed with
+            automated consumption in mind.
+          </li>
+        </ul>
+
+        <t>
+          Service providers <bcp14>MUST</bcp14> implement appropriate
+          rate limiting on all capability endpoints exposed through the
+          AI Discovery Document.  Service providers
+          <bcp14>MUST NOT</bcp14> rely solely on agents' voluntary
+          compliance with advertised rate limits.
+        </t>
+
+        <t>
+          Service providers <bcp14>SHOULD</bcp14> monitor traffic
+          patterns to capability endpoints and implement anomaly
+          detection for automated abuse.
+        </t>
+      </section>
+
+      <section anchor="content-integrity" numbered="true" toc="default">
+        <name>Content Integrity</name>
+
+        <t>
+          An AI agent that fetches an AI Discovery Document over an
+          insecure channel risks receiving a modified or malicious
+          document.  A tampered document could redirect the agent to
+          attacker-controlled endpoints or alter parameter descriptions
+          to induce the agent to send sensitive data to unauthorized
+          parties.
+        </t>
+
+        <t>
+          AI agents <bcp14>MUST</bcp14> fetch the AI Discovery Document
+          over HTTPS (TLS) <xref target="RFC8446"/>.  Agents
+          <bcp14>MUST NOT</bcp14> fetch the document over plain HTTP.
+          Service providers <bcp14>MUST</bcp14> serve the document
+          over HTTPS.
+        </t>
+
+        <t>
+          AI agents <bcp14>SHOULD</bcp14> validate TLS certificates
+          according to <xref target="RFC6125"/> and
+          <bcp14>MUST NOT</bcp14> proceed if certificate validation
+          fails.
+        </t>
+      </section>
+
+      <section anchor="dos" numbered="true" toc="default">
+        <name>Denial of Service</name>
+
+        <t>
+          A malicious or misconfigured AI Discovery Document could
+          describe a very large number of capabilities, extremely long
+          description strings, or deeply nested parameter structures,
+          causing excessive resource consumption in the parsing agent.
+        </t>
+
+        <t>
+          AI agents <bcp14>SHOULD</bcp14> enforce the size limits
+          described in <xref target="size-limits"/> and
+          <bcp14>SHOULD</bcp14> impose their own limits on the number
+          of capabilities processed (<bcp14>RECOMMENDED</bcp14>: no
+          more than 100 capabilities per document) and the length of
+          individual string fields.
+        </t>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 7: IANA Considerations                                -->
+    <!-- ============================================================ -->
+
+    <section anchor="iana" numbered="true" toc="default">
+      <name>IANA Considerations</name>
+
+      <section anchor="well-known-registration" numbered="true" toc="default">
+        <name>Well-Known URI Registration</name>
+
+        <t>
+          This document requests registration of the following
+          well-known URI <xref target="RFC8615"/>:
+        </t>
+
+        <dl>
+          <dt>URI Suffix:</dt>
+          <dd>ai</dd>
+
+          <dt>Change Controller:</dt>
+          <dd>IETF</dd>
+
+          <dt>Specification Document(s):</dt>
+          <dd>This document</dd>
+
+          <dt>Status:</dt>
+          <dd>provisional</dd>
+
+          <dt>Related Information:</dt>
+          <dd>None</dd>
+        </dl>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 8: Examples                                           -->
+    <!-- ============================================================ -->
+
+    <section anchor="examples" numbered="true" toc="default">
+      <name>Examples</name>
+
+      <section anchor="example-minimal" numbered="true" toc="default">
+        <name>Minimal Conformant Response</name>
+
+        <sourcecode type="json"><![CDATA[
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "SimpleNotes",
+    "description": "Create and retrieve plain text notes."
+  },
+  "capabilities": [
+    {
+      "id": "create_note",
+      "description": "Create a new text note",
+      "endpoint": "/api/notes",
+      "method": "POST"
+    },
+    {
+      "id": "list_notes",
+      "description": "List all notes, newest first",
+      "endpoint": "/api/notes",
+      "method": "GET"
+    }
+  ]
+}
+]]></sourcecode>
+      </section>
+
+      <section anchor="example-full" numbered="true" toc="default">
+        <name>Full-Featured Response</name>
+
+        <sourcecode type="json"><![CDATA[
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "ExampleShop",
+    "description": "Search and browse products. Supports keyword search, category filtering, and price sorting.",
+    "category": ["ecommerce", "search"],
+    "language": ["en", "ko"]
+  },
+  "capabilities": [
+    {
+      "id": "search_products",
+      "description": "Search products by keyword",
+      "endpoint": "/api/ai/products/search",
+      "method": "GET",
+      "params": {
+        "q": "string, required -- search keyword",
+        "category": "string, optional -- filter by category",
+        "max_price": "number, optional -- max price in USD",
+        "sort": "string, optional -- price_asc|price_desc|relevance, default relevance",
+        "limit": "integer, optional, default 10, max 50"
+      },
+      "returns": "products[] {id, name, price_usd, stock, category, url}"
+    },
+    {
+      "id": "get_product",
+      "description": "Get full details of a product by ID",
+      "endpoint": "/api/ai/products/:id",
+      "method": "GET",
+      "params": {
+        "id": "string, required -- product ID"
+      },
+      "returns": "product {id, name, description, price_usd, stock, images[], category, url}"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "header": "X-API-Key",
+    "docs": "https://exampleshop.com/docs/auth"
+  },
+  "token_hints": {
+    "compact_mode": true,
+    "field_filtering": true,
+    "delta_support": false
+  },
+  "rate_limits": {
+    "requests_per_minute": 60,
+    "agent_tier_available": true
+  },
+  "meta": {
+    "last_updated": "2026-03-10",
+    "changelog": "https://exampleshop.com/changelog",
+    "status": "https://status.exampleshop.com"
+  }
+}
+]]></sourcecode>
+      </section>
+
+      <section anchor="example-public" numbered="true" toc="default">
+        <name>Service with No Authentication</name>
+
+        <sourcecode type="json"><![CDATA[
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "WorldWeather",
+    "description": "Current weather and 5-day forecasts for cities worldwide.",
+    "category": ["weather", "data"],
+    "language": ["en"]
+  },
+  "capabilities": [
+    {
+      "id": "current_weather",
+      "description": "Get current weather for a city",
+      "endpoint": "/api/weather/current",
+      "method": "GET",
+      "params": {
+        "city": "string, required -- city name",
+        "units": "string, optional -- metric|imperial, default metric"
+      },
+      "returns": "city {name, country}, condition, temp, humidity_pct, wind_speed, updated_at"
+    },
+    {
+      "id": "forecast",
+      "description": "Get 5-day weather forecast for a city",
+      "endpoint": "/api/weather/forecast",
+      "method": "GET",
+      "params": {
+        "city": "string, required -- city name",
+        "days": "integer, optional, default 5, max 5",
+        "units": "string, optional -- metric|imperial, default metric"
+      },
+      "returns": "city {name, country}, forecast[] {date, condition, temp_high, temp_low, precipitation_pct}"
+    }
+  ],
+  "auth": {
+    "type": "none"
+  },
+  "token_hints": {
+    "compact_mode": false,
+    "field_filtering": true,
+    "delta_support": true
+  },
+  "rate_limits": {
+    "requests_per_minute": 100,
+    "agent_tier_available": false
+  },
+  "meta": {
+    "last_updated": "2026-03-15"
+  }
+}
+]]></sourcecode>
+      </section>
+    </section>
+
+  </middle>
+
+  <back>
+
+    <!-- ============================================================ -->
+    <!-- References                                                    -->
+    <!-- ============================================================ -->
+
+    <references>
+      <name>References</name>
+
+      <references>
+        <name>Normative References</name>
+        &RFC2119;
+        &RFC3629;
+        &RFC5646;
+        &RFC6125;
+        &RFC6749;
+        &RFC6750;
+        &RFC8174;
+        &RFC8259;
+        &RFC8446;
+        &RFC8615;
+        &RFC9110;
+        &RFC9111;
+      </references>
+
+      <references>
+        <name>Informative References</name>
+        &RFC9309;
+
+        <reference anchor="OPENAPI"
+                   target="https://spec.openapis.org/oas/v3.1.0">
+          <front>
+            <title>OpenAPI Specification</title>
+            <author>
+              <organization>OpenAPI Initiative</organization>
+            </author>
+            <date year="2021" month="February"/>
+          </front>
+          <seriesInfo name="Version" value="3.1.0"/>
+        </reference>
+
+        <reference anchor="MCP"
+                   target="https://modelcontextprotocol.io">
+          <front>
+            <title>Model Context Protocol Specification</title>
+            <author>
+              <organization>Anthropic</organization>
+            </author>
+            <date year="2024"/>
+          </front>
+        </reference>
+
+        <reference anchor="LLMSTXT"
+                   target="https://llmstxt.org">
+          <front>
+            <title>llms.txt -- A Proposal</title>
+            <author fullname="Simon Willison" initials="S." surname="Willison"/>
+            <date year="2024"/>
+          </front>
+        </reference>
+      </references>
+    </references>
+
+    <!-- ============================================================ -->
+    <!-- Appendix A: Comparison                                        -->
+    <!-- ============================================================ -->
+
+    <section anchor="comparison" numbered="true" toc="default">
+      <name>Comparison with Existing Approaches</name>
+
+      <section numbered="true" toc="default">
+        <name>robots.txt (RFC 9309)</name>
+        <t>
+          robots.txt communicates access restrictions to web crawlers.
+          It answers the question "where should you NOT go?" but provides
+          no information about what a service can do or how to interact
+          with it programmatically.  The AI Discovery Endpoint is
+          complementary: while robots.txt defines boundaries, the AI
+          Discovery Endpoint defines capabilities within those boundaries.
+        </t>
+      </section>
+
+      <section numbered="true" toc="default">
+        <name>OpenAPI / Swagger</name>
+        <t>
+          OpenAPI provides exhaustive, formal descriptions of REST APIs.
+          It is designed as a complete contract between API provider and
+          consumer, typically running to thousands of lines for a
+          non-trivial service.  A typical OpenAPI specification for a
+          service with 10 endpoints consumes 5,000-20,000 tokens when
+          processed by an LLM.  The equivalent AI Discovery Document
+          consumes 300-800 tokens.
+        </t>
+        <t>
+          The AI Discovery Endpoint does not replace OpenAPI.  A service
+          <bcp14>MAY</bcp14> publish both, using the AI Discovery
+          Document for initial capability discovery and linking to the
+          OpenAPI specification for agents that require detailed
+          contract information.
+        </t>
+      </section>
+
+      <section numbered="true" toc="default">
+        <name>Model Context Protocol (MCP)</name>
+        <t>
+          MCP defines a runtime protocol for connecting AI agents to
+          external tools and data sources.  It requires a dedicated
+          server process, a custom transport layer, and framework-specific
+          integration.  The AI Discovery Endpoint operates at a different
+          layer: it is a static discovery mechanism with no runtime
+          dependencies.  A service's AI Discovery Document can be used
+          to automatically generate an MCP server configuration, making
+          the two approaches complementary.
+        </t>
+      </section>
+
+      <section numbered="true" toc="default">
+        <name>llms.txt</name>
+        <t>
+          llms.txt proposes a convention for placing a plain text file
+          at the root of a website containing a natural language summary
+          for LLMs.  While simple to implement, it is unstructured, not
+          machine-queryable, and does not describe invocable actions.
+          An LLM can read an llms.txt file to understand what a service
+          is, but cannot determine from it how to programmatically
+          interact with the service.
+        </t>
+      </section>
+
+      <section numbered="true" toc="default">
+        <name>Summary</name>
+
+        <table align="center">
+          <thead>
+            <tr>
+              <th>Criterion</th>
+              <th>/ai</th>
+              <th>OpenAPI</th>
+              <th>MCP</th>
+              <th>llms.txt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Discovery focus</td>
+              <td>Yes</td>
+              <td>No</td>
+              <td>No</td>
+              <td>Partial</td>
+            </tr>
+            <tr>
+              <td>Token efficient</td>
+              <td>Yes</td>
+              <td>No</td>
+              <td>N/A</td>
+              <td>Partial</td>
+            </tr>
+            <tr>
+              <td>Machine-queryable</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td>Actions described</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td>No infrastructure</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>No</td>
+              <td>Yes</td>
+            </tr>
+            <tr>
+              <td>Implementation time</td>
+              <td>&lt;30 min</td>
+              <td>Hours</td>
+              <td>Hours</td>
+              <td>&lt;10 min</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Appendix B: JSON Schema                                       -->
+    <!-- ============================================================ -->
+
+    <section anchor="json-schema" numbered="true" toc="default">
+      <name>JSON Schema</name>
+
+      <t>
+        A formal JSON Schema (draft 2020-12) for the AI Discovery
+        Document is maintained at:
+      </t>
+
+      <t>
+        https://www.aiendpoint.dev/spec/v1/schema.json
+      </t>
+
+      <t>
+        This schema provides machine-verifiable validation of AI
+        Discovery Documents and is the normative reference for field
+        types, constraints, and enumerated values defined in this
+        specification.  The schema is versioned in parallel with this
+        specification; version "1.0" of the schema corresponds to
+        this document.
+      </t>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Appendix C: Design Rationale                                  -->
+    <!-- ============================================================ -->
+
+    <section anchor="design-rationale" numbered="true" toc="default">
+      <name>Design Rationale</name>
+
+      <section numbered="true" toc="default">
+        <name>Why a Well-Known URI?</name>
+        <t>
+          The Well-Known URI mechanism <xref target="RFC8615"/> provides
+          a standardized namespace for resources that need to be located
+          without prior knowledge of a site's URL structure.  This is
+          precisely the use case for AI agent discovery: an agent needs
+          to find the AI Discovery Document given only the service's
+          hostname.  The alternative — requiring services to register
+          their AI Discovery Document location in a central registry —
+          would create a dependency on a third-party service and limit
+          adoption.
+        </t>
+      </section>
+
+      <section numbered="true" toc="default">
+        <name>Why JSON over Other Formats?</name>
+        <t>
+          JSON is the de facto standard for structured data exchange on
+          the web.  Every mainstream programming language includes JSON
+          parsing in its standard library.  Every LLM is trained on
+          extensive JSON data and can parse it reliably.
+        </t>
+        <t>Alternatives considered:</t>
+        <ul spacing="normal">
+          <li>YAML: More human-readable but introduces parsing
+            complexity and ambiguity.</li>
+          <li>XML: More verbose, imposing higher token costs.</li>
+          <li>Protocol Buffers / MessagePack: Efficient but not
+            human-readable.</li>
+          <li>Plain text (like llms.txt): Simple but unstructured,
+            preventing reliable machine parsing.</li>
+        </ul>
+      </section>
+
+      <section numbered="true" toc="default">
+        <name>Why Compact Parameter Descriptions?</name>
+        <t>
+          The decision to represent parameter descriptions as single-line
+          strings (e.g., "string, required -- search keyword") rather
+          than structured objects (as in OpenAPI's Parameter Object) was
+          driven by token efficiency.  A structured representation
+          requires approximately 8-12 JSON tokens for structural elements
+          alone.  The compact string format eliminates this overhead while
+          remaining parseable by both humans and LLMs.
+        </t>
+      </section>
+
+      <section numbered="true" toc="default">
+        <name>Why No Request/Response Examples?</name>
+        <t>
+          This specification deliberately omits examples from the
+          discovery document for two reasons:
+        </t>
+        <ol spacing="normal">
+          <li>
+            Token cost: Examples can easily double the size of a
+            capability description without adding proportional
+            informational value for an LLM, which can infer usage from
+            parameter types and descriptions.
+          </li>
+          <li>
+            Maintenance burden: Examples that fall out of sync with the
+            actual API behavior are worse than no examples, as they cause
+            agents to generate incorrect requests.
+          </li>
+        </ol>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Acknowledgements                                              -->
+    <!-- ============================================================ -->
+
+    <section anchor="acknowledgements" numbered="false" toc="default">
+      <name>Acknowledgements</name>
+      <t>
+        The design of this specification was informed by the long history
+        of web standards that enable automated interaction with web
+        resources, including the Robots Exclusion Protocol
+        <xref target="RFC9309"/>, the Sitemaps protocol, the OpenAPI
+        Specification <xref target="OPENAPI"/>, and the Model Context
+        Protocol <xref target="MCP"/>.
+      </t>
+      <t>
+        The authors thank the early adopters and contributors to the
+        AIEndpoint open-source project for their feedback on the
+        specification design.
+      </t>
+    </section>
+
+  </back>
+</rfc>
