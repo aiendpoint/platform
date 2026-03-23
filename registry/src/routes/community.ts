@@ -15,6 +15,7 @@ import type { FastifyInstance } from 'fastify'
 import { db } from '../db/index.js'
 import { cacheGet, cacheSet } from '../cache/index.js'
 import { computeConfidence, confidenceTtl } from '../services/confidence.js'
+import { recordDiscoveryEvent } from '../services/metrics.js'
 import type { CommunitySpec, CommunitySubmitBody } from '../types/community.js'
 import type { AiEndpointSpec } from '../types/index.js'
 
@@ -140,6 +141,14 @@ export async function communityRoute(app: FastifyInstance) {
         .eq('url', normalized.origin)
         .then(() => {}, () => {})
 
+      recordDiscoveryEvent({
+        url: normalized.origin,
+        step: 'registry',
+        success: true,
+        tool: 'aiendpoint_discover',
+        confidence: cached.confidence,
+      })
+
       return reply.send({
         url:            cached.url,
         ai_spec:        cached.ai_spec,
@@ -163,6 +172,13 @@ export async function communityRoute(app: FastifyInstance) {
       .single()
 
     if (error || !data) {
+      recordDiscoveryEvent({
+        url: normalized.origin,
+        step: 'registry',
+        success: false,
+        tool: 'aiendpoint_discover',
+        errorCode: 'NOT_FOUND',
+      })
       return reply.status(404).send({ error: 'not_found' })
     }
 
@@ -189,6 +205,14 @@ export async function communityRoute(app: FastifyInstance) {
     // Cache for remaining TTL
     const remainingTtl = Math.max(60, Math.floor((expiresAt - Date.now()) / 1000))
     await cacheSet(cacheKey, spec, Math.min(remainingTtl, 3600)) // max 1hr in cache
+
+    recordDiscoveryEvent({
+      url: normalized.origin,
+      step: 'registry',
+      success: true,
+      tool: 'aiendpoint_discover',
+      confidence: spec.confidence,
+    })
 
     return reply.send({
       url:            spec.url,
@@ -338,6 +362,14 @@ export async function communityRoute(app: FastifyInstance) {
     if (insertErr || !inserted) {
       return reply.status(500).send({ error: 'Failed to save spec', code: 'INTERNAL_ERROR' })
     }
+
+    recordDiscoveryEvent({
+      url: normalized.origin,
+      step: 'generation',
+      success: true,
+      tool: 'aiendpoint_submit_community_spec',
+      confidence,
+    })
 
     reply.status(201).send({
       id:         inserted.id,
