@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { db } from '../../db/index.js'
 import { validateAiEndpoint, getScoreGrade, parseSpec } from '../../services/validator.js'
+import { recordTokenBenchmark } from '../../services/metrics.js'
 import { cacheDelPattern } from '../../cache/index.js'
 import type { AuthType, HttpMethod } from '../../types/index.js'
 
@@ -120,6 +121,19 @@ export async function serviceRegisterRoute(app: FastifyInstance) {
     // Invalidate cached service list and community cache
     await cacheDelPattern('services:v1:*')
     await cacheDelPattern(`community:v1:${normalizedUrl}`)
+
+    // Record token benchmark (fire-and-forget)
+    if (validation.raw_response) {
+      recordTokenBenchmark({
+        url: normalizedUrl,
+        serviceId: service.id,
+        aiResponseJson: JSON.stringify(validation.raw_response),
+        aiResponseMs: validation.response_ms ?? undefined,
+        capabilityCount: validation.capability_count,
+        specVersion: validation.spec_version ?? undefined,
+        source: 'registration',
+      })
+    }
 
     // Save validation record
     await db.from('validations').insert({

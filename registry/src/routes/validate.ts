@@ -7,6 +7,7 @@
 import type { FastifyInstance } from 'fastify'
 import { validateAiEndpoint, getScoreGrade } from '../services/validator.js'
 import { cacheGet, cacheSet, cacheTtl } from '../cache/index.js'
+import { recordTokenBenchmark } from '../services/metrics.js'
 
 const VALIDATE_TTL = 300 // 5 minutes
 
@@ -66,6 +67,18 @@ export async function validateRoute(app: FastifyInstance) {
     // Only cache successful fetches (passed or meaningful errors — not connection failures)
     if (result.ai_url !== null || result.errors.some(e => e.code !== 'NO_AI_ENDPOINT')) {
       await cacheSet(cacheKey, response, VALIDATE_TTL)
+    }
+
+    // Record token benchmark (fire-and-forget)
+    if (result.raw_response && result.passed) {
+      recordTokenBenchmark({
+        url,
+        aiResponseJson: JSON.stringify(result.raw_response),
+        aiResponseMs: result.response_ms ?? undefined,
+        capabilityCount: result.capability_count,
+        specVersion: result.spec_version ?? undefined,
+        source: 'validation',
+      })
     }
 
     reply.send(response)
