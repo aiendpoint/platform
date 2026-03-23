@@ -1377,4 +1377,4 @@ Authors' Addresses
    Yeongjae Choi
    AIEndpoint
    Email: bejoyfuuul@gmail.com
-   URI:   https://aiendpoint.dev
+   URI:   https://www.aiendpoint.dev
