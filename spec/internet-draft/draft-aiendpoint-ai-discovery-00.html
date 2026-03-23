@@ -1,0 +1,3149 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>The AI Discovery Endpoint: A Structured Mechanism for AI Agent Service Discovery and Capability Exposure</title>
+<meta content="Yeongjae Choi" name="author">
+<meta content="
+       
+        This document defines a lightweight mechanism by which web services
+        expose a machine-readable description of their capabilities to
+        autonomous AI agents.  The mechanism consists of a well-known
+        resource, served at &quot;/.well-known/ai&quot;, that returns a structured
+        JSON document describing the service's identity, available actions,
+        authentication requirements, and operational hints optimized for
+        large language model (LLM) token efficiency.
+       
+       
+        The specification addresses the absence of a standardized method
+        for AI agents to programmatically discover what a web service can
+        do and how to invoke its capabilities, without resorting to
+        parsing human-oriented documentation or HTML content.
+       
+    " name="description">
+<meta content="xml2rfc 3.32.0" name="generator">
+<meta content="AI" name="keyword">
+<meta content="agent" name="keyword">
+<meta content="discovery" name="keyword">
+<meta content="well-known" name="keyword">
+<meta content="LLM" name="keyword">
+<meta content="capability" name="keyword">
+<meta content="draft-aiendpoint-ai-discovery-00" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.32.0
+    Python 3.12.12
+    ConfigArgParse 1.7.5
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.0.2
+    platformdirs 4.9.4
+    pycountry 26.2.16
+    PyYAML 6.0.3
+    requests 2.32.5
+    wcwidth 0.6.0
+-->
+<link href="draft-aiendpoint-ai-discovery-00.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">/*
+
+  NOTE: Changes at the bottom of this file overrides some earlier settings.
+
+  Once the style has stabilized and has been adopted as an official RFC style,
+  this can be consolidated so that style settings occur only in one place, but
+  for now the contents of this file consists first of the initial CSS work as
+  provided to the RFC Formatter (xml2rfc) work, followed by itemized and
+  commented changes found necessary during the development of the v3
+  formatters.
+
+*/
+
+/* fonts */
+@import url('https://static.ietf.org/fonts/noto-sans/import.css'); /* Sans-serif */
+@import url('https://static.ietf.org/fonts/noto-serif/import.css'); /* Serif (print) */
+@import url('https://static.ietf.org/fonts/roboto-mono/import.css'); /* Monospace */
+
+:root {
+  --font-sans: 'Noto Sans', Arial, Helvetica, sans-serif;
+  --font-serif: 'Noto Serif', 'Times', 'Times New Roman', serif;
+  --font-mono: 'Roboto Mono', Courier, 'Courier New', monospace;
+}
+
+@viewport {
+  zoom: 1.0;
+}
+@-ms-viewport {
+  width: extend-to-zoom;
+  zoom: 1.0;
+}
+/* general and mobile first */
+html {
+}
+body {
+  max-width: 90%;
+  margin: 1.5em auto;
+  color: #222;
+  background-color: #fff;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  scroll-behavior: smooth;
+  overflow-wrap: break-word;
+}
+.ears {
+  display: none;
+}
+
+/* headings */
+#title, h1, h2, h3, h4, h5, h6 {
+  margin: 1em 0 0.5em;
+  font-weight: bold;
+  line-height: 1.3;
+}
+#title {
+  clear: both;
+  border-bottom: 1px solid #ddd;
+  margin: 0 0 0.5em 0;
+  padding: 1em 0 0.5em;
+}
+.author {
+  padding-bottom: 4px;
+}
+h1 {
+  font-size: 26px;
+  margin: 1em 0;
+}
+h2 {
+  font-size: 22px;
+  margin-top: -20px;  /* provide offset for in-page anchors */
+  padding-top: 33px;
+}
+h3 {
+  font-size: 18px;
+  margin-top: -36px;  /* provide offset for in-page anchors */
+  padding-top: 42px;
+}
+h4 {
+  font-size: 16px;
+  margin-top: -36px;  /* provide offset for in-page anchors */
+  padding-top: 42px;
+}
+h5, h6 {
+  font-size: 14px;
+}
+#n-copyright-notice {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 1em;
+  margin-bottom: 1em;
+}
+/* general structure */
+p {
+  padding: 0;
+  margin: 0 0 1em 0;
+  text-align: left;
+}
+div, span {
+  position: relative;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  padding: 1em 1em 0;
+  margin-bottom: 1.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+@media print {
+  svg {
+    max-height: 850px;
+    max-width: 660px;
+  }
+}
+svg[font-family~="serif" i], svg [font-family~="serif" i] {
+  font-family: var(--font-serif);
+}
+svg[font-family~="sans-serif" i], svg [font-family~="sans-serif" i] {
+  font-family: var(--font-sans);
+}
+svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
+  font-family: var(--font-mono);
+}
+.alignCenter.art-text {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  padding: 1em 1em 0;
+  margin-bottom: 1.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  display: table;
+  border: none;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 1em 2em;
+}
+ol ol, ul ul, ol ul, ul ol {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+ul.ulBare, li.ulBare {
+  margin-left: 0em !important;
+}
+ul.compact, .ulCompact,
+ol.compact, .olCompact {
+  line-height: 100%;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+/* 
+dl.nohang > dt {
+  float: none;
+}
+*/
+dl > dd {
+  margin-bottom: .8em;
+  min-height: 1.3em;
+}
+dl.compact > dd, .dlCompact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+
+/* links */
+a {
+  text-decoration: none;
+}
+a[href] {
+  color: #22e; /* Arlen: WCAG 2019 */
+}
+a[href]:hover {
+  background-color: #f2f2f2;
+}
+figcaption a[href],
+a[href].selfRef {
+  color: #222;
+}
+/* XXX probably not this:
+a.selfRef:hover {
+  background-color: transparent;
+  cursor: default;
+} */
+
+/* Figures */
+tt, code, pre {
+  background-color: #f9f9f9;
+  font-family: var(--font-mono);
+}
+pre {
+  border: 1px solid #eee;
+  margin: 0;
+  padding: 1em;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption {
+  font-style: italic;
+  margin: 0 0 1em 0;
+}
+@media screen {
+  pre {
+    overflow-x: auto;
+    max-width: 100%;
+    max-width: calc(100% - 22px);
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 1.2em 2em;
+}
+blockquote {
+  background-color: #f9f9f9;
+  color: #111; /* Arlen: WCAG 2019 */
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  margin: 1em 0;
+}
+blockquote > *:last-child {
+  margin-bottom: 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+.xref {
+  overflow-wrap: normal;
+}
+
+/* tables */
+table {
+  width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  border: 1px solid #eee;
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5em 0.75em;
+}
+th {
+  text-align: left;
+  background-color: #e9e9e9;
+}
+tr:nth-child(2n+1) > td {
+  background-color: #f5f5f5;
+}
+table caption {
+  font-style: italic;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+table p {
+  /* XXX to avoid bottom margin on table row signifiers. If paragraphs should
+     be allowed within tables more generally, it would be far better to select on a class. */
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  color: #666; /* Arlen: AHDJ 2019 */
+  text-decoration: none;
+  visibility: hidden;
+  user-select: none;
+  -ms-user-select: none;
+  -o-user-select:none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+@media screen {
+  aside:hover > a.pilcrow,
+  p:hover > a.pilcrow,
+  blockquote:hover > a.pilcrow,
+  div:hover > a.pilcrow,
+  li:hover > a.pilcrow,
+  pre:hover > a.pilcrow {
+    visibility: visible;
+  }
+  a.pilcrow:hover {
+    background-color: transparent;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid #eee;
+}
+.bcp14 {
+  font-variant: small-caps;
+}
+
+.role {
+  font-variant: all-small-caps;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: 0.9em;
+}
+#identifiers dt {
+  width: 3em;
+  clear: left;
+}
+#identifiers dd {
+  float: left;
+  margin-bottom: 0;
+}
+/* Fix PDF info block run off issue */
+@media print {
+  #identifiers dd {
+    max-width: 100%;
+  }
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #666; /* Arlen: WCAG 2019 */
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc  {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+nav.toc ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+nav.toc li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dd {
+  margin-left: 8em;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.refSubseries {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+.index ul {
+  margin: 0 0 0 1em;
+  padding: 0;
+  list-style: none;
+}
+.index ul ul {
+  margin: 0;
+}
+.index li {
+  margin: 0;
+  text-indent: -2em;
+  padding-left: 2em;
+  padding-bottom: 5px;
+}
+.indexIndex {
+  margin: 0.5em 0 1em;
+}
+.index a {
+  font-weight: 700;
+}
+/* make the index two-column on all but the smallest screens */
+@media (min-width: 600px) {
+  .index ul {
+    -moz-column-count: 2;
+    -moz-column-gap: 20px;
+  }
+  .index ul ul {
+    -moz-column-count: 1;
+    -moz-column-gap: 0;
+  }
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  font-family: var(--font-sans);
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+
+/* temporary notes */
+.rfcEditorRemove::before {
+  position: absolute;
+  top: 0.2em;
+  right: 0.2em;
+  padding: 0.2em;
+  content: "The RFC Editor will remove this note";
+  color: #9e2a00; /* Arlen: WCAG 2019 */
+  background-color: #ffd; /* Arlen: WCAG 2019 */
+}
+.rfcEditorRemove {
+  position: relative;
+  padding-top: 1.8em;
+  background-color: #ffd; /* Arlen: WCAG 2019 */
+  border-radius: 3px;
+}
+.cref {
+  background-color: #ffd; /* Arlen: WCAG 2019 */
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 1023px) {
+  body {
+    padding-top: 2em;
+  }
+  #title {
+    padding: 1em 0;
+  }
+  h1 {
+    font-size: 24px;
+  }
+  h2 {
+    font-size: 20px;
+    margin-top: -18px;  /* provide offset for in-page anchors */
+    padding-top: 38px;
+  }
+  #identifiers dd {
+    max-width: 60%;
+  }
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    background-color: inherit;
+    border-bottom: 1px solid #ccc;
+  }
+  #toc h2 {
+    margin: -1px 0 0 0;
+    padding: 4px 0 4px 6px;
+    padding-right: 1em;
+    min-width: 190px;
+    font-size: 1.1em;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 6px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 1024px) {
+  body {
+    max-width: 724px;
+    margin: 42px auto;
+    padding-left: 1.5em;
+    padding-right: 29em;
+  }
+  #toc {
+    position: fixed;
+    top: 42px;
+    right: 42px;
+    width: 25%;
+    margin: 0;
+    padding: 0 1em;
+    z-index: 1;
+  }
+  #toc h2 {
+    border-top: none;
+    border-bottom: 1px solid #ddd;
+    font-size: 1em;
+    font-weight: normal;
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 0;
+    overflow: auto;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre {
+    page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  .breakable pre {
+    break-inside: auto;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  h2+*, h3+*, h4+*, h5+*, h6+* {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+/* This is commented out here, as the string-set: doesn't
+   pass W3C validation currently */
+/*
+.ears thead .left {
+  string-set: ears-top-left content();
+}
+
+.ears thead .center {
+  string-set: ears-top-center content();
+}
+
+.ears thead .right {
+  string-set: ears-top-right content();
+}
+
+.ears tfoot .left {
+  string-set: ears-bottom-left content();
+}
+
+.ears tfoot .center {
+  string-set: ears-bottom-center content();
+}
+
+.ears tfoot .right {
+  string-set: ears-bottom-right content();
+}
+*/
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+  /* The following is commented out here, but set appropriately by in code, as
+     the content depends on the document */
+  /*
+  @top-left {
+    content: 'Internet-Draft';
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-left {
+    content: string(ears-top-left);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-center {
+    content: string(ears-top-center);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-right {
+    content: string(ears-top-right);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @bottom-left {
+    content: string(ears-bottom-left);
+    vertical-align: top;
+    border-top: solid 1px #ccc;
+  }
+  @bottom-center {
+    content: string(ears-bottom-center);
+    vertical-align: top;
+    border-top: solid 1px #ccc;
+  }
+  @bottom-right {
+      content: '[Page ' counter(page) ']';
+      vertical-align: top;
+      border-top: solid 1px #ccc;
+  }
+  */
+
+}
+
+/* Changes introduced to fix issues found during implementation */
+/* Make sure links are clickable even if overlapped by following H* */
+a {
+  z-index: 2;
+}
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Leave room in document info to show Internet-Draft on one line */
+#identifiers dt {
+  width: 8em;
+}
+
+/* Don't waste quite as much whitespace between label and value in doc info */
+#identifiers dd {
+  margin-left: 1em;
+}
+
+/* Give floating toc a background color (needed when it's a div inside section */
+#toc {
+  background-color: white;
+}
+
+/* Make the collapsed ToC header render white on gray also when it's a link */
+@media screen and (max-width: 1023px) {
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+}
+
+/* Give the bottom of the ToC some whitespace */
+@media screen and (min-width: 1024px) {
+  #toc {
+    padding: 0 0 1em 1em;
+  }
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* prevent monospace from becoming overly large */
+tt, code, pre {
+  font-size: 95%;
+}
+
+/* Fix the height/width aspect for ascii art*/
+.sourcecode pre,
+.art-text pre {
+  line-height: 1.12;
+}
+
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin-right: 0.5em;
+}
+
+/* Fix the dl styling to match the RFC 7992 attributes */
+dl > dt,
+dl.dlParallel > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+
+/* Provide styling for table cell text alignment */
+table td.text-left,
+table th.text-left {
+  text-align: left;
+}
+table td.text-center,
+table th.text-center {
+  text-align: center;
+}
+table td.text-right,
+table th.text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 30em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Provide table alignment support.  We can't use the alignX classes above
+   since they do unwanted things with caption and other styling. */
+table.right {
+ margin-left: auto;
+ margin-right: 0;
+}
+table.center {
+ margin-left: auto;
+ margin-right: auto;
+}
+table.left {
+ margin-left: 0;
+ margin-right: auto;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+caption a[href] {
+  color: #222;
+}
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+/* Tweak the bcp14 keyword presentation */
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+/* Tweak the invisible space above H* in order not to overlay links in text above */
+ h2 {
+  margin-top: -18px;  /* provide offset for in-page anchors */
+  padding-top: 31px;
+ }
+ h3 {
+  margin-top: -18px;  /* provide offset for in-page anchors */
+  padding-top: 24px;
+ }
+ h4 {
+  margin-top: -18px;  /* provide offset for in-page anchors */
+  padding-top: 24px;
+ }
+/* Float artwork pilcrow to the right */
+@media screen {
+  .artwork a.pilcrow {
+    display: block;
+    line-height: 0.7;
+    margin-top: 0.15em;
+  }
+}
+/* Make pilcrows on dd visible */
+@media screen {
+  dd:hover > a.pilcrow {
+    visibility: visible;
+  }
+}
+/* Make the placement of figcaption match that of a table's caption
+   by removing the figure's added bottom margin */
+.alignLeft.art-text,
+.alignCenter.art-text,
+.alignRight.art-text {
+   margin-bottom: 0;
+}
+.alignLeft,
+.alignCenter,
+.alignRight {
+  margin: 1em 0 0 0;
+}
+/* In print, the pilcrow won't show on hover, so prevent it from taking up space,
+   possibly even requiring a new line */
+@media print {
+  a.pilcrow {
+    display: none;
+  }
+}
+/* Styling for the external metadata */
+div#external-metadata {
+  background-color: #eee;
+  padding: 0.5em;
+  margin-bottom: 0.5em;
+  display: none;
+}
+div#internal-metadata {
+  padding: 0.5em;                       /* to match the external-metadata padding */
+}
+/* Styling for title RFC Number */
+h1#rfcnum {
+  clear: both;
+  margin: 0 0 -1em;
+  padding: 1em 0 0 0;
+}
+/* Make .olPercent look the same as <ol><li> */
+dl.olPercent > dd {
+  margin-bottom: 0.25em;
+  min-height: initial;
+}
+/* Give aside some styling to set it apart */
+aside {
+  border-left: 1px solid #ddd;
+  margin: 1em 0 1em 2em;
+  padding: 0.2em 2em;
+}
+aside > dl,
+aside > ol,
+aside > ul,
+aside > table,
+aside > p {
+  margin-bottom: 0.5em;
+}
+/* Additional page break settings */
+@media print {
+  figcaption, table caption {
+    page-break-before: avoid;
+  }
+}
+/* Font size adjustments for print */
+@media print {
+  body  { font-size: 10pt;      line-height: normal; max-width: 96%; }
+  h1    { font-size: 1.72em;    padding-top: 1.5em; } /* 1*1.2*1.2*1.2 */
+  h2    { font-size: 1.44em;    padding-top: 1.5em; } /* 1*1.2*1.2 */
+  h3    { font-size: 1.2em;     padding-top: 1.5em; } /* 1*1.2 */
+  h4    { font-size: 1em;       padding-top: 1.5em; }
+  h5, h6 { font-size: 1em;      margin: initial; padding: 0.5em 0 0.3em; }
+}
+/* Sourcecode margin in print, when there's no pilcrow */
+@media print {
+  .artwork,
+  .artwork > pre,
+  .sourcecode {
+    margin-bottom: 1em;
+  }
+}
+/* Avoid narrow tables forcing too narrow table captions, which may render badly */
+table {
+  min-width: 20em;
+}
+/* ol type a */
+ol.type-a { list-style-type: lower-alpha; }
+ol.type-A { list-style-type: upper-alpha; }
+ol.type-i { list-style-type: lower-roman; }
+ol.type-I { list-style-type: upper-roman; }
+/* Apply the print table and row borders in general, on request from the RPC,
+and increase the contrast between border and odd row background slightly */
+table {
+  border: 1px solid #ddd;
+}
+td {
+  border-top: 1px solid #ddd;
+}
+tr {
+  break-inside: avoid;
+}
+tr:nth-child(2n+1) > td {
+  background-color: #f8f8f8;
+}
+/* Use style rules to govern display of the TOC. */
+@media screen and (max-width: 1023px) {
+  #toc nav { display: none; }
+  #toc.active nav { display: block; }
+}
+/* Add support for keepWithNext */
+.keepWithNext {
+  break-after: avoid-page;
+  break-after: avoid-page;
+}
+/* Add support for keepWithPrevious */
+.keepWithPrevious {
+  break-before: avoid-page;
+}
+/* Change the approach to avoiding breaks inside artwork etc. */
+figure, pre, table, .artwork, .sourcecode  {
+  break-before: auto;
+  break-after: auto;
+}
+/* Avoid breaks between <dt> and <dd> */
+dl {
+  break-before: auto;
+  break-inside: auto;
+}
+dt {
+  break-before: auto;
+  break-after: avoid-page;
+}
+dd {
+  break-before: avoid-page;
+  break-after: auto;
+  orphans: 3;
+  widows: 3
+}
+span.break, dd.break {
+  margin-bottom: 0;
+  min-height: 0;
+  break-before: auto;
+  break-inside: auto;
+  break-after: auto;
+}
+/* Undo break-before ToC */
+@media print {
+  #toc {
+    break-before: auto;
+  }
+}
+/* Text in compact lists should not get extra bottom margin space,
+   since that would makes the list not compact */
+ul.compact p, .ulCompact p,
+ol.compact p, .olCompact p {
+ margin: 0;
+}
+/* But the list as a whole needs the extra space at the end */
+section ul.compact,
+section .ulCompact,
+section ol.compact,
+section .olCompact {
+  margin-bottom: 1em;                    /* same as p not within ul.compact etc. */
+}
+/* The tt and code background above interferes with for instance table cell
+   backgrounds.  Changed to something a bit more selective. */
+tt, code {
+  background-color: transparent;
+}
+p tt, p code, li tt, li code, dt tt, dt code {
+  background-color: #f8f8f8;
+}
+/* Tweak the pre margin -- 0px doesn't come out well */
+pre {
+   margin-top: 0.5px;
+}
+/* Tweak the compact list text */
+ul.compact, .ulCompact,
+ol.compact, .olCompact,
+dl.compact, .dlCompact {
+  line-height: normal;
+}
+/* Don't add top margin for nested lists */
+li > ul, li > ol, li > dl,
+dd > ul, dd > ol, dd > dl,
+dl > dd > dl {
+  margin-top: initial;
+}
+/* Elements that should not be rendered on the same line as a <dt> */
+/* This should match the element list in writer.text.TextWriter.render_dl() */
+dd > div.artwork:first-child,
+dd > aside:first-child,
+dd > blockquote:first-child,
+dd > figure:first-child,
+dd > ol:first-child,
+dd > div.sourcecode:first-child,
+dd > table:first-child,
+dd > ul:first-child {
+  clear: left;
+}
+/* fix for weird browser behaviour when <dd/> is empty */
+dt+dd:empty::before{
+  content: "\00a0";
+}
+/* Make paragraph spacing inside <li> smaller than in body text, to fit better within the list */
+li > p {
+  margin-bottom: 0.5em
+}
+/* Don't let p margin spill out from inside list items */
+li > p:last-of-type:only-child {
+  margin-bottom: 0;
+}
+</style>
+<link href="rfc-local.css" rel="stylesheet" type="text/css">
+<script type="application/javascript">async function addMetadata(){try{const e=document.styleSheets[0].cssRules;for(let t=0;t<e.length;t++)if(/#identifiers/.exec(e[t].selectorText)){const a=e[t].cssText.replace("#identifiers","#external-updates");document.styleSheets[0].insertRule(a,document.styleSheets[0].cssRules.length)}}catch(e){console.log(e)}const e=document.getElementById("external-metadata");if(e)try{var t,a="",o=function(e){const t=document.getElementsByTagName("meta");for(let a=0;a<t.length;a++)if(t[a].getAttribute("name")===e)return t[a].getAttribute("content");return""}("rfc.number");if(o){t="https://www.rfc-editor.org/rfc/rfc"+o+".json";try{const e=await fetch(t);a=await e.json()}catch(e){t=document.URL.indexOf("html")>=0?document.URL.replace(/html$/,"json"):document.URL+".json";const o=await fetch(t);a=await o.json()}}if(!a)return;e.style.display="block";const s="",d="https://datatracker.ietf.org/doc",n="https://datatracker.ietf.org/ipr/search",c="https://www.rfc-editor.org/info",l=a.doc_id.toLowerCase(),i=a.doc_id.slice(0,3).toLowerCase(),f=a.doc_id.slice(3).replace(/^0+/,""),u={status:"Status",obsoletes:"Obsoletes",obsoleted_by:"Obsoleted By",updates:"Updates",updated_by:"Updated By",see_also:"See Also",errata_url:"Errata"};let h="<dl style='overflow:hidden' id='external-updates'>";["status","obsoletes","obsoleted_by","updates","updated_by","see_also","errata_url"].forEach(e=>{if("status"==e){a[e]=a[e].toLowerCase();var t=a[e].split(" "),o=t.length,w="",p=1;for(let e=0;e<o;e++)p<o?w=w+r(t[e])+" ":w+=r(t[e]),p++;a[e]=w}else if("obsoletes"==e||"obsoleted_by"==e||"updates"==e||"updated_by"==e){var g,m="",b=1;g=a[e].length;for(let t=0;t<g;t++)a[e][t]&&(a[e][t]=String(a[e][t]).toLowerCase(),m=b<g?m+"<a href='"+s+"/rfc/".concat(a[e][t])+"'>"+a[e][t].slice(3)+"</a>, ":m+"<a href='"+s+"/rfc/".concat(a[e][t])+"'>"+a[e][t].slice(3)+"</a>",b++);a[e]=m}else if("see_also"==e){var y,L="",C=1;y=a[e].length;for(let t=0;t<y;t++)if(a[e][t]){a[e][t]=String(a[e][t]);var _=a[e][t].slice(0,3),v=a[e][t].slice(3).replace(/^0+/,"");L=C<y?"RFC"!=_?L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+_+" "+v+"</a>, ":L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+v+"</a>, ":"RFC"!=_?L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+_+" "+v+"</a>":L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+v+"</a>",C++}a[e]=L}else if("errata_url"==e){var R="";R=a[e]?R+"<a href='"+a[e]+"'>Errata exist</a> | <a href='"+d+"/"+l+"'>Datatracker</a>| <a href='"+n+"/?"+i+"="+f+"&submit="+i+"'>IPR</a> | <a href='"+c+"/"+l+"'>Info page</a>":"<a href='"+d+"/"+l+"'>Datatracker</a> | <a href='"+n+"/?"+i+"="+f+"&submit="+i+"'>IPR</a> | <a href='"+c+"/"+l+"'>Info page</a>",a[e]=R}""!=a[e]?"Errata"==u[e]?h+=`<dt>More info:</dt><dd>${a[e]}</dd>`:h+=`<dt>${u[e]}:</dt><dd>${a[e]}</dd>`:"Errata"==u[e]&&(h+=`<dt>More info:</dt><dd>${a[e]}</dd>`)}),h+="</dl>",e.innerHTML=h}catch(e){console.log(e)}else console.log("Could not locate metadata <div> element");function r(e){return e.charAt(0).toUpperCase()+e.slice(1)}}window.removeEventListener("load",addMetadata),window.addEventListener("load",addMetadata);</script>
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">AI Discovery Endpoint</td>
+<td class="right">March 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Choi</td>
+<td class="center">Expires 24 September 2026</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Internet Engineering Task Force</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-aiendpoint-ai-discovery-00</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-03-23" class="published">23 March 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Standards Track</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2026-09-24">24 September 2026</time></dd>
+<dt class="label-authors">Author:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">Y. Choi</div>
+<div class="org">AIEndpoint</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">The AI Discovery Endpoint: A Structured Mechanism for AI Agent Service Discovery and Capability Exposure</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">
+        This document defines a lightweight mechanism by which web services
+        expose a machine-readable description of their capabilities to
+        autonomous AI agents.  The mechanism consists of a well-known
+        resource, served at "/.well-known/ai", that returns a structured
+        JSON document describing the service's identity, available actions,
+        authentication requirements, and operational hints optimized for
+        large language model (LLM) token efficiency.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">
+        The specification addresses the absence of a standardized method
+        for AI agents to programmatically discover what a web service can
+        do and how to invoke its capabilities, without resorting to
+        parsing human-oriented documentation or HTML content.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 24 September 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-requirements-language" class="internal xref">Requirements Language</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-the-ai-discovery-resource" class="internal xref">The AI Discovery Resource</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
+                <p id="section-toc.1-1.2.2.1.1"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-resource-location" class="internal xref">Resource Location</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
+                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-access-method" class="internal xref">Access Method</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.3">
+                <p id="section-toc.1-1.2.2.3.1"><a href="#section-2.3" class="auto internal xref">2.3</a>.  <a href="#name-media-type" class="internal xref">Media Type</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.4">
+                <p id="section-toc.1-1.2.2.4.1"><a href="#section-2.4" class="auto internal xref">2.4</a>.  <a href="#name-character-encoding" class="internal xref">Character Encoding</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-response-schema" class="internal xref">Response Schema</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-top-level-structure" class="internal xref">Top-Level Structure</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2">
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-the-service-object" class="internal xref">The "service" Object</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3">
+                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="auto internal xref">3.3</a>.  <a href="#name-the-capabilities-array" class="internal xref">The "capabilities" Array</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4">
+                <p id="section-toc.1-1.3.2.4.1"><a href="#section-3.4" class="auto internal xref">3.4</a>.  <a href="#name-the-auth-object" class="internal xref">The "auth" Object</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.5">
+                <p id="section-toc.1-1.3.2.5.1"><a href="#section-3.5" class="auto internal xref">3.5</a>.  <a href="#name-the-token_hints-object" class="internal xref">The "token_hints" Object</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.6">
+                <p id="section-toc.1-1.3.2.6.1"><a href="#section-3.6" class="auto internal xref">3.6</a>.  <a href="#name-the-rate_limits-object" class="internal xref">The "rate_limits" Object</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.7">
+                <p id="section-toc.1-1.3.2.7.1"><a href="#section-3.7" class="auto internal xref">3.7</a>.  <a href="#name-the-meta-object" class="internal xref">The "meta" Object</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-processing-rules" class="internal xref">Processing Rules</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-fetching" class="internal xref">Fetching</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-caching" class="internal xref">Caching</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-error-handling" class="internal xref">Error Handling</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="auto internal xref">4.4</a>.  <a href="#name-version-negotiation" class="internal xref">Version Negotiation</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.5">
+                <p id="section-toc.1-1.4.2.5.1"><a href="#section-4.5" class="auto internal xref">4.5</a>.  <a href="#name-size-limits" class="internal xref">Size Limits</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-token-efficiency-considerat" class="internal xref">Token Efficiency Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-information-disclosure" class="internal xref">Information Disclosure</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-authentication-credential-e" class="internal xref">Authentication Credential Exposure</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.3">
+                <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="auto internal xref">6.3</a>.  <a href="#name-abuse-by-automated-agents" class="internal xref">Abuse by Automated Agents</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.4">
+                <p id="section-toc.1-1.6.2.4.1"><a href="#section-6.4" class="auto internal xref">6.4</a>.  <a href="#name-content-integrity" class="internal xref">Content Integrity</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.5">
+                <p id="section-toc.1-1.6.2.5.1"><a href="#section-6.5" class="auto internal xref">6.5</a>.  <a href="#name-denial-of-service" class="internal xref">Denial of Service</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1">
+                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="auto internal xref">7.1</a>.  <a href="#name-well-known-uri-registration" class="internal xref">Well-Known URI Registration</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-examples" class="internal xref">Examples</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.1">
+                <p id="section-toc.1-1.8.2.1.1"><a href="#section-8.1" class="auto internal xref">8.1</a>.  <a href="#name-minimal-conformant-response" class="internal xref">Minimal Conformant Response</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2">
+                <p id="section-toc.1-1.8.2.2.1"><a href="#section-8.2" class="auto internal xref">8.2</a>.  <a href="#name-full-featured-response" class="internal xref">Full-Featured Response</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.3">
+                <p id="section-toc.1-1.8.2.3.1"><a href="#section-8.3" class="auto internal xref">8.3</a>.  <a href="#name-service-with-no-authenticat" class="internal xref">Service with No Authentication</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.1">
+                <p id="section-toc.1-1.9.2.1.1"><a href="#section-9.1" class="auto internal xref">9.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.2">
+                <p id="section-toc.1-1.9.2.2.1"><a href="#section-9.2" class="auto internal xref">9.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-comparison-with-existing-ap" class="internal xref">Comparison with Existing Approaches</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.1">
+                <p id="section-toc.1-1.10.2.1.1"><a href="#appendix-A.1" class="auto internal xref">A.1</a>.  <a href="#name-robotstxt-rfc-9309" class="internal xref">robots.txt (RFC 9309)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.2">
+                <p id="section-toc.1-1.10.2.2.1"><a href="#appendix-A.2" class="auto internal xref">A.2</a>.  <a href="#name-openapi-swagger" class="internal xref">OpenAPI / Swagger</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.3">
+                <p id="section-toc.1-1.10.2.3.1"><a href="#appendix-A.3" class="auto internal xref">A.3</a>.  <a href="#name-model-context-protocol-mcp" class="internal xref">Model Context Protocol (MCP)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.4">
+                <p id="section-toc.1-1.10.2.4.1"><a href="#appendix-A.4" class="auto internal xref">A.4</a>.  <a href="#name-llmstxt" class="internal xref">llms.txt</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.5">
+                <p id="section-toc.1-1.10.2.5.1"><a href="#appendix-A.5" class="auto internal xref">A.5</a>.  <a href="#name-summary" class="internal xref">Summary</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-json-schema" class="internal xref">JSON Schema</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#appendix-C" class="auto internal xref">Appendix C</a>.  <a href="#name-design-rationale" class="internal xref">Design Rationale</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.1">
+                <p id="section-toc.1-1.12.2.1.1"><a href="#appendix-C.1" class="auto internal xref">C.1</a>.  <a href="#name-why-a-well-known-uri" class="internal xref">Why a Well-Known URI?</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.2">
+                <p id="section-toc.1-1.12.2.2.1"><a href="#appendix-C.2" class="auto internal xref">C.2</a>.  <a href="#name-why-json-over-other-formats" class="internal xref">Why JSON over Other Formats?</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.3">
+                <p id="section-toc.1-1.12.2.3.1"><a href="#appendix-C.3" class="auto internal xref">C.3</a>.  <a href="#name-why-compact-parameter-descr" class="internal xref">Why Compact Parameter Descriptions?</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.4">
+                <p id="section-toc.1-1.12.2.4.1"><a href="#appendix-C.4" class="auto internal xref">C.4</a>.  <a href="#name-why-no-request-response-exa" class="internal xref">Why No Request/Response Examples?</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
+            <p id="section-toc.1-1.13.1"><a href="#appendix-D" class="auto internal xref"></a><a href="#name-acknowledgements" class="internal xref">Acknowledgements</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
+            <p id="section-toc.1-1.14.1"><a href="#appendix-E" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">
+        The rapid proliferation of autonomous AI agents — software systems
+        powered by large language models (LLMs) that perform tasks on
+        behalf of users — has created a fundamental interoperability gap
+        on the World Wide Web.  While the web has well-established
+        mechanisms for communicating with human users (HTML) and search
+        engine crawlers (robots.txt <span>[<a href="#RFC9309" class="cite xref">RFC9309</a>]</span>, sitemaps),
+        no equivalent standard exists for AI agents seeking to discover
+        and invoke the capabilities of web services.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">
+        Today, when an AI agent attempts to interact with a web service,
+        it must resort to one or more of the following strategies:<a href="#section-1-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-3.1">
+          Parsing HTML pages designed for human consumption, extracting
+          structured meaning from unstructured content at significant
+          computational cost (typically 8,000-15,000 LLM tokens per page).<a href="#section-1-3.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-1-3.2">
+          Reading API documentation scattered across multiple pages,
+          often requiring the agent to navigate hyperlinks, interpret
+          natural language descriptions, and resolve ambiguities.<a href="#section-1-3.2" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-1-3.3">
+          Using pre-configured tool definitions maintained by the agent's
+          developer, which become stale as services evolve and cannot
+          scale to the breadth of services on the web.<a href="#section-1-3.3" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-1-3.4">
+          Attempting trial-and-error API calls, which waste computational
+          resources and risk triggering rate limits or unintended side
+          effects.<a href="#section-1-3.4" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="section-1-4">
+        These approaches are inefficient, error-prone, and fundamentally
+        unscalable.  A single service discovery interaction that could be
+        accomplished in 200-500 LLM tokens with a structured response
+        instead requires 3,000-15,000 tokens of unstructured content
+        parsing — a 10x to 30x overhead.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">
+        This document defines the AI Discovery Endpoint, a mechanism
+        whereby a web service publishes a single, structured JSON document
+        at a well-known location.  This document describes the service's
+        identity, enumerates its capabilities as discrete invocable
+        actions, specifies authentication requirements, and provides
+        operational hints that enable AI agents to interact with the
+        service efficiently.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-6">The design prioritizes:<a href="#section-1-6" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-7.1">
+          Simplicity: A developer <span class="bcp14">SHOULD</span> be able to
+          implement a conformant endpoint in under 30 minutes using
+          any web framework.<a href="#section-1-7.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-1-7.2">
+          Token efficiency: The response format is optimized to convey
+          maximum information in minimum LLM tokens.<a href="#section-1-7.2" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-1-7.3">
+          Universality: The mechanism requires only HTTP and JSON — no
+          custom protocols, transport layers, or runtime dependencies.<a href="#section-1-7.3" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-1-7.4">
+          Backward compatibility: Future versions of this specification
+          will extend the schema additively; fields defined in this
+          version will not be removed or have their semantics altered.<a href="#section-1-7.4" class="pilcrow">¶</a>
+</li>
+      </ul>
+<div id="requirements-language">
+<section id="section-1.1">
+        <h3 id="name-requirements-language">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-requirements-language" class="section-name selfRef">Requirements Language</a>
+        </h3>
+<p id="section-1.1-1">
+          The key words "<span class="bcp14">MUST</span>", "<span class="bcp14">MUST NOT</span>",
+          "<span class="bcp14">REQUIRED</span>", "<span class="bcp14">SHALL</span>",
+          "<span class="bcp14">SHALL NOT</span>", "<span class="bcp14">SHOULD</span>",
+          "<span class="bcp14">SHOULD NOT</span>", "<span class="bcp14">RECOMMENDED</span>",
+          "<span class="bcp14">NOT RECOMMENDED</span>", "<span class="bcp14">MAY</span>", and
+          "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted
+          as described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span>
+          <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they appear in
+          all capitals, as shown here.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="terminology">
+<section id="section-1.2">
+        <h3 id="name-terminology">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
+        </h3>
+<span class="break"></span><dl class="dlParallel" id="section-1.2-1">
+          <dt id="section-1.2-1.1">AI Agent:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-1.2">
+            An autonomous software system, typically powered by a large
+            language model, that performs tasks on behalf of a user by
+            discovering and invoking web services programmatically.<a href="#section-1.2-1.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-1.3">AI Discovery Document:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-1.4">
+            The JSON document served at the AI Discovery Endpoint,
+            conforming to the schema defined in this specification.<a href="#section-1.2-1.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-1.5">Capability:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-1.6">
+            A discrete, invocable action that a web service exposes to
+            AI agents, described by an identifier, an HTTP endpoint,
+            a method, and parameter/return specifications.<a href="#section-1.2-1.6" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-1.7">Service Provider:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-1.8">
+            The operator of a web service that publishes an AI Discovery
+            Document.<a href="#section-1.2-1.8" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-1.9">Token:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-1.10">
+            The fundamental unit of text processing in a large language
+            model.  The efficiency of AI agent interactions is measured
+            in tokens consumed.<a href="#section-1.2-1.10" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="resource">
+<section id="section-2">
+      <h2 id="name-the-ai-discovery-resource">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-the-ai-discovery-resource" class="section-name selfRef">The AI Discovery Resource</a>
+      </h2>
+<div id="resource-location">
+<section id="section-2.1">
+        <h3 id="name-resource-location">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-resource-location" class="section-name selfRef">Resource Location</a>
+        </h3>
+<p id="section-2.1-1">
+          A service provider that implements this specification
+          <span class="bcp14">MUST</span> serve the AI Discovery Document at the
+          following well-known URI <span>[<a href="#RFC8615" class="cite xref">RFC8615</a>]</span>:<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-example art-text artwork" id="section-2.1-2">
+<pre>
+/.well-known/ai
+</pre><a href="#section-2.1-2" class="pilcrow">¶</a>
+</div>
+<p id="section-2.1-3">
+          The complete URI is constructed by appending "/.well-known/ai"
+          to the authority (scheme and host) of the service.  For example,
+          for a service at "https://example.com", the AI Discovery
+          Document is located at:<a href="#section-2.1-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-example art-text artwork" id="section-2.1-4">
+<pre>
+https://example.com/.well-known/ai
+</pre><a href="#section-2.1-4" class="pilcrow">¶</a>
+</div>
+<p id="section-2.1-5">
+          A service provider <span class="bcp14">MAY</span> additionally serve an
+          identical copy of the AI Discovery Document at the path "/ai"
+          on the same authority, as a convenience alias.  When both
+          locations are served, the content <span class="bcp14">MUST</span> be
+          identical.  An AI agent that receives differing content from
+          the two locations <span class="bcp14">MUST</span> treat the
+          "/.well-known/ai" response as authoritative.<a href="#section-2.1-5" class="pilcrow">¶</a></p>
+<p id="section-2.1-6">
+          The AI Discovery Document <span class="bcp14">MUST NOT</span> be served
+          at a path that includes query parameters or fragment
+          identifiers.  The resource is a single, complete document.<a href="#section-2.1-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="access-method">
+<section id="section-2.2">
+        <h3 id="name-access-method">
+<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-access-method" class="section-name selfRef">Access Method</a>
+        </h3>
+<p id="section-2.2-1">
+          The AI Discovery Document <span class="bcp14">MUST</span> be accessible
+          via an HTTP GET request <span>[<a href="#RFC9110" class="cite xref">RFC9110</a>]</span>.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2-2">
+          The server <span class="bcp14">MUST NOT</span> require authentication to
+          access the AI Discovery Document itself.  The purpose of the
+          document is to enable discovery; requiring authentication to
+          discover what authentication is needed creates a circular
+          dependency.<a href="#section-2.2-2" class="pilcrow">¶</a></p>
+<p id="section-2.2-3">
+          The server <span class="bcp14">SHOULD</span> respond to requests within
+          3 seconds under normal operating conditions.  AI agents
+          <span class="bcp14">MAY</span> treat responses exceeding 10 seconds as
+          unavailable.<a href="#section-2.2-3" class="pilcrow">¶</a></p>
+<p id="section-2.2-4">
+          The server <span class="bcp14">MUST</span> respond with HTTP status code
+          200 (OK) when the AI Discovery Document is available and the
+          request is valid.<a href="#section-2.2-4" class="pilcrow">¶</a></p>
+<p id="section-2.2-5">
+          If the server does not implement this specification, it
+          <span class="bcp14">SHOULD</span> respond with HTTP status code 404
+          (Not Found).  An AI agent receiving a 404 response
+          <span class="bcp14">MUST</span> conclude that the service does not
+          publish an AI Discovery Document.<a href="#section-2.2-5" class="pilcrow">¶</a></p>
+<p id="section-2.2-6">
+          The server <span class="bcp14">MAY</span> respond with HTTP status code
+          301 (Moved Permanently) or 302 (Found) to redirect to another
+          location.  An AI agent <span class="bcp14">MUST</span> follow redirects
+          up to a maximum of 5 consecutive redirections.  The agent
+          <span class="bcp14">MUST NOT</span> follow redirects that change the
+          scheme from "https" to "http".<a href="#section-2.2-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="media-type">
+<section id="section-2.3">
+        <h3 id="name-media-type">
+<a href="#section-2.3" class="section-number selfRef">2.3. </a><a href="#name-media-type" class="section-name selfRef">Media Type</a>
+        </h3>
+<p id="section-2.3-1">
+          The AI Discovery Document <span class="bcp14">MUST</span> be served with
+          the media type "application/json" <span>[<a href="#RFC8259" class="cite xref">RFC8259</a>]</span>.<a href="#section-2.3-1" class="pilcrow">¶</a></p>
+<p id="section-2.3-2">
+          Servers <span class="bcp14">SHOULD</span> include the "charset=utf-8"
+          parameter:<a href="#section-2.3-2" class="pilcrow">¶</a></p>
+<div class="alignLeft art-example art-text artwork" id="section-2.3-3">
+<pre>
+Content-Type: application/json; charset=utf-8
+</pre><a href="#section-2.3-3" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="character-encoding">
+<section id="section-2.4">
+        <h3 id="name-character-encoding">
+<a href="#section-2.4" class="section-number selfRef">2.4. </a><a href="#name-character-encoding" class="section-name selfRef">Character Encoding</a>
+        </h3>
+<p id="section-2.4-1">
+          The AI Discovery Document <span class="bcp14">MUST</span> be encoded in
+          UTF-8 <span>[<a href="#RFC3629" class="cite xref">RFC3629</a>]</span>.  This ensures consistent
+          handling of non-ASCII characters in service descriptions,
+          capability names, and other textual fields, which is
+          particularly important for services operating in multilingual
+          environments.<a href="#section-2.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="schema">
+<section id="section-3">
+      <h2 id="name-response-schema">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-response-schema" class="section-name selfRef">Response Schema</a>
+      </h2>
+<p id="section-3-1">
+        The AI Discovery Document is a single JSON object
+        <span>[<a href="#RFC8259" class="cite xref">RFC8259</a>]</span> containing the fields defined in
+        this section.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<div id="top-level">
+<section id="section-3.1">
+        <h3 id="name-top-level-structure">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-top-level-structure" class="section-name selfRef">Top-Level Structure</a>
+        </h3>
+<p id="section-3.1-1">
+          The top-level JSON object <span class="bcp14">MUST</span> contain the
+          following fields:<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.1-2">
+          <dt id="section-3.1-2.1">aiendpoint:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.1-2.2">
+            (string, REQUIRED)  The version of this specification to
+            which the document conforms.  For documents conforming to
+            this specification, the value <span class="bcp14">MUST</span> be "1.0".<a href="#section-3.1-2.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.1-2.3">service:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.1-2.4">
+            (object, REQUIRED)  An object describing the identity of
+            the service.  See <a href="#service-object" class="auto internal xref">Section 3.2</a>.<a href="#section-3.1-2.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.1-2.5">capabilities:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.1-2.6">
+            (array, REQUIRED)  A non-empty array of capability objects,
+            each describing a discrete action the service exposes to AI
+            agents.  See <a href="#capabilities-array" class="auto internal xref">Section 3.3</a>.<a href="#section-3.1-2.6" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-3.1-3">
+          The top-level JSON object <span class="bcp14">MAY</span> contain the
+          following fields:<a href="#section-3.1-3" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.1-4">
+          <dt id="section-3.1-4.1">auth:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.1-4.2">
+            (object, OPTIONAL)  An object describing the authentication
+            requirements of the service.
+            See <a href="#auth-object" class="auto internal xref">Section 3.4</a>.<a href="#section-3.1-4.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.1-4.3">token_hints:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.1-4.4">
+            (object, OPTIONAL)  An object providing hints for AI agents
+            on how to reduce token consumption when invoking the
+            service's capabilities.
+            See <a href="#token-hints-object" class="auto internal xref">Section 3.5</a>.<a href="#section-3.1-4.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.1-4.5">rate_limits:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.1-4.6">
+            (object, OPTIONAL)  An object describing the rate limiting
+            policy of the service.
+            See <a href="#rate-limits-object" class="auto internal xref">Section 3.6</a>.<a href="#section-3.1-4.6" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.1-4.7">meta:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.1-4.8">
+            (object, OPTIONAL)  An object containing metadata about
+            the AI Discovery Document itself.
+            See <a href="#meta-object" class="auto internal xref">Section 3.7</a>.<a href="#section-3.1-4.8" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-3.1-5">
+          A conformant AI Discovery Document <span class="bcp14">MUST NOT</span>
+          contain fields not defined in this specification at the top
+          level.  This constraint ensures that future versions of the
+          specification can introduce new top-level fields without
+          conflicting with proprietary extensions.  Service providers
+          requiring custom metadata <span class="bcp14">SHOULD</span> use the
+          "meta" object for this purpose.<a href="#section-3.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="service-object">
+<section id="section-3.2">
+        <h3 id="name-the-service-object">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-the-service-object" class="section-name selfRef">The "service" Object</a>
+        </h3>
+<p id="section-3.2-1">
+          The "service" object describes the identity and classification
+          of the service.  It <span class="bcp14">MUST</span> contain the following
+          fields:<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.2-2">
+          <dt id="section-3.2-2.1">name:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.2-2.2">
+            <p id="section-3.2-2.2.1">
+              (string, REQUIRED)  The human-readable name of the service.
+              This value <span class="bcp14">SHOULD</span> be the commonly recognized
+              name of the service (e.g., "GitHub", "Stripe",
+              "OpenWeatherMap").  The value <span class="bcp14">MUST</span> be
+              between 1 and 100 characters in length.<a href="#section-3.2-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.2-2.3">description:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.2-2.4">
+            <p id="section-3.2-2.4.1">
+              (string, REQUIRED)  A concise, factual description of what
+              the service does.  This description is intended for machine
+              consumption and <span class="bcp14">SHOULD</span> be written in a
+              declarative style that prioritizes clarity over marketing
+              language.  The value <span class="bcp14">MUST</span> be between 1 and
+              300 characters in length.<a href="#section-3.2-2.4.1" class="pilcrow">¶</a></p>
+<p id="section-3.2-2.4.2">
+              Authors <span class="bcp14">SHOULD</span> aim for descriptions under
+              200 characters to optimize token consumption.<a href="#section-3.2-2.4.2" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-3.2-3">
+          The "service" object <span class="bcp14">MAY</span> contain the following
+          fields:<a href="#section-3.2-3" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.2-4">
+          <dt id="section-3.2-4.1">category:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.2-4.2">
+            <p id="section-3.2-4.2.1">
+              (array of strings, OPTIONAL)  One or more category labels
+              that classify the service for discovery purposes.  The
+              following category values are defined in this version of
+              the specification: "productivity", "ecommerce", "finance",
+              "news", "weather", "maps", "search", "data",
+              "communication", "calendar", "storage", "media", "health",
+              "education", "travel", "food", "government", "developer".<a href="#section-3.2-4.2.1" class="pilcrow">¶</a></p>
+<p id="section-3.2-4.2.2">
+              Service providers <span class="bcp14">SHOULD</span> select from the
+              above list to maximize interoperability with discovery
+              systems.  Future versions of this specification
+              <span class="bcp14">MAY</span> define additional categories.  A
+              discovery system encountering an unrecognized category
+              value <span class="bcp14">SHOULD</span> ignore it without error.<a href="#section-3.2-4.2.2" class="pilcrow">¶</a></p>
+<p id="section-3.2-4.2.3">
+              The array <span class="bcp14">MUST</span> contain at least one element
+              if present, and <span class="bcp14">MUST NOT</span> contain duplicate
+              values.<a href="#section-3.2-4.2.3" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.2-4.3">language:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.2-4.4">
+            <p id="section-3.2-4.4.1">
+              (array of strings, OPTIONAL)  The natural languages
+              supported by the service, expressed as BCP 47
+              <span>[<a href="#RFC5646" class="cite xref">RFC5646</a>]</span> language tags.  If omitted, the
+              default value is ["en"].<a href="#section-3.2-4.4.1" class="pilcrow">¶</a></p>
+<p id="section-3.2-4.4.2">
+              The array <span class="bcp14">MUST</span> contain at least one element
+              if present, and <span class="bcp14">MUST NOT</span> contain duplicate
+              values.<a href="#section-3.2-4.4.2" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="capabilities-array">
+<section id="section-3.3">
+        <h3 id="name-the-capabilities-array">
+<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-the-capabilities-array" class="section-name selfRef">The "capabilities" Array</a>
+        </h3>
+<p id="section-3.3-1">
+          The "capabilities" array is the core of the AI Discovery
+          Document.  Each element describes a single, discrete action
+          that an AI agent can invoke.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<p id="section-3.3-2">
+          The array <span class="bcp14">MUST</span> contain at least one element.<a href="#section-3.3-2" class="pilcrow">¶</a></p>
+<p id="section-3.3-3">
+          Service providers <span class="bcp14">SHOULD</span> limit the array to
+          capabilities that are meaningful for AI agent consumption.
+          Internal endpoints, administrative functions, and endpoints
+          that require complex multi-step human interaction
+          <span class="bcp14">SHOULD</span> be omitted.<a href="#section-3.3-3" class="pilcrow">¶</a></p>
+<p id="section-3.3-4">
+          Each capability object <span class="bcp14">MUST</span> contain the
+          following fields:<a href="#section-3.3-4" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.3-5">
+          <dt id="section-3.3-5.1">id:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.3-5.2">
+            <p id="section-3.3-5.2.1">
+              (string, REQUIRED)  A unique identifier for this capability
+              within the service.  The identifier <span class="bcp14">MUST</span>
+              match the regular expression ^[a-z][a-z0-9_]*$ (lowercase
+              ASCII letters, digits, and underscores, beginning with a
+              letter).  The identifier <span class="bcp14">MUST</span> be between 1
+              and 64 characters in length.<a href="#section-3.3-5.2.1" class="pilcrow">¶</a></p>
+<p id="section-3.3-5.2.2">
+              The identifier serves as a stable reference for the
+              capability.  Service providers <span class="bcp14">SHOULD NOT</span>
+              change the identifier of an existing capability, as AI
+              agents and external systems may reference it.<a href="#section-3.3-5.2.2" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.3-5.3">description:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.3-5.4">
+            <p id="section-3.3-5.4.1">
+              (string, REQUIRED)  A concise description of what this
+              capability does.  The value <span class="bcp14">MUST</span> be between
+              1 and 200 characters in length.<a href="#section-3.3-5.4.1" class="pilcrow">¶</a></p>
+<p id="section-3.3-5.4.2">
+              This description is the primary mechanism by which an AI
+              agent determines whether a capability is relevant to its
+              task.  Authors <span class="bcp14">SHOULD</span> write descriptions
+              that are specific and actionable.<a href="#section-3.3-5.4.2" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.3-5.5">endpoint:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.3-5.6">
+            <p id="section-3.3-5.6.1">
+              (string, REQUIRED)  The URI or URI path at which this
+              capability is accessible.  The value <span class="bcp14">MUST</span>
+              be non-empty.<a href="#section-3.3-5.6.1" class="pilcrow">¶</a></p>
+<p id="section-3.3-5.6.2">
+              If the value begins with "/" (U+002F), it is a relative
+              path and <span class="bcp14">MUST</span> be resolved against the
+              authority of the AI Discovery Document's URI.  If the
+              value is an absolute URI (beginning with a scheme), it is
+              used as-is.  This allows services to expose capabilities
+              hosted on different domains or subdomains.<a href="#section-3.3-5.6.2" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.3-5.7">method:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.3-5.8">
+            (string, REQUIRED)  The HTTP method used to invoke this
+            capability.  The value <span class="bcp14">MUST</span> be one of:
+            "GET", "POST", "PUT", "DELETE", "PATCH".<a href="#section-3.3-5.8" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-3.3-6">
+          Each capability object <span class="bcp14">MAY</span> contain the
+          following fields:<a href="#section-3.3-6" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.3-7">
+          <dt id="section-3.3-7.1">params:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.3-7.2">
+            <p id="section-3.3-7.2.1">
+              (object, OPTIONAL)  A JSON object describing the parameters
+              accepted by this capability's endpoint.  Each key is a
+              parameter name, and each value is a string describing the
+              parameter in a compact, structured format.<a href="#section-3.3-7.2.1" class="pilcrow">¶</a></p>
+<p id="section-3.3-7.2.2">
+              The parameter description string <span class="bcp14">SHOULD</span>
+              follow this pattern:<a href="#section-3.3-7.2.2" class="pilcrow">¶</a></p>
+<div class="alignLeft art-example art-text artwork" id="section-3.3-7.2.3">
+<pre>
+&lt;type&gt;, &lt;requirement&gt;[, &lt;constraints&gt;] [-- &lt;description&gt;]
+</pre><a href="#section-3.3-7.2.3" class="pilcrow">¶</a>
+</div>
+<p id="section-3.3-7.2.4">Where:<a href="#section-3.3-7.2.4" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.3-7.2.5.1">&lt;type&gt; is the data type: "string", "integer",
+                "number", "boolean", or "array"<a href="#section-3.3-7.2.5.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-3.3-7.2.5.2">&lt;requirement&gt; is "required" or "optional"<a href="#section-3.3-7.2.5.2" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-3.3-7.2.5.3">&lt;constraints&gt; are optional qualifiers such as
+                "default 10", "max 50", "min 1", or enumerated values
+                separated by "|"<a href="#section-3.3-7.2.5.3" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-3.3-7.2.5.4">&lt;description&gt; is an optional natural language
+                description, separated by an em dash or double
+                hyphen (--)<a href="#section-3.3-7.2.5.4" class="pilcrow">¶</a>
+</li>
+            </ul>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.3-7.3">returns:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.3-7.4">
+            <p id="section-3.3-7.4.1">
+              (string, OPTIONAL)  A compact description of the response
+              structure.  The value <span class="bcp14">MUST NOT</span> exceed 300
+              characters in length.<a href="#section-3.3-7.4.1" class="pilcrow">¶</a></p>
+<p id="section-3.3-7.4.2">
+              Authors <span class="bcp14">SHOULD</span> use a concise structural
+              notation that conveys the shape of the response, e.g.,
+              "products[] {id, name, price, stock}".<a href="#section-3.3-7.4.2" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="auth-object">
+<section id="section-3.4">
+        <h3 id="name-the-auth-object">
+<a href="#section-3.4" class="section-number selfRef">3.4. </a><a href="#name-the-auth-object" class="section-name selfRef">The "auth" Object</a>
+        </h3>
+<p id="section-3.4-1">
+          The "auth" object describes how an AI agent must authenticate
+          when invoking the service's capabilities.<a href="#section-3.4-1" class="pilcrow">¶</a></p>
+<p id="section-3.4-2">
+          When present, the "auth" object <span class="bcp14">MUST</span> contain
+          the following field:<a href="#section-3.4-2" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.4-3">
+          <dt id="section-3.4-3.1">type:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.4-3.2">
+            <p id="section-3.4-3.2.1">
+              (string, REQUIRED)  The authentication mechanism required
+              by the service.  The value <span class="bcp14">MUST</span> be one of:<a href="#section-3.4-3.2.1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.4-3.2.2">
+              <dt id="section-3.4-3.2.2.1">"none":</dt>
+              <dd style="margin-left: 1.5em" id="section-3.4-3.2.2.2">No authentication is required.  All capabilities are
+                publicly accessible.<a href="#section-3.4-3.2.2.2" class="pilcrow">¶</a>
+</dd>
+              <dd class="break"></dd>
+<dt id="section-3.4-3.2.2.3">"apikey":</dt>
+              <dd style="margin-left: 1.5em" id="section-3.4-3.2.2.4">Authentication via a static API key, typically passed
+                in an HTTP header.<a href="#section-3.4-3.2.2.4" class="pilcrow">¶</a>
+</dd>
+              <dd class="break"></dd>
+<dt id="section-3.4-3.2.2.5">"bearer":</dt>
+              <dd style="margin-left: 1.5em" id="section-3.4-3.2.2.6">Authentication via a bearer token (e.g., JWT), passed
+                in the Authorization header as defined in
+                <span>[<a href="#RFC6750" class="cite xref">RFC6750</a>]</span>.<a href="#section-3.4-3.2.2.6" class="pilcrow">¶</a>
+</dd>
+              <dd class="break"></dd>
+<dt id="section-3.4-3.2.2.7">"oauth2":</dt>
+              <dd style="margin-left: 1.5em" id="section-3.4-3.2.2.8">Authentication via the OAuth 2.0 framework
+                <span>[<a href="#RFC6749" class="cite xref">RFC6749</a>]</span>.<a href="#section-3.4-3.2.2.8" class="pilcrow">¶</a>
+</dd>
+            <dd class="break"></dd>
+</dl>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-3.4-4">
+          The "auth" object <span class="bcp14">MAY</span> contain the following
+          fields:<a href="#section-3.4-4" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.4-5">
+          <dt id="section-3.4-5.1">header:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.4-5.2">
+            (string, OPTIONAL)  The name of the HTTP header in which
+            the authentication credential is passed.  This field is
+            most useful for "apikey" authentication where the header
+            name varies across services (e.g., "X-API-Key", "Api-Key",
+            "Authorization").  For "bearer" authentication, the header
+            is implicitly "Authorization" and this field
+            <span class="bcp14">MAY</span> be omitted.<a href="#section-3.4-5.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.4-5.3">docs:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.4-5.4">
+            (string, OPTIONAL)  A URI pointing to human-readable
+            documentation for the service's authentication process.<a href="#section-3.4-5.4" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-3.4-6">
+          If the "auth" object is omitted entirely, an AI agent
+          <span class="bcp14">SHOULD</span> assume that authentication may be
+          required.  Service providers are therefore
+          <span class="bcp14">RECOMMENDED</span> to include the "auth" object
+          even when no authentication is required, with type set
+          to "none".<a href="#section-3.4-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="token-hints-object">
+<section id="section-3.5">
+        <h3 id="name-the-token_hints-object">
+<a href="#section-3.5" class="section-number selfRef">3.5. </a><a href="#name-the-token_hints-object" class="section-name selfRef">The "token_hints" Object</a>
+        </h3>
+<p id="section-3.5-1">
+          The "token_hints" object provides signals to AI agents about
+          features the service supports to reduce the token cost of
+          capability invocations.<a href="#section-3.5-1" class="pilcrow">¶</a></p>
+<p id="section-3.5-2">
+          All fields in the "token_hints" object are boolean and
+          OPTIONAL.  If the object is omitted, all fields default
+          to false.<a href="#section-3.5-2" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.5-3">
+          <dt id="section-3.5-3.1">compact_mode:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.5-3.2">
+            (boolean, default false)  If true, the service's capability
+            endpoints accept a query parameter "compact=true" that
+            causes the response to include only essential fields,
+            omitting verbose or supplementary data.<a href="#section-3.5-3.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.5-3.3">field_filtering:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.5-3.4">
+            (boolean, default false)  If true, the service's capability
+            endpoints accept a query parameter "fields" whose value is
+            a comma-separated list of field names.  The response
+            includes only the specified fields.<a href="#section-3.5-3.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.5-3.5">delta_support:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.5-3.6">
+            (boolean, default false)  If true, the service's capability
+            endpoints accept a query parameter "since" whose value is
+            an ISO 8601 timestamp.  The response includes only records
+            created or modified after the specified timestamp.<a href="#section-3.5-3.6" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="rate-limits-object">
+<section id="section-3.6">
+        <h3 id="name-the-rate_limits-object">
+<a href="#section-3.6" class="section-number selfRef">3.6. </a><a href="#name-the-rate_limits-object" class="section-name selfRef">The "rate_limits" Object</a>
+        </h3>
+<p id="section-3.6-1">
+          The "rate_limits" object informs AI agents of the service's
+          rate limiting policy, enabling agents to plan their request
+          patterns to avoid throttling.<a href="#section-3.6-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.6-2">
+          <dt id="section-3.6-2.1">requests_per_minute:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.6-2.2">
+            (integer, OPTIONAL)  The maximum number of requests an AI
+            agent may make per minute under the default access tier.
+            The value <span class="bcp14">MUST</span> be a positive integer.
+            This is an advisory limit.  AI agents <span class="bcp14">SHOULD</span>
+            use this value to pace their requests.<a href="#section-3.6-2.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.6-2.3">agent_tier_available:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.6-2.4">
+            (boolean, OPTIONAL)  If true, the service offers a higher
+            rate limit tier specifically for AI agents.  Details of how
+            to access this tier are available at the URI specified in
+            "auth.docs".<a href="#section-3.6-2.4" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="meta-object">
+<section id="section-3.7">
+        <h3 id="name-the-meta-object">
+<a href="#section-3.7" class="section-number selfRef">3.7. </a><a href="#name-the-meta-object" class="section-name selfRef">The "meta" Object</a>
+        </h3>
+<p id="section-3.7-1">
+          The "meta" object contains metadata about the AI Discovery
+          Document itself (not the service it describes).  All fields
+          are OPTIONAL.<a href="#section-3.7-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3.7-2">
+          <dt id="section-3.7-2.1">last_updated:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.7-2.2">
+            (string, OPTIONAL)  The date on which the AI Discovery
+            Document was last modified, expressed in ISO 8601 format
+            (YYYY-MM-DD or YYYY-MM-DDThh:mm:ssZ).<a href="#section-3.7-2.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.7-2.3">changelog:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.7-2.4">
+            (string, OPTIONAL)  A URI pointing to a changelog or
+            release notes page for the service.<a href="#section-3.7-2.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-3.7-2.5">status:</dt>
+          <dd style="margin-left: 1.5em" id="section-3.7-2.6">
+            (string, OPTIONAL)  A URI pointing to a service status page.
+            AI agents <span class="bcp14">MAY</span> consult this URI before
+            invoking capabilities on a service that appears to be
+            experiencing errors.<a href="#section-3.7-2.6" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="processing">
+<section id="section-4">
+      <h2 id="name-processing-rules">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-processing-rules" class="section-name selfRef">Processing Rules</a>
+      </h2>
+<p id="section-4-1">
+        This section defines how AI agents and other consumers
+        <span class="bcp14">SHOULD</span> process the AI Discovery Document.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<div id="fetching">
+<section id="section-4.1">
+        <h3 id="name-fetching">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-fetching" class="section-name selfRef">Fetching</a>
+        </h3>
+<p id="section-4.1-1">
+          An AI agent attempting to discover the capabilities of a
+          service at a given authority <span class="bcp14">SHOULD</span> perform
+          the following steps:<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4.1-2">
+          <li id="section-4.1-2.1">
+            Construct the well-known URI by appending "/.well-known/ai"
+            to the authority (e.g.,
+            "https://example.com/.well-known/ai").<a href="#section-4.1-2.1" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.1-2.2">Issue an HTTP GET request to the constructed URI.<a href="#section-4.1-2.2" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.1-2.3">
+            If the response status is 200 (OK) and the Content-Type
+            header indicates "application/json", parse the response
+            body as a JSON object.<a href="#section-4.1-2.3" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.1-2.4">
+            Validate that the parsed object contains the required fields
+            "aiendpoint", "service", and "capabilities" as defined in
+            <a href="#schema" class="auto internal xref">Section 3</a>.<a href="#section-4.1-2.4" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.1-2.5">
+            If validation succeeds, the service is considered to have a
+            valid AI Discovery Document.  The agent <span class="bcp14">MAY</span>
+            proceed to invoke the service's capabilities as described.<a href="#section-4.1-2.5" class="pilcrow">¶</a>
+</li>
+        </ol>
+<p id="section-4.1-3">
+          If the response status is 404 (Not Found), the agent
+          <span class="bcp14">MAY</span> optionally attempt to fetch the resource
+          at "/ai" as a fallback.  However, the "/.well-known/ai"
+          location is authoritative, and agents <span class="bcp14">MUST NOT</span>
+          treat a response from "/ai" as valid if the "/.well-known/ai"
+          location returns a different response.<a href="#section-4.1-3" class="pilcrow">¶</a></p>
+<p id="section-4.1-4">
+          An agent <span class="bcp14">MUST NOT</span> issue requests to any
+          capability endpoint described in the AI Discovery Document
+          without first confirming that the document is valid and that
+          the capability's method, endpoint, and parameters are
+          well-formed.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="caching">
+<section id="section-4.2">
+        <h3 id="name-caching">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-caching" class="section-name selfRef">Caching</a>
+        </h3>
+<p id="section-4.2-1">
+          The AI Discovery Document is expected to change infrequently.
+          Service providers <span class="bcp14">SHOULD</span> include appropriate
+          HTTP caching headers <span>[<a href="#RFC9111" class="cite xref">RFC9111</a>]</span> in the response.
+          A Cache-Control max-age value of 86400 (24 hours) is
+          <span class="bcp14">RECOMMENDED</span> for most services.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-example art-text artwork" id="section-4.2-2">
+<pre>
+Cache-Control: public, max-age=86400
+</pre><a href="#section-4.2-2" class="pilcrow">¶</a>
+</div>
+<p id="section-4.2-3">
+          AI agents <span class="bcp14">SHOULD</span> respect standard HTTP caching
+          semantics.  When the "meta.last_updated" field is present, an
+          agent <span class="bcp14">MAY</span> compare it against a previously
+          stored value to determine whether the document has changed.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="error-handling">
+<section id="section-4.3">
+        <h3 id="name-error-handling">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-error-handling" class="section-name selfRef">Error Handling</a>
+        </h3>
+<p id="section-4.3-1">
+          AI agents <span class="bcp14">MUST</span> handle the following error
+          conditions gracefully:<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-4.3-2">
+          <dt id="section-4.3-2.1">HTTP 404 (Not Found):</dt>
+          <dd style="margin-left: 1.5em" id="section-4.3-2.2">
+            The service does not implement this specification.  The
+            agent <span class="bcp14">MUST NOT</span> retry the request for the
+            same authority within a reasonable period
+            (<span class="bcp14">RECOMMENDED</span>: 24 hours).<a href="#section-4.3-2.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.3-2.3">HTTP 5xx (Server Error):</dt>
+          <dd style="margin-left: 1.5em" id="section-4.3-2.4">
+            The service may be temporarily unavailable.  The agent
+            <span class="bcp14">MAY</span> retry after an appropriate delay,
+            using exponential backoff with a maximum of 3 retry
+            attempts.<a href="#section-4.3-2.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.3-2.5">HTTP 429 (Too Many Requests):</dt>
+          <dd style="margin-left: 1.5em" id="section-4.3-2.6">
+            The agent has exceeded the service's rate limit.  The
+            agent <span class="bcp14">MUST</span> respect the Retry-After header
+            if present.<a href="#section-4.3-2.6" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.3-2.7">Invalid JSON:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.3-2.8">
+            If the response body cannot be parsed as valid JSON, the
+            agent <span class="bcp14">MUST</span> treat the service as not
+            implementing this specification.<a href="#section-4.3-2.8" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.3-2.9">Schema Violation:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.3-2.10">
+            If the parsed JSON does not contain the required fields,
+            the agent <span class="bcp14">SHOULD</span> treat the document as
+            invalid.  An agent <span class="bcp14">MAY</span> attempt to use
+            partially valid documents at its own risk.<a href="#section-4.3-2.10" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="version-negotiation">
+<section id="section-4.4">
+        <h3 id="name-version-negotiation">
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-version-negotiation" class="section-name selfRef">Version Negotiation</a>
+        </h3>
+<p id="section-4.4-1">
+          This specification defines version "1.0" of the AI Discovery
+          Document.  The "aiendpoint" field identifies the version.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
+<p id="section-4.4-2">
+          An AI agent that encounters an "aiendpoint" value it does not
+          recognize <span class="bcp14">SHOULD</span> still attempt to parse the
+          document using the rules of the highest version it supports.
+          Because this specification mandates additive-only changes
+          across versions, a version 1.0 agent can safely process a
+          version 1.1 document by ignoring unknown fields.<a href="#section-4.4-2" class="pilcrow">¶</a></p>
+<p id="section-4.4-3">
+          An AI agent <span class="bcp14">MUST NOT</span> reject a document solely
+          because the "aiendpoint" value is higher than the version it
+          supports.<a href="#section-4.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="size-limits">
+<section id="section-4.5">
+        <h3 id="name-size-limits">
+<a href="#section-4.5" class="section-number selfRef">4.5. </a><a href="#name-size-limits" class="section-name selfRef">Size Limits</a>
+        </h3>
+<p id="section-4.5-1">
+          An AI Discovery Document <span class="bcp14">SHOULD NOT</span> exceed
+          64 kilobytes in size.  Service providers whose capabilities
+          would exceed this limit <span class="bcp14">SHOULD</span> consider
+          splitting their service into logical sub-services, each with
+          its own AI Discovery Document.<a href="#section-4.5-1" class="pilcrow">¶</a></p>
+<p id="section-4.5-2">
+          An AI agent <span class="bcp14">MAY</span> refuse to process a document
+          that exceeds 256 kilobytes.<a href="#section-4.5-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="token-efficiency">
+<section id="section-5">
+      <h2 id="name-token-efficiency-considerat">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-token-efficiency-considerat" class="section-name selfRef">Token Efficiency Considerations</a>
+      </h2>
+<p id="section-5-1">
+        A primary design goal of this specification is to minimize the
+        number of LLM tokens required for an AI agent to discover and
+        understand a service's capabilities.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-2">
+        As of this writing, leading LLMs consume approximately 1 token
+        per 4 characters of English text and 1 token per 1-2 characters
+        of JSON structural elements.  Non-Latin scripts (e.g., CJK
+        characters) typically consume 1-3 tokens per character.<a href="#section-5-2" class="pilcrow">¶</a></p>
+<p id="section-5-3">
+        A well-formed AI Discovery Document for a service with 5
+        capabilities is expected to consume between 200 and 800 tokens.
+        By contrast, extracting equivalent information from a typical
+        HTML documentation page requires 3,000 to 15,000 tokens — an
+        overhead factor of 10x to 30x.<a href="#section-5-3" class="pilcrow">¶</a></p>
+<p id="section-5-4">This efficiency gain is achieved through several design choices:<a href="#section-5-4" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-5.1">
+          Compact parameter descriptions: Parameters are described in a
+          single string that encodes type, requirement, constraints, and
+          description in a compact notation, rather than a verbose schema
+          format as in OpenAPI.<a href="#section-5-5.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-5-5.2">
+          Structural response descriptions: The "returns" field uses a
+          concise notation (e.g., "products[] {id, name, price}") rather
+          than a full JSON Schema definition.<a href="#section-5-5.2" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-5-5.3">
+          Absence of examples: Unlike OpenAPI, this specification does
+          not include example request/response pairs in the discovery
+          document.  AI agents are expected to infer usage from parameter
+          and return descriptions.<a href="#section-5-5.3" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-5-5.4">
+          Fixed vocabulary: Category values and authentication types use
+          a closed vocabulary, eliminating the need for agents to
+          interpret free-form text in these fields.<a href="#section-5-5.4" class="pilcrow">¶</a>
+</li>
+      </ul>
+</section>
+</div>
+<div id="security">
+<section id="section-6">
+      <h2 id="name-security-considerations">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-6-1">
+        The AI Discovery Document inherently exposes information about
+        a service's internal structure and capabilities.  Service
+        providers <span class="bcp14">MUST</span> carefully consider the security
+        implications of this disclosure.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<div id="info-disclosure">
+<section id="section-6.1">
+        <h3 id="name-information-disclosure">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-information-disclosure" class="section-name selfRef">Information Disclosure</a>
+        </h3>
+<p id="section-6.1-1">
+          The AI Discovery Document reveals the existence, paths,
+          methods, and parameter structures of API endpoints.  While
+          this information may already be available through documentation
+          or reverse engineering, the structured, machine-readable format
+          significantly lowers the barrier for automated reconnaissance.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-2">
+          Service providers <span class="bcp14">MUST NOT</span> include endpoints
+          in the "capabilities" array that they do not intend to be
+          publicly discoverable.  Administrative endpoints, internal
+          APIs, and endpoints under development <span class="bcp14">MUST</span>
+          be excluded.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="credential-exposure">
+<section id="section-6.2">
+        <h3 id="name-authentication-credential-e">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-authentication-credential-e" class="section-name selfRef">Authentication Credential Exposure</a>
+        </h3>
+<p id="section-6.2-1">
+          The "auth" object describes the authentication mechanism but
+          <span class="bcp14">MUST NOT</span> contain actual credentials, secrets,
+          tokens, or keys.  The "header" field specifies the name of
+          the header in which a credential is passed, not the credential
+          itself.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.2-2">
+          An AI agent that stores or caches AI Discovery Documents
+          <span class="bcp14">MUST</span> ensure that no credentials are written
+          into the cached document, even if the agent possesses
+          credentials for the service.<a href="#section-6.2-2" class="pilcrow">¶</a></p>
+<p id="section-6.2-3">
+          When the "auth.type" is "none", the service provider asserts
+          that no authentication is required.  Service providers
+          <span class="bcp14">MUST NOT</span> use "none" for endpoints that handle
+          sensitive data, perform write operations, or incur costs.<a href="#section-6.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="abuse">
+<section id="section-6.3">
+        <h3 id="name-abuse-by-automated-agents">
+<a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-abuse-by-automated-agents" class="section-name selfRef">Abuse by Automated Agents</a>
+        </h3>
+<p id="section-6.3-1">
+          The AI Discovery Document facilitates automated interaction
+          with web services.  This creates a potential vector for abuse,
+          including:<a href="#section-6.3-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.3-2.1">
+            Automated enumeration of capabilities across many services
+            for reconnaissance purposes.<a href="#section-6.3-2.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-6.3-2.2">
+            Rapid, programmatic invocation of capabilities at scale,
+            potentially exceeding the service's intended usage patterns.<a href="#section-6.3-2.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-6.3-2.3">
+            Exploitation of capabilities that were not designed with
+            automated consumption in mind.<a href="#section-6.3-2.3" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-6.3-3">
+          Service providers <span class="bcp14">MUST</span> implement appropriate
+          rate limiting on all capability endpoints exposed through the
+          AI Discovery Document.  Service providers
+          <span class="bcp14">MUST NOT</span> rely solely on agents' voluntary
+          compliance with advertised rate limits.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
+<p id="section-6.3-4">
+          Service providers <span class="bcp14">SHOULD</span> monitor traffic
+          patterns to capability endpoints and implement anomaly
+          detection for automated abuse.<a href="#section-6.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="content-integrity">
+<section id="section-6.4">
+        <h3 id="name-content-integrity">
+<a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-content-integrity" class="section-name selfRef">Content Integrity</a>
+        </h3>
+<p id="section-6.4-1">
+          An AI agent that fetches an AI Discovery Document over an
+          insecure channel risks receiving a modified or malicious
+          document.  A tampered document could redirect the agent to
+          attacker-controlled endpoints or alter parameter descriptions
+          to induce the agent to send sensitive data to unauthorized
+          parties.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-2">
+          AI agents <span class="bcp14">MUST</span> fetch the AI Discovery Document
+          over HTTPS (TLS) <span>[<a href="#RFC8446" class="cite xref">RFC8446</a>]</span>.  Agents
+          <span class="bcp14">MUST NOT</span> fetch the document over plain HTTP.
+          Service providers <span class="bcp14">MUST</span> serve the document
+          over HTTPS.<a href="#section-6.4-2" class="pilcrow">¶</a></p>
+<p id="section-6.4-3">
+          AI agents <span class="bcp14">SHOULD</span> validate TLS certificates
+          according to <span>[<a href="#RFC6125" class="cite xref">RFC6125</a>]</span> and
+          <span class="bcp14">MUST NOT</span> proceed if certificate validation
+          fails.<a href="#section-6.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="dos">
+<section id="section-6.5">
+        <h3 id="name-denial-of-service">
+<a href="#section-6.5" class="section-number selfRef">6.5. </a><a href="#name-denial-of-service" class="section-name selfRef">Denial of Service</a>
+        </h3>
+<p id="section-6.5-1">
+          A malicious or misconfigured AI Discovery Document could
+          describe a very large number of capabilities, extremely long
+          description strings, or deeply nested parameter structures,
+          causing excessive resource consumption in the parsing agent.<a href="#section-6.5-1" class="pilcrow">¶</a></p>
+<p id="section-6.5-2">
+          AI agents <span class="bcp14">SHOULD</span> enforce the size limits
+          described in <a href="#size-limits" class="auto internal xref">Section 4.5</a> and
+          <span class="bcp14">SHOULD</span> impose their own limits on the number
+          of capabilities processed (<span class="bcp14">RECOMMENDED</span>: no
+          more than 100 capabilities per document) and the length of
+          individual string fields.<a href="#section-6.5-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="iana">
+<section id="section-7">
+      <h2 id="name-iana-considerations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<div id="well-known-registration">
+<section id="section-7.1">
+        <h3 id="name-well-known-uri-registration">
+<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-well-known-uri-registration" class="section-name selfRef">Well-Known URI Registration</a>
+        </h3>
+<p id="section-7.1-1">
+          This document requests registration of the following
+          well-known URI <span>[<a href="#RFC8615" class="cite xref">RFC8615</a>]</span>:<a href="#section-7.1-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-7.1-2">
+          <dt id="section-7.1-2.1">URI Suffix:</dt>
+          <dd style="margin-left: 1.5em" id="section-7.1-2.2">ai<a href="#section-7.1-2.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-7.1-2.3">Change Controller:</dt>
+          <dd style="margin-left: 1.5em" id="section-7.1-2.4">IETF<a href="#section-7.1-2.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-7.1-2.5">Specification Document(s):</dt>
+          <dd style="margin-left: 1.5em" id="section-7.1-2.6">This document<a href="#section-7.1-2.6" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-7.1-2.7">Status:</dt>
+          <dd style="margin-left: 1.5em" id="section-7.1-2.8">provisional<a href="#section-7.1-2.8" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-7.1-2.9">Related Information:</dt>
+          <dd style="margin-left: 1.5em" id="section-7.1-2.10">None<a href="#section-7.1-2.10" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="examples">
+<section id="section-8">
+      <h2 id="name-examples">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-examples" class="section-name selfRef">Examples</a>
+      </h2>
+<div id="example-minimal">
+<section id="section-8.1">
+        <h3 id="name-minimal-conformant-response">
+<a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-minimal-conformant-response" class="section-name selfRef">Minimal Conformant Response</a>
+        </h3>
+<div class="lang-json sourcecode" id="section-8.1-1">
+<pre>
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "SimpleNotes",
+    "description": "Create and retrieve plain text notes."
+  },
+  "capabilities": [
+    {
+      "id": "create_note",
+      "description": "Create a new text note",
+      "endpoint": "/api/notes",
+      "method": "POST"
+    },
+    {
+      "id": "list_notes",
+      "description": "List all notes, newest first",
+      "endpoint": "/api/notes",
+      "method": "GET"
+    }
+  ]
+}
+</pre><a href="#section-8.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="example-full">
+<section id="section-8.2">
+        <h3 id="name-full-featured-response">
+<a href="#section-8.2" class="section-number selfRef">8.2. </a><a href="#name-full-featured-response" class="section-name selfRef">Full-Featured Response</a>
+        </h3>
+<div class="breakable lang-json sourcecode" id="section-8.2-1">
+<pre>
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "ExampleShop",
+    "description": "Search and browse products.
+      Supports keyword search, category filtering,
+      and price sorting.",
+    "category": ["ecommerce", "search"],
+    "language": ["en", "ko"]
+  },
+  "capabilities": [
+    {
+      "id": "search_products",
+      "description": "Search products by keyword",
+      "endpoint": "/api/ai/products/search",
+      "method": "GET",
+      "params": {
+        "q": "string, required -- search keyword",
+        "category": "string, optional -- filter by category",
+        "max_price": "number, optional -- max price in USD",
+        "sort": "string, optional --
+          price_asc|price_desc|relevance,
+          default relevance",
+        "limit": "integer, optional, default 10, max 50"
+      },
+      "returns": "products[] {id, name,
+        price_usd, stock, category, url}"
+    },
+    {
+      "id": "get_product",
+      "description": "Get full details of a product by ID",
+      "endpoint": "/api/ai/products/:id",
+      "method": "GET",
+      "params": {
+        "id": "string, required -- product ID"
+      },
+      "returns": "product {id, name, description,
+        price_usd, stock, images[], category, url}"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "header": "X-API-Key",
+    "docs": "https://exampleshop.com/docs/auth"
+  },
+  "token_hints": {
+    "compact_mode": true,
+    "field_filtering": true,
+    "delta_support": false
+  },
+  "rate_limits": {
+    "requests_per_minute": 60,
+    "agent_tier_available": true
+  },
+  "meta": {
+    "last_updated": "2026-03-10",
+    "changelog": "https://exampleshop.com/changelog",
+    "status": "https://status.exampleshop.com"
+  }
+}
+</pre><a href="#section-8.2-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="example-public">
+<section id="section-8.3">
+        <h3 id="name-service-with-no-authenticat">
+<a href="#section-8.3" class="section-number selfRef">8.3. </a><a href="#name-service-with-no-authenticat" class="section-name selfRef">Service with No Authentication</a>
+        </h3>
+<div class="breakable lang-json sourcecode" id="section-8.3-1">
+<pre>
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "WorldWeather",
+    "description": "Current weather and 5-day
+      forecasts for cities worldwide.",
+    "category": ["weather", "data"],
+    "language": ["en"]
+  },
+  "capabilities": [
+    {
+      "id": "current_weather",
+      "description": "Get current weather for a city",
+      "endpoint": "/api/weather/current",
+      "method": "GET",
+      "params": {
+        "city": "string, required -- city name",
+        "units": "string, optional --
+          metric|imperial, default metric"
+      },
+      "returns": "city {name, country}, condition,
+        temp, humidity_pct, wind_speed, updated_at"
+    },
+    {
+      "id": "forecast",
+      "description": "Get 5-day weather forecast for a city",
+      "endpoint": "/api/weather/forecast",
+      "method": "GET",
+      "params": {
+        "city": "string, required -- city name",
+        "days": "integer, optional, default 5, max 5",
+        "units": "string, optional --
+          metric|imperial, default metric"
+      },
+      "returns": "city {name, country},
+        forecast[] {date, condition, temp_high,
+        temp_low, precipitation_pct}"
+    }
+  ],
+  "auth": {
+    "type": "none"
+  },
+  "token_hints": {
+    "compact_mode": false,
+    "field_filtering": true,
+    "delta_support": true
+  },
+  "rate_limits": {
+    "requests_per_minute": 100,
+    "agent_tier_available": false
+  },
+  "meta": {
+    "last_updated": "2026-03-15"
+  }
+}
+</pre><a href="#section-8.3-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+<section id="section-9">
+      <h2 id="name-references">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<section id="section-9.1">
+        <h3 id="name-normative-references">
+<a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2119">https://www.rfc-editor.org/info/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3629">[RFC3629]</dt>
+        <dd>
+<span class="refAuthor">Yergeau, F.</span>, <span class="refTitle">"UTF-8, a transformation format of ISO 10646"</span>, <span class="seriesInfo">STD 63</span>, <span class="seriesInfo">RFC 3629</span>, <span class="seriesInfo">DOI 10.17487/RFC3629</span>, <time datetime="2003-11" class="refDate">November 2003</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc3629">https://www.rfc-editor.org/info/rfc3629</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC5646">[RFC5646]</dt>
+        <dd>
+<span class="refAuthor">Phillips, A., Ed.</span> and <span class="refAuthor">M. Davis, Ed.</span>, <span class="refTitle">"Tags for Identifying Languages"</span>, <span class="seriesInfo">BCP 47</span>, <span class="seriesInfo">RFC 5646</span>, <span class="seriesInfo">DOI 10.17487/RFC5646</span>, <time datetime="2009-09" class="refDate">September 2009</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5646">https://www.rfc-editor.org/info/rfc5646</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6125">[RFC6125]</dt>
+        <dd>
+<span class="refAuthor">Saint-Andre, P.</span> and <span class="refAuthor">J. Hodges</span>, <span class="refTitle">"Representation and Verification of Domain-Based Application Service Identity within Internet Public Key Infrastructure Using X.509 (PKIX) Certificates in the Context of Transport Layer Security (TLS)"</span>, <span class="seriesInfo">RFC 6125</span>, <span class="seriesInfo">DOI 10.17487/RFC6125</span>, <time datetime="2011-03" class="refDate">March 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6125">https://www.rfc-editor.org/info/rfc6125</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6749">[RFC6749]</dt>
+        <dd>
+<span class="refAuthor">Hardt, D., Ed.</span>, <span class="refTitle">"The OAuth 2.0 Authorization Framework"</span>, <span class="seriesInfo">RFC 6749</span>, <span class="seriesInfo">DOI 10.17487/RFC6749</span>, <time datetime="2012-10" class="refDate">October 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6749">https://www.rfc-editor.org/info/rfc6749</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6750">[RFC6750]</dt>
+        <dd>
+<span class="refAuthor">Jones, M.</span> and <span class="refAuthor">D. Hardt</span>, <span class="refTitle">"The OAuth 2.0 Authorization Framework: Bearer Token Usage"</span>, <span class="seriesInfo">RFC 6750</span>, <span class="seriesInfo">DOI 10.17487/RFC6750</span>, <time datetime="2012-10" class="refDate">October 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6750">https://www.rfc-editor.org/info/rfc6750</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+        <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8174">https://www.rfc-editor.org/info/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8259">[RFC8259]</dt>
+        <dd>
+<span class="refAuthor">Bray, T., Ed.</span>, <span class="refTitle">"The JavaScript Object Notation (JSON) Data Interchange Format"</span>, <span class="seriesInfo">STD 90</span>, <span class="seriesInfo">RFC 8259</span>, <span class="seriesInfo">DOI 10.17487/RFC8259</span>, <time datetime="2017-12" class="refDate">December 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8259">https://www.rfc-editor.org/info/rfc8259</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8446">[RFC8446]</dt>
+        <dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="seriesInfo">RFC 8446</span>, <span class="seriesInfo">DOI 10.17487/RFC8446</span>, <time datetime="2018-08" class="refDate">August 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8446">https://www.rfc-editor.org/info/rfc8446</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8615">[RFC8615]</dt>
+        <dd>
+<span class="refAuthor">Nottingham, M.</span>, <span class="refTitle">"Well-Known Uniform Resource Identifiers (URIs)"</span>, <span class="seriesInfo">RFC 8615</span>, <span class="seriesInfo">DOI 10.17487/RFC8615</span>, <time datetime="2019-05" class="refDate">May 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8615">https://www.rfc-editor.org/info/rfc8615</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9110">[RFC9110]</dt>
+        <dd>
+<span class="refAuthor">Fielding, R., Ed.</span>, <span class="refAuthor">Nottingham, M., Ed.</span>, and <span class="refAuthor">J. Reschke, Ed.</span>, <span class="refTitle">"HTTP Semantics"</span>, <span class="seriesInfo">STD 97</span>, <span class="seriesInfo">RFC 9110</span>, <span class="seriesInfo">DOI 10.17487/RFC9110</span>, <time datetime="2022-06" class="refDate">June 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9110">https://www.rfc-editor.org/info/rfc9110</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9111">[RFC9111]</dt>
+      <dd>
+<span class="refAuthor">Fielding, R., Ed.</span>, <span class="refAuthor">Nottingham, M., Ed.</span>, and <span class="refAuthor">J. Reschke, Ed.</span>, <span class="refTitle">"HTTP Caching"</span>, <span class="seriesInfo">STD 98</span>, <span class="seriesInfo">RFC 9111</span>, <span class="seriesInfo">DOI 10.17487/RFC9111</span>, <time datetime="2022-06" class="refDate">June 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9111">https://www.rfc-editor.org/info/rfc9111</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+<section id="section-9.2">
+        <h3 id="name-informative-references">
+<a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="RFC9309">[RFC9309]</dt>
+        <dd>
+<span class="refAuthor">Koster, M.</span>, <span class="refAuthor">Illyes, G.</span>, <span class="refAuthor">Zeller, H.</span>, and <span class="refAuthor">L. Sassman</span>, <span class="refTitle">"Robots Exclusion Protocol"</span>, <span class="seriesInfo">RFC 9309</span>, <span class="seriesInfo">DOI 10.17487/RFC9309</span>, <time datetime="2022-09" class="refDate">September 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9309">https://www.rfc-editor.org/info/rfc9309</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="OPENAPI">[OPENAPI]</dt>
+        <dd>
+<span class="refAuthor">OpenAPI Initiative</span>, <span class="refTitle">"OpenAPI Specification"</span>, <span class="seriesInfo">Version 3.1.0</span>, <time datetime="2021-02" class="refDate">February 2021</time>, <span>&lt;<a href="https://spec.openapis.org/oas/v3.1.0">https://spec.openapis.org/oas/v3.1.0</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="MCP">[MCP]</dt>
+        <dd>
+<span class="refAuthor">Anthropic</span>, <span class="refTitle">"Model Context Protocol Specification"</span>, <time datetime="2024" class="refDate">2024</time>, <span>&lt;<a href="https://modelcontextprotocol.io">https://modelcontextprotocol.io</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="LLMSTXT">[LLMSTXT]</dt>
+      <dd>
+<span class="refAuthor">Willison, S.</span>, <span class="refTitle">"llms.txt -- A Proposal"</span>, <time datetime="2024" class="refDate">2024</time>, <span>&lt;<a href="https://llmstxt.org">https://llmstxt.org</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</section>
+<div id="comparison">
+<section id="appendix-A">
+      <h2 id="name-comparison-with-existing-ap">
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-comparison-with-existing-ap" class="section-name selfRef">Comparison with Existing Approaches</a>
+      </h2>
+<section id="appendix-A.1">
+        <h3 id="name-robotstxt-rfc-9309">
+<a href="#appendix-A.1" class="section-number selfRef">A.1. </a><a href="#name-robotstxt-rfc-9309" class="section-name selfRef">robots.txt (RFC 9309)</a>
+        </h3>
+<p id="appendix-A.1-1">
+          robots.txt communicates access restrictions to web crawlers.
+          It answers the question "where should you NOT go?" but provides
+          no information about what a service can do or how to interact
+          with it programmatically.  The AI Discovery Endpoint is
+          complementary: while robots.txt defines boundaries, the AI
+          Discovery Endpoint defines capabilities within those boundaries.<a href="#appendix-A.1-1" class="pilcrow">¶</a></p>
+</section>
+<section id="appendix-A.2">
+        <h3 id="name-openapi-swagger">
+<a href="#appendix-A.2" class="section-number selfRef">A.2. </a><a href="#name-openapi-swagger" class="section-name selfRef">OpenAPI / Swagger</a>
+        </h3>
+<p id="appendix-A.2-1">
+          OpenAPI provides exhaustive, formal descriptions of REST APIs.
+          It is designed as a complete contract between API provider and
+          consumer, typically running to thousands of lines for a
+          non-trivial service.  A typical OpenAPI specification for a
+          service with 10 endpoints consumes 5,000-20,000 tokens when
+          processed by an LLM.  The equivalent AI Discovery Document
+          consumes 300-800 tokens.<a href="#appendix-A.2-1" class="pilcrow">¶</a></p>
+<p id="appendix-A.2-2">
+          The AI Discovery Endpoint does not replace OpenAPI.  A service
+          <span class="bcp14">MAY</span> publish both, using the AI Discovery
+          Document for initial capability discovery and linking to the
+          OpenAPI specification for agents that require detailed
+          contract information.<a href="#appendix-A.2-2" class="pilcrow">¶</a></p>
+</section>
+<section id="appendix-A.3">
+        <h3 id="name-model-context-protocol-mcp">
+<a href="#appendix-A.3" class="section-number selfRef">A.3. </a><a href="#name-model-context-protocol-mcp" class="section-name selfRef">Model Context Protocol (MCP)</a>
+        </h3>
+<p id="appendix-A.3-1">
+          MCP defines a runtime protocol for connecting AI agents to
+          external tools and data sources.  It requires a dedicated
+          server process, a custom transport layer, and framework-specific
+          integration.  The AI Discovery Endpoint operates at a different
+          layer: it is a static discovery mechanism with no runtime
+          dependencies.  A service's AI Discovery Document can be used
+          to automatically generate an MCP server configuration, making
+          the two approaches complementary.<a href="#appendix-A.3-1" class="pilcrow">¶</a></p>
+</section>
+<section id="appendix-A.4">
+        <h3 id="name-llmstxt">
+<a href="#appendix-A.4" class="section-number selfRef">A.4. </a><a href="#name-llmstxt" class="section-name selfRef">llms.txt</a>
+        </h3>
+<p id="appendix-A.4-1">
+          llms.txt <span>[<a href="#LLMSTXT" class="cite xref">LLMSTXT</a>]</span> proposes a convention for
+          placing a plain text file at the root of a website containing
+          a natural language summary for LLMs.  While simple to
+          implement, it is unstructured, not machine-queryable, and
+          does not describe invocable actions.  An LLM can read an
+          llms.txt file to understand what a service is, but cannot
+          determine from it how to programmatically interact with
+          the service.<a href="#appendix-A.4-1" class="pilcrow">¶</a></p>
+</section>
+<section id="appendix-A.5">
+        <h3 id="name-summary">
+<a href="#appendix-A.5" class="section-number selfRef">A.5. </a><a href="#name-summary" class="section-name selfRef">Summary</a>
+        </h3>
+<table class="center" id="table-1">
+          <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Criterion</th>
+              <th class="text-left" rowspan="1" colspan="1">/ai</th>
+              <th class="text-left" rowspan="1" colspan="1">OpenAPI</th>
+              <th class="text-left" rowspan="1" colspan="1">MCP</th>
+              <th class="text-left" rowspan="1" colspan="1">llms.txt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Discovery focus</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+              <td class="text-left" rowspan="1" colspan="1">Partial</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Token efficient</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+              <td class="text-left" rowspan="1" colspan="1">N/A</td>
+              <td class="text-left" rowspan="1" colspan="1">Partial</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Machine-queryable</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Actions described</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">No infrastructure</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+              <td class="text-left" rowspan="1" colspan="1">Yes</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Implementation time</td>
+              <td class="text-left" rowspan="1" colspan="1">&lt;30 min</td>
+              <td class="text-left" rowspan="1" colspan="1">Hours</td>
+              <td class="text-left" rowspan="1" colspan="1">Hours</td>
+              <td class="text-left" rowspan="1" colspan="1">&lt;10 min</td>
+            </tr>
+          </tbody>
+        </table>
+</section>
+</section>
+</div>
+<div id="json-schema">
+<section id="appendix-B">
+      <h2 id="name-json-schema">
+<a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-json-schema" class="section-name selfRef">JSON Schema</a>
+      </h2>
+<p id="appendix-B-1">
+        A formal JSON Schema (draft 2020-12) for the AI Discovery
+        Document is maintained at:<a href="#appendix-B-1" class="pilcrow">¶</a></p>
+<p id="appendix-B-2">
+        https://www.aiendpoint.dev/spec/v1/schema.json<a href="#appendix-B-2" class="pilcrow">¶</a></p>
+<p id="appendix-B-3">
+        This schema provides machine-verifiable validation of AI
+        Discovery Documents and is the normative reference for field
+        types, constraints, and enumerated values defined in this
+        specification.  The schema is versioned in parallel with this
+        specification; version "1.0" of the schema corresponds to
+        this document.<a href="#appendix-B-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="design-rationale">
+<section id="appendix-C">
+      <h2 id="name-design-rationale">
+<a href="#appendix-C" class="section-number selfRef">Appendix C. </a><a href="#name-design-rationale" class="section-name selfRef">Design Rationale</a>
+      </h2>
+<section id="appendix-C.1">
+        <h3 id="name-why-a-well-known-uri">
+<a href="#appendix-C.1" class="section-number selfRef">C.1. </a><a href="#name-why-a-well-known-uri" class="section-name selfRef">Why a Well-Known URI?</a>
+        </h3>
+<p id="appendix-C.1-1">
+          The Well-Known URI mechanism <span>[<a href="#RFC8615" class="cite xref">RFC8615</a>]</span> provides
+          a standardized namespace for resources that need to be located
+          without prior knowledge of a site's URL structure.  This is
+          precisely the use case for AI agent discovery: an agent needs
+          to find the AI Discovery Document given only the service's
+          hostname.  The alternative — requiring services to register
+          their AI Discovery Document location in a central registry —
+          would create a dependency on a third-party service and limit
+          adoption.<a href="#appendix-C.1-1" class="pilcrow">¶</a></p>
+</section>
+<section id="appendix-C.2">
+        <h3 id="name-why-json-over-other-formats">
+<a href="#appendix-C.2" class="section-number selfRef">C.2. </a><a href="#name-why-json-over-other-formats" class="section-name selfRef">Why JSON over Other Formats?</a>
+        </h3>
+<p id="appendix-C.2-1">
+          JSON is the de facto standard for structured data exchange on
+          the web.  Every mainstream programming language includes JSON
+          parsing in its standard library.  Every LLM is trained on
+          extensive JSON data and can parse it reliably.<a href="#appendix-C.2-1" class="pilcrow">¶</a></p>
+<p id="appendix-C.2-2">Alternatives considered:<a href="#appendix-C.2-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-C.2-3.1">YAML: More human-readable but introduces parsing
+            complexity and ambiguity.<a href="#appendix-C.2-3.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="appendix-C.2-3.2">XML: More verbose, imposing higher token costs.<a href="#appendix-C.2-3.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="appendix-C.2-3.3">Protocol Buffers / MessagePack: Efficient but not
+            human-readable.<a href="#appendix-C.2-3.3" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="appendix-C.2-3.4">Plain text (like llms.txt): Simple but unstructured,
+            preventing reliable machine parsing.<a href="#appendix-C.2-3.4" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+<section id="appendix-C.3">
+        <h3 id="name-why-compact-parameter-descr">
+<a href="#appendix-C.3" class="section-number selfRef">C.3. </a><a href="#name-why-compact-parameter-descr" class="section-name selfRef">Why Compact Parameter Descriptions?</a>
+        </h3>
+<p id="appendix-C.3-1">
+          The decision to represent parameter descriptions as single-line
+          strings (e.g., "string, required -- search keyword") rather
+          than structured objects (as in OpenAPI's Parameter Object) was
+          driven by token efficiency.  A structured representation
+          requires approximately 8-12 JSON tokens for structural elements
+          alone.  The compact string format eliminates this overhead while
+          remaining parseable by both humans and LLMs.<a href="#appendix-C.3-1" class="pilcrow">¶</a></p>
+</section>
+<section id="appendix-C.4">
+        <h3 id="name-why-no-request-response-exa">
+<a href="#appendix-C.4" class="section-number selfRef">C.4. </a><a href="#name-why-no-request-response-exa" class="section-name selfRef">Why No Request/Response Examples?</a>
+        </h3>
+<p id="appendix-C.4-1">
+          This specification deliberately omits examples from the
+          discovery document for two reasons:<a href="#appendix-C.4-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="appendix-C.4-2">
+          <li id="appendix-C.4-2.1">
+            Token cost: Examples can easily double the size of a
+            capability description without adding proportional
+            informational value for an LLM, which can infer usage from
+            parameter types and descriptions.<a href="#appendix-C.4-2.1" class="pilcrow">¶</a>
+</li>
+          <li id="appendix-C.4-2.2">
+            Maintenance burden: Examples that fall out of sync with the
+            actual API behavior are worse than no examples, as they cause
+            agents to generate incorrect requests.<a href="#appendix-C.4-2.2" class="pilcrow">¶</a>
+</li>
+        </ol>
+</section>
+</section>
+</div>
+<div id="acknowledgements">
+<section id="appendix-D">
+      <h2 id="name-acknowledgements">
+<a href="#name-acknowledgements" class="section-name selfRef">Acknowledgements</a>
+      </h2>
+<p id="appendix-D-1">
+        The design of this specification was informed by the long history
+        of web standards that enable automated interaction with web
+        resources, including the Robots Exclusion Protocol
+        <span>[<a href="#RFC9309" class="cite xref">RFC9309</a>]</span>, the Sitemaps protocol, the OpenAPI
+        Specification <span>[<a href="#OPENAPI" class="cite xref">OPENAPI</a>]</span>, and the Model Context
+        Protocol <span>[<a href="#MCP" class="cite xref">MCP</a>]</span>.<a href="#appendix-D-1" class="pilcrow">¶</a></p>
+<p id="appendix-D-2">
+        The authors thank the early adopters and contributors to the
+        AIEndpoint open-source project for their feedback on the
+        specification design.<a href="#appendix-D-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-E">
+      <h2 id="name-authors-address">
+<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Yeongjae Choi</span></div>
+<div dir="auto" class="left"><span class="org">AIEndpoint</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:bejoyfuuul@gmail.com" class="email">bejoyfuuul@gmail.com</a>
+</div>
+<div class="url">
+<span>URI:</span>
+<a href="https://www.aiendpoint.dev" class="url">https://www.aiendpoint.dev</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>

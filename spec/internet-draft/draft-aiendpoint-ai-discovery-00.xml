@@ -82,9 +82,9 @@
       <name>Introduction</name>
 
       <t>
-        The rapid proliferation of autonomous AI agents — software systems
+        The rapid proliferation of autonomous AI agents -- software systems
         powered by large language models (LLMs) that perform tasks on
-        behalf of users — has created a fundamental interoperability gap
+        behalf of users -- has created a fundamental interoperability gap
         on the World Wide Web.  While the web has well-established
         mechanisms for communicating with human users (HTML) and search
         engine crawlers (robots.txt <xref target="RFC9309"/>, sitemaps),
@@ -125,7 +125,7 @@
         unscalable.  A single service discovery interaction that could be
         accomplished in 200-500 LLM tokens with a structured response
         instead requires 3,000-15,000 tokens of unstructured content
-        parsing — a 10x to 30x overhead.
+        parsing -- a 10x to 30x overhead.
       </t>
 
       <t>
@@ -151,7 +151,7 @@
           maximum information in minimum LLM tokens.
         </li>
         <li>
-          Universality: The mechanism requires only HTTP and JSON — no
+          Universality: The mechanism requires only HTTP and JSON -- no
           custom protocols, transport layers, or runtime dependencies.
         </li>
         <li>
@@ -1034,7 +1034,7 @@ Cache-Control: public, max-age=86400
         A well-formed AI Discovery Document for a service with 5
         capabilities is expected to consume between 200 and 800 tokens.
         By contrast, extracting equivalent information from a typical
-        HTML documentation page requires 3,000 to 15,000 tokens — an
+        HTML documentation page requires 3,000 to 15,000 tokens -- an
         overhead factor of 10x to 30x.
       </t>
 
@@ -1291,7 +1291,9 @@ Cache-Control: public, max-age=86400
   "aiendpoint": "1.0",
   "service": {
     "name": "ExampleShop",
-    "description": "Search and browse products. Supports keyword search, category filtering, and price sorting.",
+    "description": "Search and browse products.
+      Supports keyword search, category filtering,
+      and price sorting.",
     "category": ["ecommerce", "search"],
     "language": ["en", "ko"]
   },
@@ -1305,10 +1307,13 @@ Cache-Control: public, max-age=86400
         "q": "string, required -- search keyword",
         "category": "string, optional -- filter by category",
         "max_price": "number, optional -- max price in USD",
-        "sort": "string, optional -- price_asc|price_desc|relevance, default relevance",
+        "sort": "string, optional --
+          price_asc|price_desc|relevance,
+          default relevance",
         "limit": "integer, optional, default 10, max 50"
       },
-      "returns": "products[] {id, name, price_usd, stock, category, url}"
+      "returns": "products[] {id, name,
+        price_usd, stock, category, url}"
     },
     {
       "id": "get_product",
@@ -1318,7 +1323,8 @@ Cache-Control: public, max-age=86400
       "params": {
         "id": "string, required -- product ID"
       },
-      "returns": "product {id, name, description, price_usd, stock, images[], category, url}"
+      "returns": "product {id, name, description,
+        price_usd, stock, images[], category, url}"
     }
   ],
   "auth": {
@@ -1352,7 +1358,8 @@ Cache-Control: public, max-age=86400
   "aiendpoint": "1.0",
   "service": {
     "name": "WorldWeather",
-    "description": "Current weather and 5-day forecasts for cities worldwide.",
+    "description": "Current weather and 5-day
+      forecasts for cities worldwide.",
     "category": ["weather", "data"],
     "language": ["en"]
   },
@@ -1364,9 +1371,11 @@ Cache-Control: public, max-age=86400
       "method": "GET",
       "params": {
         "city": "string, required -- city name",
-        "units": "string, optional -- metric|imperial, default metric"
+        "units": "string, optional --
+          metric|imperial, default metric"
       },
-      "returns": "city {name, country}, condition, temp, humidity_pct, wind_speed, updated_at"
+      "returns": "city {name, country}, condition,
+        temp, humidity_pct, wind_speed, updated_at"
     },
     {
       "id": "forecast",
@@ -1376,9 +1385,12 @@ Cache-Control: public, max-age=86400
       "params": {
         "city": "string, required -- city name",
         "days": "integer, optional, default 5, max 5",
-        "units": "string, optional -- metric|imperial, default metric"
+        "units": "string, optional --
+          metric|imperial, default metric"
       },
-      "returns": "city {name, country}, forecast[] {date, condition, temp_high, temp_low, precipitation_pct}"
+      "returns": "city {name, country},
+        forecast[] {date, condition, temp_high,
+        temp_low, precipitation_pct}"
     }
   ],
   "auth": {
@@ -1522,13 +1534,14 @@ Cache-Control: public, max-age=86400
       <section numbered="true" toc="default">
         <name>llms.txt</name>
         <t>
-          llms.txt proposes a convention for placing a plain text file
-          at the root of a website containing a natural language summary
-          for LLMs.  While simple to implement, it is unstructured, not
-          machine-queryable, and does not describe invocable actions.
-          An LLM can read an llms.txt file to understand what a service
-          is, but cannot determine from it how to programmatically
-          interact with the service.
+          llms.txt <xref target="LLMSTXT"/> proposes a convention for
+          placing a plain text file at the root of a website containing
+          a natural language summary for LLMs.  While simple to
+          implement, it is unstructured, not machine-queryable, and
+          does not describe invocable actions.  An LLM can read an
+          llms.txt file to understand what a service is, but cannot
+          determine from it how to programmatically interact with
+          the service.
         </t>
       </section>
 
@@ -1634,8 +1647,8 @@ Cache-Control: public, max-age=86400
           without prior knowledge of a site's URL structure.  This is
           precisely the use case for AI agent discovery: an agent needs
           to find the AI Discovery Document given only the service's
-          hostname.  The alternative — requiring services to register
-          their AI Discovery Document location in a central registry —
+          hostname.  The alternative -- requiring services to register
+          their AI Discovery Document location in a central registry --
           would create a dependency on a third-party service and limit
           adoption.
         </t>

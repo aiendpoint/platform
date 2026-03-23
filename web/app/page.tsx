@@ -27,7 +27,24 @@ export default async function Home() {
       <section className="max-w-5xl mx-auto px-6 pt-24 pb-16 text-center">
         <div className="inline-flex items-center gap-2 bg-canvas border border-line text-muted text-xs px-3 py-1 rounded-full mb-8">
           <span className="w-1.5 h-1.5 bg-success rounded-full" />
-          Open Standard · Apache 2.0
+          Open Standard ·{" "}
+          <a
+            href="https://www.ietf.org/archive/id/draft-aiendpoint-ai-discovery-00.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-fg transition-colors"
+          >
+            IETF Internet-Draft
+          </a>{" "}
+          ·{" "}
+          <a
+            href="https://github.com/aiendpoint/platform/blob/main/LICENSE"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-fg transition-colors"
+          >
+            Apache 2.0
+          </a>
         </div>
         <h1 className="text-5xl font-bold tracking-tight text-fg mb-6">
           The <code className="text-accent">/ai</code> Standard
