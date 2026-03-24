@@ -72,7 +72,13 @@ export default async function ServicesPage({ searchParams }: Props) {
 
       {/* Filters (client component) */}
       <Suspense fallback={null}>
-        <ServicesFilter categories={categories} />
+        <ServicesFilter
+          categories={categories}
+          initialQ={params.q ?? ""}
+          initialCategories={cats}
+          initialAuthType={params.auth_type ?? ""}
+          initialSort={params.sort ?? "newest"}
+        />
       </Suspense>
 
       {/* Grid */}

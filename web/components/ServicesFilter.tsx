@@ -22,16 +22,24 @@ const SORT_OPTIONS = [
   { id: "name", label: "A–Z" },
 ] as const;
 
-export function ServicesFilter({ categories }: { categories: Category[] }) {
+interface FilterProps {
+  categories: Category[];
+  initialQ?: string;
+  initialCategories?: string[];
+  initialAuthType?: string;
+  initialSort?: string;
+}
+
+export function ServicesFilter({ categories, initialQ = "", initialCategories = [], initialAuthType = "", initialSort = "newest" }: FilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const q = searchParams.get("q") ?? "";
-  const selectedCategories = (searchParams.get("category") ?? "").split(",").filter(Boolean);
-  const authType = searchParams.get("auth_type") ?? "";
-  const sort = searchParams.get("sort") ?? "newest";
+  const q = searchParams.get("q") ?? initialQ;
+  const selectedCategories = (searchParams.get("category") ?? initialCategories.join(",")).split(",").filter(Boolean);
+  const authType = searchParams.get("auth_type") ?? initialAuthType;
+  const sort = searchParams.get("sort") ?? initialSort;
 
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useState(initialQ);
   const [categoryExpanded, setCategoryExpanded] = useState(false);
 
   useEffect(() => { setSearchInput(q); }, [q]);
@@ -99,7 +107,7 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
         {/* Category */}
         {categories.filter((c) => c.count > 0).length > 0 && (
           <div>
-            <div className={`flex flex-wrap gap-2 items-start ${categoryExpanded ? "" : "max-h-[4.5rem] overflow-hidden"}`}>
+            <div className={`flex flex-wrap gap-2 items-start overflow-hidden ${categoryExpanded ? "" : "max-h-[4.5rem]"}`}>
               <span className="text-xs text-faint w-14 shrink-0 leading-[1.875rem]">Category</span>
               {categories.filter((c) => c.count > 0).map((cat) => (
                 <button
