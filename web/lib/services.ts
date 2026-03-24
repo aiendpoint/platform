@@ -37,10 +37,10 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
   }
   const cats = params.category ? params.category.split(",").filter(Boolean) : [];
   if (cats.length > 0) {
-    ownerCountQ = ownerCountQ.overlaps("categories", cats);
-    communityCountQ = communityCountQ.or(
-      cats.map(c => `ai_spec->service->category.cs.["${c}"]`).join(",")
-    );
+    ownerCountQ = ownerCountQ.contains("categories", cats);
+    for (const c of cats) {
+      communityCountQ = communityCountQ.filter("ai_spec->service->category", "cs", `["${c}"]`);
+    }
   }
   if (params.auth_type) {
     ownerCountQ = ownerCountQ.eq("auth_type", params.auth_type);
@@ -62,7 +62,7 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
 
   if (params.q) ownerQuery = ownerQuery.or(`name.ilike.${params.q}%,url.ilike.${params.q}%`);
   if (cats.length > 0) {
-    ownerQuery = ownerQuery.overlaps("categories", cats);
+    ownerQuery = ownerQuery.contains("categories", cats);
   }
   if (params.auth_type) ownerQuery = ownerQuery.eq("auth_type", params.auth_type);
 
@@ -105,10 +105,8 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
 
     if (params.q) communityQuery = communityQuery.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
     if (params.auth_type) communityQuery = communityQuery.filter("ai_spec->auth->>type", "eq", params.auth_type);
-    if (cats.length > 0) {
-      communityQuery = communityQuery.or(
-        cats.map(c => `ai_spec->service->category.cs.["${c}"]`).join(",")
-      );
+    for (const c of cats) {
+      communityQuery = communityQuery.filter("ai_spec->service->category", "cs", `["${c}"]`);
     }
 
     // Apply sort to community query

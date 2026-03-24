@@ -44,7 +44,9 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
           params.delete(k);
         }
       }
-      router.push(`/services?${params.toString()}`);
+      // Avoid URLSearchParams encoding commas in category
+      const qs = params.toString().replace(/%2C/gi, ",");
+      router.push(`/services?${qs}`);
     },
     [router, searchParams]
   );
