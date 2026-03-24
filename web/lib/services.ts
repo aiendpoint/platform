@@ -41,7 +41,8 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
   const [{ count: ownerCount }, { count: communityCount }] = await Promise.all([ownerCountQ, communityCountQ]);
 
   const totalOwner = ownerCount ?? 0;
-  const totalCommunity = communityCount ?? 0;
+  // Exclude community from count when auth_type filter is active
+  const totalCommunity = params.auth_type ? 0 : (communityCount ?? 0);
   const total = totalOwner + totalCommunity;
 
   // ── Owner services query ──────────────────────────────────────────
@@ -82,7 +83,8 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
   }));
 
   // ── Fill remaining with community specs ──────────────────────────
-  const remaining = PAGE_SIZE - services.length;
+  // Skip community if auth_type filter is set (can't filter JSONB efficiently)
+  const remaining = params.auth_type ? 0 : PAGE_SIZE - services.length;
 
   if (remaining > 0) {
     const communityOffset = Math.max(0, offset - totalOwner);
@@ -94,8 +96,16 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
 
     if (params.q) communityQuery = communityQuery.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
 
+    // Apply sort to community query
+    if (params.sort === "score") {
+      communityQuery = communityQuery.order("confidence", { ascending: false });
+    } else if (params.sort === "name") {
+      communityQuery = communityQuery.order("domain", { ascending: true });
+    } else {
+      communityQuery = communityQuery.order("created_at", { ascending: false });
+    }
+
     const { data: communityData } = await communityQuery
-      .order("discover_count", { ascending: false })
       .range(communityOffset, communityOffset + remaining - 1);
 
     for (const row of communityData ?? []) {
