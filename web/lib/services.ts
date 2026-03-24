@@ -36,13 +36,15 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
     communityCountQ = communityCountQ.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
   }
   if (params.category) ownerCountQ = ownerCountQ.overlaps("categories", [params.category]);
-  if (params.auth_type) ownerCountQ = ownerCountQ.eq("auth_type", params.auth_type);
+  if (params.auth_type) {
+    ownerCountQ = ownerCountQ.eq("auth_type", params.auth_type);
+    communityCountQ = communityCountQ.filter("ai_spec->auth->>type", "eq", params.auth_type);
+  }
 
   const [{ count: ownerCount }, { count: communityCount }] = await Promise.all([ownerCountQ, communityCountQ]);
 
   const totalOwner = ownerCount ?? 0;
-  // Exclude community from count when auth_type filter is active
-  const totalCommunity = params.auth_type ? 0 : (communityCount ?? 0);
+  const totalCommunity = communityCount ?? 0;
   const total = totalOwner + totalCommunity;
 
   // ── Owner services query ──────────────────────────────────────────
@@ -83,8 +85,7 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
   }));
 
   // ── Fill remaining with community specs ──────────────────────────
-  // Skip community if auth_type filter is set (can't filter JSONB efficiently)
-  const remaining = params.auth_type ? 0 : PAGE_SIZE - services.length;
+  const remaining = PAGE_SIZE - services.length;
 
   if (remaining > 0) {
     const communityOffset = Math.max(0, offset - totalOwner);
@@ -95,6 +96,7 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
       .eq("status", "active");
 
     if (params.q) communityQuery = communityQuery.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
+    if (params.auth_type) communityQuery = communityQuery.filter("ai_spec->auth->>type", "eq", params.auth_type);
 
     // Apply sort to community query
     if (params.sort === "score") {
