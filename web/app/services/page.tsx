@@ -55,19 +55,11 @@ export default async function ServicesPage({ searchParams }: Props) {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-fg">Services</h1>
-          <p className="text-muted mt-1">
-            {formatCount(total)} indexed service{total !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <Link
-          href="/register"
-          className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          + Register
-        </Link>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-fg">Services</h1>
+        <p className="text-muted mt-1">
+          {formatCount(total)} indexed service{total !== 1 ? "s" : ""}
+        </p>
       </div>
 
       {/* Filters (client component) */}
