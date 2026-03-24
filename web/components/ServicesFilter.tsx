@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 interface Category {
   id: string;
@@ -31,8 +31,10 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
   const authType = searchParams.get("auth_type") ?? "";
   const sort = searchParams.get("sort") ?? "newest";
 
-  const [searchInput, setSearchInput] = useState(q);
+  const [searchInput, setSearchInput] = useState("");
   const [categoryExpanded, setCategoryExpanded] = useState(false);
+
+  useEffect(() => { setSearchInput(q); }, [q]);
 
   const navigate = useCallback(
     (updates: Record<string, string>) => {
