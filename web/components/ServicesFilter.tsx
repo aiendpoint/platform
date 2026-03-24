@@ -32,6 +32,7 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
   const sort = searchParams.get("sort") ?? "newest";
 
   const [searchInput, setSearchInput] = useState(q);
+  const [categoryExpanded, setCategoryExpanded] = useState(false);
 
   const navigate = useCallback(
     (updates: Record<string, string>) => {
@@ -95,23 +96,43 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
       <div className="space-y-3 mb-8">
         {/* Category */}
         {categories.filter((c) => c.count > 0).length > 0 && (
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs text-faint w-14 shrink-0">Category</span>
-            {categories.filter((c) => c.count > 0).map((cat) => (
+          <div>
+            <div className={`flex flex-wrap gap-2 items-start ${categoryExpanded ? "" : "max-h-[4.5rem] overflow-hidden"}`}>
+              <span className="text-xs text-faint w-14 shrink-0 leading-[1.875rem]">Category</span>
+              {categories.filter((c) => c.count > 0).map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => toggleCategory(cat.id)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors cursor-pointer ${
+                    selectedCategories.includes(cat.id)
+                      ? "bg-accent border-accent text-white"
+                      : "bg-canvas border-line text-muted hover:border-line-dim hover:text-fg"
+                  }`}
+                >
+                  {cat.label}
+                  <span className="ml-1 opacity-50">({cat.count})</span>
+                </button>
+              ))}
+            </div>
+            {categories.filter((c) => c.count > 0).length > 10 && (
               <button
-                key={cat.id}
                 type="button"
-                onClick={() => toggleCategory(cat.id)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors cursor-pointer ${
-                  selectedCategories.includes(cat.id)
-                    ? "bg-accent border-accent text-white"
-                    : "bg-canvas border-line text-muted hover:border-line-dim hover:text-fg"
-                }`}
+                onClick={() => setCategoryExpanded(!categoryExpanded)}
+                className="mt-1.5 ml-14 text-xs text-subtle hover:text-muted transition-colors cursor-pointer flex items-center gap-1"
               >
-                {cat.label}
-                <span className="ml-1 opacity-50">({cat.count})</span>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  className={`transition-transform ${categoryExpanded ? "rotate-180" : ""}`}
+                >
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {categoryExpanded ? "Show less" : `Show all ${categories.filter((c) => c.count > 0).length} categories`}
               </button>
-            ))}
+            )}
           </div>
         )}
 
