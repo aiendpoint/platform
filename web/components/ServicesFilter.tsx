@@ -27,22 +27,23 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
   const searchParams = useSearchParams();
 
   const q = searchParams.get("q") ?? "";
-  const category = searchParams.get("category") ?? "";
+  const selectedCategories = searchParams.getAll("category");
   const authType = searchParams.get("auth_type") ?? "";
   const sort = searchParams.get("sort") ?? "newest";
 
   const [searchInput, setSearchInput] = useState(q);
 
   const navigate = useCallback(
-    (updates: Record<string, string>) => {
+    (updates: Record<string, string | string[]>) => {
       const params = new URLSearchParams(searchParams.toString());
       // Reset page on filter change
       params.delete("page");
       for (const [k, v] of Object.entries(updates)) {
-        if (v) {
+        params.delete(k);
+        if (Array.isArray(v)) {
+          for (const item of v) params.append(k, item);
+        } else if (v) {
           params.set(k, v);
-        } else {
-          params.delete(k);
         }
       }
       router.push(`/services?${params.toString()}`);
@@ -56,7 +57,10 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
   };
 
   const toggleCategory = (cat: string) => {
-    navigate({ category: category === cat ? "" : cat });
+    const next = selectedCategories.includes(cat)
+      ? selectedCategories.filter(c => c !== cat)
+      : [...selectedCategories, cat];
+    navigate({ category: next });
   };
 
   const toggleAuth = (auth: string) => {
@@ -67,7 +71,7 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
     navigate({ sort: s === "newest" ? "" : s });
   };
 
-  const hasFilters = !!(q || category || authType || sort !== "newest");
+  const hasFilters = !!(q || selectedCategories.length > 0 || authType || sort !== "newest");
 
   const clearAll = () => {
     setSearchInput("");
@@ -99,7 +103,7 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
                 type="button"
                 onClick={() => toggleCategory(cat.id)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors cursor-pointer ${
-                  category === cat.id
+                  selectedCategories.includes(cat.id)
                     ? "bg-accent border-accent text-white"
                     : "bg-canvas border-line text-muted hover:border-line-dim hover:text-fg"
                 }`}

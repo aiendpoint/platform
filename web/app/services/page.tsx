@@ -15,7 +15,7 @@ import { formatCount } from "@/lib/numbers";
 interface Props {
   searchParams: Promise<{
     q?: string;
-    category?: string;
+    category?: string | string[];
     auth_type?: string;
     sort?: string;
     page?: string;
@@ -37,13 +37,14 @@ export default async function ServicesPage({ searchParams }: Props) {
     getCategoriesSSR(),
   ]);
 
-  const hasFilters = !!(params.q || params.category || params.auth_type || (params.sort && params.sort !== "newest"));
+  const cats = params.category ? (Array.isArray(params.category) ? params.category : [params.category]) : [];
+  const hasFilters = !!(params.q || cats.length > 0 || params.auth_type || (params.sort && params.sort !== "newest"));
 
   // Build pagination URLs
   function pageUrl(p: number): string {
     const sp = new URLSearchParams();
     if (params.q) sp.set("q", params.q);
-    if (params.category) sp.set("category", params.category);
+    for (const c of cats) sp.append("category", c);
     if (params.auth_type) sp.set("auth_type", params.auth_type);
     if (params.sort && params.sort !== "newest") sp.set("sort", params.sort);
     if (p > 1) sp.set("page", String(p));

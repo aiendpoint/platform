@@ -9,7 +9,7 @@ const CACHE_TTL = parseInt(process.env.SERVICES_CACHE_TTL ?? "300", 10); // defa
 
 export interface ServicesParams {
   q?: string;
-  category?: string;
+  category?: string | string[];
   auth_type?: string;
   sort?: string;
   page?: number;
@@ -35,9 +35,13 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
     ownerCountQ = ownerCountQ.or(`name.ilike.${params.q}%,url.ilike.${params.q}%`);
     communityCountQ = communityCountQ.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
   }
-  if (params.category) {
-    ownerCountQ = ownerCountQ.overlaps("categories", [params.category]);
-    communityCountQ = communityCountQ.filter("ai_spec->service->category", "cs", `["${params.category}"]`);
+  const cats = params.category ? (Array.isArray(params.category) ? params.category : [params.category]) : [];
+  if (cats.length > 0) {
+    ownerCountQ = ownerCountQ.overlaps("categories", cats);
+    // JSONB array contains — check each selected category
+    communityCountQ = communityCountQ.or(
+      cats.map(c => `ai_spec->service->category.cs.["${c}"]`).join(",")
+    );
   }
   if (params.auth_type) {
     ownerCountQ = ownerCountQ.eq("auth_type", params.auth_type);
@@ -58,7 +62,7 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
     .is("deleted_at", null);
 
   if (params.q) ownerQuery = ownerQuery.or(`name.ilike.${params.q}%,url.ilike.${params.q}%`);
-  if (params.category) ownerQuery = ownerQuery.overlaps("categories", [params.category]);
+  if (cats.length > 0) ownerQuery = ownerQuery.overlaps("categories", cats);
   if (params.auth_type) ownerQuery = ownerQuery.eq("auth_type", params.auth_type);
 
   if (params.sort === "score") {
@@ -100,7 +104,9 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
 
     if (params.q) communityQuery = communityQuery.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
     if (params.auth_type) communityQuery = communityQuery.filter("ai_spec->auth->>type", "eq", params.auth_type);
-    if (params.category) communityQuery = communityQuery.filter("ai_spec->service->category", "cs", `["${params.category}"]`);
+    if (cats.length > 0) communityQuery = communityQuery.or(
+      cats.map(c => `ai_spec->service->category.cs.["${c}"]`).join(",")
+    );
 
     // Apply sort to community query
     if (params.sort === "score") {
@@ -151,7 +157,8 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
 export async function getServicesSSR(params: ServicesParams): Promise<ServicesResult> {
   if (CACHE_TTL <= 0) return _getServicesSSR(params);
 
-  const cacheKey = `services:${params.q ?? ""}:${params.category ?? ""}:${params.auth_type ?? ""}:${params.sort ?? ""}:${params.page ?? 1}`;
+  const catKey = Array.isArray(params.category) ? params.category.sort().join(",") : (params.category ?? "");
+  const cacheKey = `services:${params.q ?? ""}:${catKey}:${params.auth_type ?? ""}:${params.sort ?? ""}:${params.page ?? 1}`;
 
   const cached = unstable_cache(
     () => _getServicesSSR(params),
