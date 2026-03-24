@@ -35,7 +35,13 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
     ownerCountQ = ownerCountQ.or(`name.ilike.${params.q}%,url.ilike.${params.q}%`);
     communityCountQ = communityCountQ.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
   }
-  if (params.category) ownerCountQ = ownerCountQ.overlaps("categories", [params.category]);
+  const cats = params.category ? params.category.split(",").filter(Boolean) : [];
+  if (cats.length > 0) {
+    ownerCountQ = ownerCountQ.contains("categories", cats);
+    for (const c of cats) {
+      communityCountQ = communityCountQ.filter("ai_spec->service->category", "cs", `["${c}"]`);
+    }
+  }
   if (params.auth_type) {
     ownerCountQ = ownerCountQ.eq("auth_type", params.auth_type);
     communityCountQ = communityCountQ.filter("ai_spec->auth->>type", "eq", params.auth_type);
@@ -55,7 +61,9 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
     .is("deleted_at", null);
 
   if (params.q) ownerQuery = ownerQuery.or(`name.ilike.${params.q}%,url.ilike.${params.q}%`);
-  if (params.category) ownerQuery = ownerQuery.overlaps("categories", [params.category]);
+  if (cats.length > 0) {
+    ownerQuery = ownerQuery.contains("categories", cats);
+  }
   if (params.auth_type) ownerQuery = ownerQuery.eq("auth_type", params.auth_type);
 
   if (params.sort === "score") {
@@ -97,6 +105,9 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
 
     if (params.q) communityQuery = communityQuery.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
     if (params.auth_type) communityQuery = communityQuery.filter("ai_spec->auth->>type", "eq", params.auth_type);
+    for (const c of cats) {
+      communityQuery = communityQuery.filter("ai_spec->service->category", "cs", `["${c}"]`);
+    }
 
     // Apply sort to community query
     if (params.sort === "score") {
@@ -147,7 +158,8 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
 export async function getServicesSSR(params: ServicesParams): Promise<ServicesResult> {
   if (CACHE_TTL <= 0) return _getServicesSSR(params);
 
-  const cacheKey = `services:${params.q ?? ""}:${params.category ?? ""}:${params.auth_type ?? ""}:${params.sort ?? ""}:${params.page ?? 1}`;
+  const catKey = params.category ?? "";
+  const cacheKey = `services:${params.q ?? ""}:${catKey}:${params.auth_type ?? ""}:${params.sort ?? ""}:${params.page ?? 1}`;
 
   const cached = unstable_cache(
     () => _getServicesSSR(params),
@@ -159,22 +171,31 @@ export async function getServicesSSR(params: ServicesParams): Promise<ServicesRe
 }
 
 async function _getCategoriesSSR(): Promise<{ id: string; label: string; count: number }[]> {
-  const { data } = await db
-    .from("services")
-    .select("categories")
-    .eq("status", "active")
-    .is("deleted_at", null);
+  const [{ data: ownerData }, { data: communityData }] = await Promise.all([
+    db.from("services").select("categories").eq("status", "active").is("deleted_at", null),
+    db.from("community_specs").select("ai_spec").eq("status", "active"),
+  ]);
 
   const counts = new Map<string, number>();
-  for (const row of data ?? []) {
+
+  for (const row of ownerData ?? []) {
     for (const cat of row.categories ?? []) {
+      counts.set(cat, (counts.get(cat) ?? 0) + 1);
+    }
+  }
+
+  for (const row of communityData ?? []) {
+    const spec = row.ai_spec as Record<string, unknown>;
+    const svc = spec?.["service"] as Record<string, unknown> | undefined;
+    const cats = (svc?.["category"] as string[]) ?? [];
+    for (const cat of cats) {
       counts.set(cat, (counts.get(cat) ?? 0) + 1);
     }
   }
 
   return [...counts.entries()]
     .map(([id, count]) => ({ id, label: id, count }))
-    .sort((a, b) => b.count - a.count);
+    .sort((a, b) => a.id.localeCompare(b.id));
 }
 
 export async function getCategoriesSSR(): Promise<{ id: string; label: string; count: number }[]> {

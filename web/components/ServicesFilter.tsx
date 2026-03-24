@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 interface Category {
   id: string;
@@ -22,21 +22,31 @@ const SORT_OPTIONS = [
   { id: "name", label: "A–Z" },
 ] as const;
 
-export function ServicesFilter({ categories }: { categories: Category[] }) {
+interface FilterProps {
+  categories: Category[];
+  initialQ?: string;
+  initialCategories?: string[];
+  initialAuthType?: string;
+  initialSort?: string;
+}
+
+export function ServicesFilter({ categories, initialQ = "", initialCategories = [], initialAuthType = "", initialSort = "newest" }: FilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const q = searchParams.get("q") ?? "";
-  const category = searchParams.get("category") ?? "";
-  const authType = searchParams.get("auth_type") ?? "";
-  const sort = searchParams.get("sort") ?? "newest";
+  const q = searchParams.get("q") ?? initialQ;
+  const selectedCategories = (searchParams.get("category") ?? initialCategories.join(",")).split(",").filter(Boolean);
+  const authType = searchParams.get("auth_type") ?? initialAuthType;
+  const sort = searchParams.get("sort") ?? initialSort;
 
-  const [searchInput, setSearchInput] = useState(q);
+  const [searchInput, setSearchInput] = useState(initialQ);
+  const [categoryExpanded, setCategoryExpanded] = useState(false);
+
+  useEffect(() => { setSearchInput(q); }, [q]);
 
   const navigate = useCallback(
     (updates: Record<string, string>) => {
       const params = new URLSearchParams(searchParams.toString());
-      // Reset page on filter change
       params.delete("page");
       for (const [k, v] of Object.entries(updates)) {
         if (v) {
@@ -45,7 +55,9 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
           params.delete(k);
         }
       }
-      router.push(`/services?${params.toString()}`);
+      // Avoid URLSearchParams encoding commas in category
+      const qs = params.toString().replace(/%2C/gi, ",");
+      router.push(`/services?${qs}`);
     },
     [router, searchParams]
   );
@@ -56,7 +68,10 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
   };
 
   const toggleCategory = (cat: string) => {
-    navigate({ category: category === cat ? "" : cat });
+    const next = selectedCategories.includes(cat)
+      ? selectedCategories.filter(c => c !== cat)
+      : [...selectedCategories, cat];
+    navigate({ category: next.join(",") });
   };
 
   const toggleAuth = (auth: string) => {
@@ -67,7 +82,7 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
     navigate({ sort: s === "newest" ? "" : s });
   };
 
-  const hasFilters = !!(q || category || authType || sort !== "newest");
+  const hasFilters = !!(q || selectedCategories.length > 0 || authType || sort !== "newest");
 
   const clearAll = () => {
     setSearchInput("");
@@ -91,23 +106,43 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
       <div className="space-y-3 mb-8">
         {/* Category */}
         {categories.filter((c) => c.count > 0).length > 0 && (
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs text-faint w-14 shrink-0">Category</span>
-            {categories.filter((c) => c.count > 0).map((cat) => (
+          <div>
+            <div className={`flex flex-wrap gap-2 items-start overflow-hidden ${categoryExpanded ? "" : "max-h-[4.5rem]"}`}>
+              <span className="text-xs text-faint w-14 shrink-0 leading-[1.875rem]">Category</span>
+              {categories.filter((c) => c.count > 0).map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => toggleCategory(cat.id)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors cursor-pointer ${
+                    selectedCategories.includes(cat.id)
+                      ? "bg-accent border-accent text-white"
+                      : "bg-canvas border-line text-muted hover:border-line-dim hover:text-fg"
+                  }`}
+                >
+                  {cat.label}
+                  <span className="ml-1 opacity-50">({cat.count})</span>
+                </button>
+              ))}
+            </div>
+            {categories.filter((c) => c.count > 0).length > 10 && (
               <button
-                key={cat.id}
                 type="button"
-                onClick={() => toggleCategory(cat.id)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors cursor-pointer ${
-                  category === cat.id
-                    ? "bg-accent border-accent text-white"
-                    : "bg-canvas border-line text-muted hover:border-line-dim hover:text-fg"
-                }`}
+                onClick={() => setCategoryExpanded(!categoryExpanded)}
+                className="mt-1.5 ml-14 text-xs text-subtle hover:text-muted transition-colors cursor-pointer flex items-center gap-1"
               >
-                {cat.label}
-                <span className="ml-1 opacity-50">({cat.count})</span>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  className={`transition-transform ${categoryExpanded ? "rotate-180" : ""}`}
+                >
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {categoryExpanded ? "Show less" : `Show all ${categories.filter((c) => c.count > 0).length} categories`}
               </button>
-            ))}
+            )}
           </div>
         )}
 

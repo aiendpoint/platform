@@ -37,13 +37,14 @@ export default async function ServicesPage({ searchParams }: Props) {
     getCategoriesSSR(),
   ]);
 
-  const hasFilters = !!(params.q || params.category || params.auth_type || (params.sort && params.sort !== "newest"));
+  const cats = params.category ? params.category.split(",").filter(Boolean) : [];
+  const hasFilters = !!(params.q || cats.length > 0 || params.auth_type || (params.sort && params.sort !== "newest"));
 
   // Build pagination URLs
   function pageUrl(p: number): string {
     const sp = new URLSearchParams();
     if (params.q) sp.set("q", params.q);
-    if (params.category) sp.set("category", params.category);
+    if (cats.length > 0) sp.set("category", cats.join(","));
     if (params.auth_type) sp.set("auth_type", params.auth_type);
     if (params.sort && params.sort !== "newest") sp.set("sort", params.sort);
     if (p > 1) sp.set("page", String(p));
@@ -54,24 +55,22 @@ export default async function ServicesPage({ searchParams }: Props) {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-fg">Services</h1>
-          <p className="text-muted mt-1">
-            {formatCount(total)} indexed service{total !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <Link
-          href="/register"
-          className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          + Register
-        </Link>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-fg">Services</h1>
+        <p className="text-muted mt-1">
+          {formatCount(total)} indexed service{total !== 1 ? "s" : ""}
+        </p>
       </div>
 
       {/* Filters (client component) */}
       <Suspense fallback={null}>
-        <ServicesFilter categories={categories} />
+        <ServicesFilter
+          categories={categories}
+          initialQ={params.q ?? ""}
+          initialCategories={cats}
+          initialAuthType={params.auth_type ?? ""}
+          initialSort={params.sort ?? "newest"}
+        />
       </Suspense>
 
       {/* Grid */}
