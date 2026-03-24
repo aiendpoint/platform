@@ -35,7 +35,10 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
     ownerCountQ = ownerCountQ.or(`name.ilike.${params.q}%,url.ilike.${params.q}%`);
     communityCountQ = communityCountQ.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
   }
-  if (params.category) ownerCountQ = ownerCountQ.overlaps("categories", [params.category]);
+  if (params.category) {
+    ownerCountQ = ownerCountQ.overlaps("categories", [params.category]);
+    communityCountQ = communityCountQ.filter("ai_spec->service->category", "cs", `["${params.category}"]`);
+  }
   if (params.auth_type) {
     ownerCountQ = ownerCountQ.eq("auth_type", params.auth_type);
     communityCountQ = communityCountQ.filter("ai_spec->auth->>type", "eq", params.auth_type);
@@ -97,6 +100,7 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
 
     if (params.q) communityQuery = communityQuery.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
     if (params.auth_type) communityQuery = communityQuery.filter("ai_spec->auth->>type", "eq", params.auth_type);
+    if (params.category) communityQuery = communityQuery.filter("ai_spec->service->category", "cs", `["${params.category}"]`);
 
     // Apply sort to community query
     if (params.sort === "score") {
@@ -159,15 +163,24 @@ export async function getServicesSSR(params: ServicesParams): Promise<ServicesRe
 }
 
 async function _getCategoriesSSR(): Promise<{ id: string; label: string; count: number }[]> {
-  const { data } = await db
-    .from("services")
-    .select("categories")
-    .eq("status", "active")
-    .is("deleted_at", null);
+  const [{ data: ownerData }, { data: communityData }] = await Promise.all([
+    db.from("services").select("categories").eq("status", "active").is("deleted_at", null),
+    db.from("community_specs").select("ai_spec").eq("status", "active"),
+  ]);
 
   const counts = new Map<string, number>();
-  for (const row of data ?? []) {
+
+  for (const row of ownerData ?? []) {
     for (const cat of row.categories ?? []) {
+      counts.set(cat, (counts.get(cat) ?? 0) + 1);
+    }
+  }
+
+  for (const row of communityData ?? []) {
+    const spec = row.ai_spec as Record<string, unknown>;
+    const svc = spec?.["service"] as Record<string, unknown> | undefined;
+    const cats = (svc?.["category"] as string[]) ?? [];
+    for (const cat of cats) {
       counts.set(cat, (counts.get(cat) ?? 0) + 1);
     }
   }
