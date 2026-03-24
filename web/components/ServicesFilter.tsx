@@ -27,23 +27,21 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
   const searchParams = useSearchParams();
 
   const q = searchParams.get("q") ?? "";
-  const selectedCategories = searchParams.getAll("category");
+  const selectedCategories = (searchParams.get("category") ?? "").split(",").filter(Boolean);
   const authType = searchParams.get("auth_type") ?? "";
   const sort = searchParams.get("sort") ?? "newest";
 
   const [searchInput, setSearchInput] = useState(q);
 
   const navigate = useCallback(
-    (updates: Record<string, string | string[]>) => {
+    (updates: Record<string, string>) => {
       const params = new URLSearchParams(searchParams.toString());
-      // Reset page on filter change
       params.delete("page");
       for (const [k, v] of Object.entries(updates)) {
-        params.delete(k);
-        if (Array.isArray(v)) {
-          for (const item of v) params.append(k, item);
-        } else if (v) {
+        if (v) {
           params.set(k, v);
+        } else {
+          params.delete(k);
         }
       }
       router.push(`/services?${params.toString()}`);
@@ -60,7 +58,7 @@ export function ServicesFilter({ categories }: { categories: Category[] }) {
     const next = selectedCategories.includes(cat)
       ? selectedCategories.filter(c => c !== cat)
       : [...selectedCategories, cat];
-    navigate({ category: next });
+    navigate({ category: next.join(",") });
   };
 
   const toggleAuth = (auth: string) => {
