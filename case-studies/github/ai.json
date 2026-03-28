@@ -1,0 +1,176 @@
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "GitHub v3 REST API",
+    "description": "GitHub's v3 REST API.",
+    "category": [
+      "actions",
+      "activity",
+      "apps",
+      "billing"
+    ]
+  },
+  "capabilities": [
+    {
+      "id": "meta_root",
+      "description": "GitHub API Root",
+      "endpoint": "/",
+      "method": "GET",
+      "returns": "Response"
+    },
+    {
+      "id": "security_advisories_list_global_advisories",
+      "description": "List global security advisories",
+      "endpoint": "/advisories",
+      "method": "GET",
+      "params": {
+        "ghsa_id": "string (optional - If specified, only advisories with this GHSA (GitHub Securit)",
+        "type": "string (optional - If specified, only advisories of this type will be returned.)",
+        "cve_id": "string (optional - If specified, only advisories with this CVE (Common Vulnerab)",
+        "ecosystem": "string (optional - If specified, only advisories for these ecosystems will be r)",
+        "severity": "string (optional - If specified, only advisories with these severities will be )",
+        "cwes": "string (optional - If specified, only advisories with these Common Weakness Enu)",
+        "is_withdrawn": "boolean (optional - Whether to only return advisories that have been withdrawn.)",
+        "affects": "string (optional - If specified, only return advisories that affect any of `pac)",
+        "published": "string (optional - If specified, only return advisories that were published on )",
+        "updated": "string (optional - If specified, only return advisories that were updated on a )",
+        "modified": "string (optional - If specified, only show advisories that were updated or publ)",
+        "epss_percentage": "string (optional - If specified, only return advisories that have an EPSS perce)",
+        "epss_percentile": "string (optional - If specified, only return advisories that have an EPSS perce)",
+        "per_page": "integer (optional - The number of results per page (max 100). For more informati)",
+        "sort": "string (optional - The property to sort the results by.)"
+      },
+      "returns": "Response"
+    },
+    {
+      "id": "security_advisories_get_global_advisory",
+      "description": "Get a global security advisory",
+      "endpoint": "/advisories/{ghsa_id}",
+      "method": "GET",
+      "returns": "Response"
+    },
+    {
+      "id": "apps_get_authenticated",
+      "description": "Get the authenticated app",
+      "endpoint": "/app",
+      "method": "GET",
+      "returns": "Response"
+    },
+    {
+      "id": "apps_create_from_manifest",
+      "description": "Create a GitHub App from a manifest",
+      "endpoint": "/app-manifests/{code}/conversions",
+      "method": "POST",
+      "params": {
+        "code": "string (required)"
+      },
+      "returns": "Response"
+    },
+    {
+      "id": "apps_get_webhook_config_for_app",
+      "description": "Get a webhook configuration for an app",
+      "endpoint": "/app/hook/config",
+      "method": "GET",
+      "returns": "Response"
+    },
+    {
+      "id": "apps_update_webhook_config_for_app",
+      "description": "Update a webhook configuration for an app",
+      "endpoint": "/app/hook/config",
+      "method": "PATCH",
+      "returns": "Response"
+    },
+    {
+      "id": "apps_list_webhook_deliveries",
+      "description": "List deliveries for an app webhook",
+      "endpoint": "/app/hook/deliveries",
+      "method": "GET",
+      "returns": "Response"
+    },
+    {
+      "id": "apps_get_webhook_delivery",
+      "description": "Get a delivery for an app webhook",
+      "endpoint": "/app/hook/deliveries/{delivery_id}",
+      "method": "GET",
+      "returns": "Response"
+    },
+    {
+      "id": "apps_redeliver_webhook_delivery",
+      "description": "Redeliver a delivery for an app webhook",
+      "endpoint": "/app/hook/deliveries/{delivery_id}/attempts",
+      "method": "POST"
+    },
+    {
+      "id": "apps_list_installation_requests_for_authenticated_app",
+      "description": "List installation requests for the authenticated app",
+      "endpoint": "/app/installation-requests",
+      "method": "GET",
+      "returns": "List of integration installation requests"
+    },
+    {
+      "id": "apps_list_installations",
+      "description": "List installations for the authenticated app",
+      "endpoint": "/app/installations",
+      "method": "GET",
+      "params": {
+        "outdated": "string (optional)"
+      },
+      "returns": "The permissions the installation has are included under the `permissions` key."
+    },
+    {
+      "id": "apps_get_installation",
+      "description": "Get an installation for the authenticated app",
+      "endpoint": "/app/installations/{installation_id}",
+      "method": "GET",
+      "returns": "Response"
+    },
+    {
+      "id": "apps_delete_installation",
+      "description": "Delete an installation for the authenticated app",
+      "endpoint": "/app/installations/{installation_id}",
+      "method": "DELETE"
+    },
+    {
+      "id": "apps_create_installation_access_token",
+      "description": "Create an installation access token for an app",
+      "endpoint": "/app/installations/{installation_id}/access_tokens",
+      "method": "POST",
+      "returns": "Response"
+    },
+    {
+      "id": "apps_suspend_installation",
+      "description": "Suspend an app installation",
+      "endpoint": "/app/installations/{installation_id}/suspended",
+      "method": "PUT"
+    },
+    {
+      "id": "apps_unsuspend_installation",
+      "description": "Unsuspend an app installation",
+      "endpoint": "/app/installations/{installation_id}/suspended",
+      "method": "DELETE"
+    },
+    {
+      "id": "apps_delete_authorization",
+      "description": "Delete an app authorization",
+      "endpoint": "/applications/{client_id}/grant",
+      "method": "DELETE"
+    },
+    {
+      "id": "apps_check_token",
+      "description": "Check a token",
+      "endpoint": "/applications/{client_id}/token",
+      "method": "POST",
+      "returns": "Response"
+    },
+    {
+      "id": "apps_reset_token",
+      "description": "Reset a token",
+      "endpoint": "/applications/{client_id}/token",
+      "method": "PATCH",
+      "returns": "Response"
+    }
+  ],
+  "meta": {
+    "last_updated": "2026-03-28"
+  }
+}

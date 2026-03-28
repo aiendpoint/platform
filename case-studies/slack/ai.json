@@ -1,0 +1,204 @@
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "Slack Web API",
+    "description": "One way to interact with the Slack platform is its HTTP RPC-based Web API, a collection of methods requiring OAuth 2.0-based user, bot, or workspace tokens blessed with related OAuth scopes."
+  },
+  "capabilities": [
+    {
+      "id": "admin_apps_approve",
+      "description": "Approve an app for installation on a workspace.",
+      "endpoint": "/admin.apps.approve",
+      "method": "POST",
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_apps_approved_list",
+      "description": "List approved apps for an org or workspace.",
+      "endpoint": "/admin.apps.approved.list",
+      "method": "GET",
+      "params": {
+        "token": "string (required - Authentication token. Requires scope: `admin.apps:read`)",
+        "limit": "integer (optional - The maximum number of items to return. Must be between 1 - 1)",
+        "cursor": "string (optional - Set `cursor` to `next_cursor` returned by the previous call )",
+        "team_id": "string (optional)",
+        "enterprise_id": "string (optional)"
+      },
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_apps_requests_list",
+      "description": "List app requests for a team/workspace.",
+      "endpoint": "/admin.apps.requests.list",
+      "method": "GET",
+      "params": {
+        "token": "string (required - Authentication token. Requires scope: `admin.apps:read`)",
+        "limit": "integer (optional - The maximum number of items to return. Must be between 1 - 1)",
+        "cursor": "string (optional - Set `cursor` to `next_cursor` returned by the previous call )",
+        "team_id": "string (optional)"
+      },
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_apps_restrict",
+      "description": "Restrict an app for installation on a workspace.",
+      "endpoint": "/admin.apps.restrict",
+      "method": "POST",
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_apps_restricted_list",
+      "description": "List restricted apps for an org or workspace.",
+      "endpoint": "/admin.apps.restricted.list",
+      "method": "GET",
+      "params": {
+        "token": "string (required - Authentication token. Requires scope: `admin.apps:read`)",
+        "limit": "integer (optional - The maximum number of items to return. Must be between 1 - 1)",
+        "cursor": "string (optional - Set `cursor` to `next_cursor` returned by the previous call )",
+        "team_id": "string (optional)",
+        "enterprise_id": "string (optional)"
+      },
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_archive",
+      "description": "Archive a public or private channel.",
+      "endpoint": "/admin.conversations.archive",
+      "method": "POST",
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_converttoprivate",
+      "description": "Convert a public channel to a private channel.",
+      "endpoint": "/admin.conversations.convertToPrivate",
+      "method": "POST",
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_create",
+      "description": "Create a public or private channel-based conversation.",
+      "endpoint": "/admin.conversations.create",
+      "method": "POST",
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_delete",
+      "description": "Delete a public or private channel.",
+      "endpoint": "/admin.conversations.delete",
+      "method": "POST",
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_disconnectshared",
+      "description": "Disconnect a connected channel from one or more workspaces.",
+      "endpoint": "/admin.conversations.disconnectShared",
+      "method": "POST",
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_ekm_listoriginalconnectedchannelinfo",
+      "description": "List all disconnected channels—i.e., channels that were once connected to other workspaces and then disconnected—and the corresponding original channel IDs for key revocation with EKM.",
+      "endpoint": "/admin.conversations.ekm.listOriginalConnectedChannelInfo",
+      "method": "GET",
+      "params": {
+        "token": "string (required - Authentication token. Requires scope: `admin.conversations:r)",
+        "channel_ids": "string (optional - A comma-separated list of channels to filter to.)",
+        "team_ids": "string (optional - A comma-separated list of the workspaces to which the channe)",
+        "limit": "integer (optional - The maximum number of items to return. Must be between 1 - 1)",
+        "cursor": "string (optional - Set `cursor` to `next_cursor` returned by the previous call )"
+      },
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_getconversationprefs",
+      "description": "Get conversation preferences for a public or private channel.",
+      "endpoint": "/admin.conversations.getConversationPrefs",
+      "method": "GET",
+      "params": {
+        "channel_id": "string (required - The channel to get preferences for.)"
+      },
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_getteams",
+      "description": "Get all the workspaces a given public or private channel is connected to within this Enterprise org.",
+      "endpoint": "/admin.conversations.getTeams",
+      "method": "GET",
+      "params": {
+        "channel_id": "string (required - The channel to determine connected workspaces within the org)",
+        "cursor": "string (optional - Set `cursor` to `next_cursor` returned by the previous call )",
+        "limit": "integer (optional - The maximum number of items to return. Must be between 1 - 1)"
+      },
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_invite",
+      "description": "Invite a user to a public or private channel.",
+      "endpoint": "/admin.conversations.invite",
+      "method": "POST",
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_rename",
+      "description": "Rename a public or private channel.",
+      "endpoint": "/admin.conversations.rename",
+      "method": "POST",
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_restrictaccess_addgroup",
+      "description": "Add an allowlist of IDP groups for accessing a channel",
+      "endpoint": "/admin.conversations.restrictAccess.addGroup",
+      "method": "POST",
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_restrictaccess_listgroups",
+      "description": "List all IDP Groups linked to a channel",
+      "endpoint": "/admin.conversations.restrictAccess.listGroups",
+      "method": "GET",
+      "params": {
+        "token": "string (required - Authentication token. Requires scope: `admin.conversations:r)",
+        "channel_id": "string (required)",
+        "team_id": "string (optional - The workspace where the channel exists. This argument is req)"
+      },
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_restrictaccess_removegroup",
+      "description": "Remove a linked IDP group linked from a private channel",
+      "endpoint": "/admin.conversations.restrictAccess.removeGroup",
+      "method": "POST",
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_search",
+      "description": "Search for public or private channels in an Enterprise organization.",
+      "endpoint": "/admin.conversations.search",
+      "method": "GET",
+      "params": {
+        "team_ids": "string (optional - Comma separated string of team IDs, signifying the workspace)",
+        "query": "string (optional - Name of the the channel to query by.)",
+        "limit": "integer (optional - Maximum number of items to be returned. Must be between 1 - )",
+        "cursor": "string (optional - Set `cursor` to `next_cursor` returned by the previous call )",
+        "search_channel_types": "string (optional - The type of channel to include or exclude in the search. For)",
+        "sort": "string (optional - Possible values are `relevant` (search ranking based on what)",
+        "sort_dir": "string (optional - Sort direction. Possible values are `asc` for ascending orde)"
+      },
+      "returns": "Typical success response"
+    },
+    {
+      "id": "admin_conversations_setconversationprefs",
+      "description": "Set the posting permissions for a public or private channel.",
+      "endpoint": "/admin.conversations.setConversationPrefs",
+      "method": "POST",
+      "returns": "Typical success response"
+    }
+  ],
+  "auth": {
+    "type": "oauth2"
+  },
+  "meta": {
+    "last_updated": "2026-03-28"
+  }
+}

@@ -1,0 +1,286 @@
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "Twilio - Api",
+    "description": "This is the public Twilio REST API.",
+    "category": [
+      "api20100401account",
+      "api20100401addonresult",
+      "api20100401address",
+      "api20100401alltime"
+    ]
+  },
+  "capabilities": [
+    {
+      "id": "listaccount",
+      "description": "Retrieves a collection of Accounts belonging to the account used to make the request",
+      "endpoint": "/2010-04-01/Accounts.json",
+      "method": "GET",
+      "params": {
+        "FriendlyName": "string (optional - Only return the Account resources with friendly names that e)",
+        "Status": "string (optional - Only return Account resources with the given status. Can be )",
+        "PageSize": "integer (optional - How many resources to return in each list page. The default )",
+        "Page": "integer (optional - The page index. This value is simply for client state.)",
+        "PageToken": "string (optional - The page token. This is provided by the API.)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "createaccount",
+      "description": "Create a new Twilio Subaccount from the account making the request",
+      "endpoint": "/2010-04-01/Accounts.json",
+      "method": "POST",
+      "returns": "Created"
+    },
+    {
+      "id": "fetchaccount",
+      "description": "Fetch the account specified by the provided Account Sid",
+      "endpoint": "/2010-04-01/Accounts/{Sid}.json",
+      "method": "GET",
+      "params": {
+        "Sid": "string (required - The Account Sid that uniquely identifies the account to fetc)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "updateaccount",
+      "description": "Modify the properties of a given Account",
+      "endpoint": "/2010-04-01/Accounts/{Sid}.json",
+      "method": "POST",
+      "params": {
+        "Sid": "string (required - The Account Sid that uniquely identifies the account to upda)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "listaddress",
+      "description": "",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/Addresses.json",
+      "method": "GET",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "CustomerName": "string (optional - The `customer_name` of the Address resources to read.)",
+        "FriendlyName": "string (optional - The string that identifies the Address resources to read.)",
+        "EmergencyEnabled": "boolean (optional - Whether the address can be associated to a number for emerge)",
+        "IsoCountry": "string (optional - The ISO country code of the Address resources to read.)",
+        "PageSize": "integer (optional - How many resources to return in each list page. The default )",
+        "Page": "integer (optional - The page index. This value is simply for client state.)",
+        "PageToken": "string (optional - The page token. This is provided by the API.)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "createaddress",
+      "description": "",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/Addresses.json",
+      "method": "POST",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)"
+      },
+      "returns": "Created"
+    },
+    {
+      "id": "fetchaddress",
+      "description": "",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/Addresses/{Sid}.json",
+      "method": "GET",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "Sid": "string (required - The Twilio-provided string that uniquely identifies the Addr)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "updateaddress",
+      "description": "",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/Addresses/{Sid}.json",
+      "method": "POST",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "Sid": "string (required - The Twilio-provided string that uniquely identifies the Addr)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "deleteaddress",
+      "description": "",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/Addresses/{Sid}.json",
+      "method": "DELETE",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "Sid": "string (required - The Twilio-provided string that uniquely identifies the Addr)"
+      }
+    },
+    {
+      "id": "listapplication",
+      "description": "Retrieve a list of applications representing an application within the requesting account",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/Applications.json",
+      "method": "GET",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "FriendlyName": "string (optional - The string that identifies the Application resources to read)",
+        "PageSize": "integer (optional - How many resources to return in each list page. The default )",
+        "Page": "integer (optional - The page index. This value is simply for client state.)",
+        "PageToken": "string (optional - The page token. This is provided by the API.)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "createapplication",
+      "description": "Create a new application within your account",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/Applications.json",
+      "method": "POST",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)"
+      },
+      "returns": "Created"
+    },
+    {
+      "id": "fetchapplication",
+      "description": "Fetch the application specified by the provided sid",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/Applications/{Sid}.json",
+      "method": "GET",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "Sid": "string (required - The Twilio-provided string that uniquely identifies the Appl)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "updateapplication",
+      "description": "Updates the application's properties",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/Applications/{Sid}.json",
+      "method": "POST",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "Sid": "string (required - The Twilio-provided string that uniquely identifies the Appl)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "deleteapplication",
+      "description": "Delete the application by the specified application sid",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/Applications/{Sid}.json",
+      "method": "DELETE",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "Sid": "string (required - The Twilio-provided string that uniquely identifies the Appl)"
+      }
+    },
+    {
+      "id": "fetchauthorizedconnectapp",
+      "description": "Fetch an instance of an authorized-connect-app",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/AuthorizedConnectApps/{ConnectAppSid}.json",
+      "method": "GET",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "ConnectAppSid": "string (required - The SID of the Connect App to fetch.)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "listauthorizedconnectapp",
+      "description": "Retrieve a list of authorized-connect-apps belonging to the account used to make the request",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/AuthorizedConnectApps.json",
+      "method": "GET",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "PageSize": "integer (optional - How many resources to return in each list page. The default )",
+        "Page": "integer (optional - The page index. This value is simply for client state.)",
+        "PageToken": "string (optional - The page token. This is provided by the API.)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "listavailablephonenumbercountry",
+      "description": "",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/AvailablePhoneNumbers.json",
+      "method": "GET",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "PageSize": "integer (optional - How many resources to return in each list page. The default )",
+        "Page": "integer (optional - The page index. This value is simply for client state.)",
+        "PageToken": "string (optional - The page token. This is provided by the API.)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "fetchavailablephonenumbercountry",
+      "description": "",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/AvailablePhoneNumbers/{CountryCode}.json",
+      "method": "GET",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "CountryCode": "string (required - The [ISO-3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_al)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "listavailablephonenumberlocal",
+      "description": "",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/AvailablePhoneNumbers/{CountryCode}/Local.json",
+      "method": "GET",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "CountryCode": "string (required - The [ISO-3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_al)",
+        "AreaCode": "integer (optional - The area code of the phone numbers to read. Applies to only )",
+        "Contains": "string (optional - Matching pattern to identify phone numbers. This pattern can)",
+        "SmsEnabled": "boolean (optional - Whether the phone numbers can receive text messages. Can be:)",
+        "MmsEnabled": "boolean (optional - Whether the phone numbers can receive MMS messages. Can be: )",
+        "VoiceEnabled": "boolean (optional - Whether the phone numbers can receive calls. Can be: `true` )",
+        "ExcludeAllAddressRequired": "boolean (optional - Whether to exclude phone numbers that require an [Address](h)",
+        "ExcludeLocalAddressRequired": "boolean (optional - Whether to exclude phone numbers that require a local [Addre)",
+        "ExcludeForeignAddressRequired": "boolean (optional - Whether to exclude phone numbers that require a foreign [Add)",
+        "Beta": "boolean (optional - Whether to read phone numbers that are new to the Twilio pla)",
+        "NearNumber": "string (optional - Given a phone number, find a geographically close number wit)",
+        "NearLatLong": "string (optional - Given a latitude/longitude pair `lat,long` find geographical)",
+        "Distance": "integer (optional - The search radius, in miles, for a `near_` query.  Can be up)",
+        "InPostalCode": "string (optional - Limit results to a particular postal code. Given a phone num)",
+        "InRegion": "string (optional - Limit results to a particular region, state, or province. Gi)",
+        "InRateCenter": "string (optional - Limit results to a specific rate center, or given a phone nu)",
+        "InLata": "string (optional - Limit results to a specific local access and transport area )",
+        "InLocality": "string (optional - Limit results to a particular locality or city. Given a phon)",
+        "FaxEnabled": "boolean (optional - Whether the phone numbers can receive faxes. Can be: `true` )",
+        "PageSize": "integer (optional - How many resources to return in each list page. The default )",
+        "Page": "integer (optional - The page index. This value is simply for client state.)",
+        "PageToken": "string (optional - The page token. This is provided by the API.)"
+      },
+      "returns": "OK"
+    },
+    {
+      "id": "listavailablephonenumbermachinetomachine",
+      "description": "",
+      "endpoint": "/2010-04-01/Accounts/{AccountSid}/AvailablePhoneNumbers/{CountryCode}/MachineToMachine.json",
+      "method": "GET",
+      "params": {
+        "AccountSid": "string (required - The SID of the [Account](https://www.twilio.com/docs/iam/api)",
+        "CountryCode": "string (required - The [ISO-3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_al)",
+        "AreaCode": "integer (optional - The area code of the phone numbers to read. Applies to only )",
+        "Contains": "string (optional - Matching pattern to identify phone numbers. This pattern can)",
+        "SmsEnabled": "boolean (optional - Whether the phone numbers can receive text messages. Can be:)",
+        "MmsEnabled": "boolean (optional - Whether the phone numbers can receive MMS messages. Can be: )",
+        "VoiceEnabled": "boolean (optional - Whether the phone numbers can receive calls. Can be: `true` )",
+        "ExcludeAllAddressRequired": "boolean (optional - Whether to exclude phone numbers that require an [Address](h)",
+        "ExcludeLocalAddressRequired": "boolean (optional - Whether to exclude phone numbers that require a local [Addre)",
+        "ExcludeForeignAddressRequired": "boolean (optional - Whether to exclude phone numbers that require a foreign [Add)",
+        "Beta": "boolean (optional - Whether to read phone numbers that are new to the Twilio pla)",
+        "NearNumber": "string (optional - Given a phone number, find a geographically close number wit)",
+        "NearLatLong": "string (optional - Given a latitude/longitude pair `lat,long` find geographical)",
+        "Distance": "integer (optional - The search radius, in miles, for a `near_` query.  Can be up)",
+        "InPostalCode": "string (optional - Limit results to a particular postal code. Given a phone num)",
+        "InRegion": "string (optional - Limit results to a particular region, state, or province. Gi)",
+        "InRateCenter": "string (optional - Limit results to a specific rate center, or given a phone nu)",
+        "InLata": "string (optional - Limit results to a specific local access and transport area )",
+        "InLocality": "string (optional - Limit results to a particular locality or city. Given a phon)",
+        "FaxEnabled": "boolean (optional - Whether the phone numbers can receive faxes. Can be: `true` )",
+        "PageSize": "integer (optional - How many resources to return in each list page. The default )",
+        "Page": "integer (optional - The page index. This value is simply for client state.)",
+        "PageToken": "string (optional - The page token. This is provided by the API.)"
+      },
+      "returns": "OK"
+    }
+  ],
+  "meta": {
+    "last_updated": "2026-03-28"
+  }
+}
