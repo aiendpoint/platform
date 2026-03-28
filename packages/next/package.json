@@ -1,0 +1,46 @@
+{
+  "name": "@aiendpoint/next",
+  "version": "0.1.0",
+  "description": "Serve your /ai endpoint from Next.js App Router in one line",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "aiendpoint",
+    "nextjs",
+    "next",
+    "ai",
+    "api",
+    "middleware"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aiendpoint/platform",
+    "directory": "packages/next"
+  },
+  "homepage": "https://aiendpoint.dev",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "next": ">=14"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "next": "^16.0.0",
+    "typescript": "^5.7.2"
+  }
+}

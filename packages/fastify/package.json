@@ -1,0 +1,45 @@
+{
+  "name": "@aiendpoint/fastify",
+  "version": "0.1.0",
+  "description": "Serve your /ai endpoint from Fastify in one line",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "aiendpoint",
+    "fastify",
+    "ai",
+    "api",
+    "plugin"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aiendpoint/platform",
+    "directory": "packages/fastify"
+  },
+  "homepage": "https://aiendpoint.dev",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "fastify": ">=4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "fastify": "^5.8.4",
+    "typescript": "^5.7.2"
+  }
+}

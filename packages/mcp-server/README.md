@@ -1,16 +1,43 @@
 # @aiendpoint/mcp-server
 
-MCP server for the [AIEndpoint](https://aiendpoint.dev) registry.
+**Install once, and your AI agent can understand any website.**
 
-Lets AI agents (Claude, Cursor, etc.) **search and discover web services** that expose a `/ai` endpoint — a machine-readable spec describing what the service can do and how to use it.
+When your AI agent needs to use a web service, it normally scrapes HTML (10,000-50,000 tokens of noise) or hopes there's documentation. This MCP server gives it a shortcut: structured, machine-readable specs at ~800 tokens.
+
+```
+AI reads a webpage  ->  10,000-50,000 tokens  (mostly noise)
+AI reads /ai        ->          ~800 tokens  (0% noise)
+```
+
+100+ popular services (GitHub, Stripe, Spotify, Notion, etc.) are already indexed in the community registry.
+
+## How it works
+
+When your agent asks "What can github.com do?", the MCP server runs a 3-step fallback:
+
+```
+1. Check github.com/ai directly
+   -> found? Use it. (~800 tokens, 100% accurate)
+
+2. Check the community registry
+   -> found? Use the cached spec.
+
+3. No spec exists anywhere
+   -> Your agent generates one from site metadata,
+      and submits it for all future agents.
+```
+
+Step 3 is the key insight: your AI agent generates the spec (no extra server cost), then shares it with the community. Every future agent gets a cache hit at step 2.
 
 ## Tools
 
 | Tool | Description |
 |------|-------------|
-| `aiendpoint_search_services` | Search registered services by keyword, category, or auth type |
-| `aiendpoint_fetch_ai_spec` | Fetch the `/ai` spec from any URL directly |
-| `aiendpoint_validate_service` | Check if a service correctly implements the `/ai` standard |
+| `aiendpoint_discover` | Auto-discover any website (3-step fallback) |
+| `aiendpoint_search_services` | Search the registry by keyword or category |
+| `aiendpoint_fetch_ai_spec` | Fetch a site's `/ai` spec directly |
+| `aiendpoint_validate_service` | Validate `/ai` compliance (0-100 score) |
+| `aiendpoint_submit_community_spec` | Submit a generated spec to the registry |
 
 ## Quick Start
 
@@ -29,51 +56,6 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
-<details>
-<summary>Using pnpm / bun / yarn</summary>
-
-**pnpm**
-```json
-{
-  "mcpServers": {
-    "aiendpoint": {
-      "command": "pnpm",
-      "args": ["dlx", "@aiendpoint/mcp-server"]
-    }
-  }
-}
-```
-
-**bun** (fastest startup)
-```json
-{
-  "mcpServers": {
-    "aiendpoint": {
-      "command": "bunx",
-      "args": ["@aiendpoint/mcp-server"]
-    }
-  }
-}
-```
-
-**yarn**
-```json
-{
-  "mcpServers": {
-    "aiendpoint": {
-      "command": "yarn",
-      "args": ["dlx", "@aiendpoint/mcp-server"]
-    }
-  }
-}
-```
-
-</details>
-
-Restart Claude Desktop. You can now ask:
-> "Find me a free weather API" → Claude calls `aiendpoint_search_services`
-> "What can stripe.com do?" → Claude calls `aiendpoint_fetch_ai_spec`
-
 ### Cursor
 
 Add to `.cursor/mcp.json` in your project (or `~/.cursor/mcp.json` globally):
@@ -89,75 +71,81 @@ Add to `.cursor/mcp.json` in your project (or `~/.cursor/mcp.json` globally):
 }
 ```
 
-<details>
-<summary>Using pnpm / bun / yarn</summary>
-
-Replace `"command"` and `"args"` with the same alternatives shown in the Claude Desktop section above.
-
-</details>
-
 ### Claude Code
 
 ```bash
-# add globally (all projects)
 claude mcp add aiendpoint -- npx -y @aiendpoint/mcp-server
-
-# add to current project only
-claude mcp add --scope project aiendpoint -- npx -y @aiendpoint/mcp-server
 ```
 
-<details>
-<summary>Using pnpm / bun / yarn</summary>
+### Windsurf
 
-```bash
-# pnpm
-claude mcp add aiendpoint -- pnpm dlx @aiendpoint/mcp-server
-
-# bun
-claude mcp add aiendpoint -- bunx @aiendpoint/mcp-server
-
-# yarn
-claude mcp add aiendpoint -- yarn dlx @aiendpoint/mcp-server
-```
-
-</details>
-
-### Global install (skip the download on every run)
-
-```bash
-npm install -g @aiendpoint/mcp-server
-# pnpm
-pnpm add -g @aiendpoint/mcp-server
-# bun
-bun add -g @aiendpoint/mcp-server
-```
-
-Then use `aiendpoint-mcp` as the command:
+Add to `~/.codeium/windsurf/mcp_config.json`:
 
 ```json
 {
   "mcpServers": {
     "aiendpoint": {
-      "command": "aiendpoint-mcp"
+      "command": "npx",
+      "args": ["-y", "@aiendpoint/mcp-server"]
     }
   }
 }
 ```
 
+<details>
+<summary>Using pnpm / bun / yarn</summary>
+
+Replace the command and args:
+
+```bash
+# pnpm
+"command": "pnpm", "args": ["dlx", "@aiendpoint/mcp-server"]
+
+# bun (fastest startup)
+"command": "bunx", "args": ["@aiendpoint/mcp-server"]
+
+# yarn
+"command": "yarn", "args": ["dlx", "@aiendpoint/mcp-server"]
+```
+
+For Claude Code:
+```bash
+claude mcp add aiendpoint -- pnpm dlx @aiendpoint/mcp-server
+claude mcp add aiendpoint -- bunx @aiendpoint/mcp-server
+```
+
+</details>
+
+### Global install (skip download on every run)
+
+```bash
+npm install -g @aiendpoint/mcp-server
+```
+
+Then use `aiendpoint-mcp` as the command in any config above.
+
 ## Usage Examples
 
-Once connected, you can ask your AI assistant:
+Once connected, ask your AI assistant:
 
-- *"Find payment APIs that don't require auth"*
-- *"Search for Korean e-commerce services"*
-- *"What can github.com do?"*
-- *"Is github.com's /ai endpoint valid?"*
-- *"Find developer tools in the registry"*
+- *"What can github.com do?"* - discovers /ai spec via 3-step fallback
+- *"Find payment APIs that don't require auth"* - searches the registry
+- *"Search for Korean e-commerce services"* - category + language filter
+- *"Is stripe.com's /ai endpoint valid?"* - validates compliance
 
-## Registry
+## Add /ai to your own service
 
-The registry is at [aiendpoint.dev](https://aiendpoint.dev).
-Register your service's `/ai` endpoint at [aiendpoint.dev/register](https://aiendpoint.dev/register).
+```bash
+npx @aiendpoint/cli init
+```
+
+See [@aiendpoint/cli](https://www.npmjs.com/package/@aiendpoint/cli) for details.
+
+## Links
+
+- [aiendpoint.dev](https://aiendpoint.dev) - Registry & documentation
+- [Spec docs](https://aiendpoint.dev/docs) - The /ai standard
+- [GitHub](https://github.com/aiendpoint/platform) - Source code
 
 ## License
 
