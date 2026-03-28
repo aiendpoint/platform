@@ -21,10 +21,13 @@ const docsEntries: DocsEntry[] = [
   { slug: [], load: () => import("@/content/docs/index.mdx") },
   { slug: ["quick-start"], load: () => import("@/content/docs/quick-start.mdx") },
   { slug: ["spec"], load: () => import("@/content/docs/spec.mdx") },
+  { slug: ["concepts"], load: () => import("@/content/docs/concepts.mdx") },
   { slug: ["validation"], load: () => import("@/content/docs/validation.mdx") },
+  { slug: ["serve"], load: () => import("@/content/docs/serve.mdx") },
+  { slug: ["cli"], load: () => import("@/content/docs/cli.mdx") },
   { slug: ["mcp-server"], load: () => import("@/content/docs/mcp-server.mdx") },
   { slug: ["skill"], load: () => import("@/content/docs/skill.mdx") },
-  { slug: ["concepts"], load: () => import("@/content/docs/concepts.mdx") },
+  { slug: ["changelog"], load: () => import("@/content/docs/changelog.mdx") },
   { slug: ["roadmap"], load: () => import("@/content/docs/roadmap.mdx") },
 ];
 
