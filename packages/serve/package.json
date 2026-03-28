@@ -1,0 +1,79 @@
+{
+  "name": "@aiendpoint/serve",
+  "version": "0.1.0",
+  "description": "Serve your /ai endpoint from any JS/TS framework - Express, Fastify, Next.js, Hono, NestJS",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./express": "./dist/express.js",
+    "./fastify": "./dist/fastify.js",
+    "./next": "./dist/next.js",
+    "./hono": "./dist/hono.js",
+    "./handler": "./dist/handler.js"
+  },
+  "typesVersions": {
+    "*": {
+      "express": ["dist/express.d.ts"],
+      "fastify": ["dist/fastify.d.ts"],
+      "next": ["dist/next.d.ts"],
+      "hono": ["dist/hono.d.ts"],
+      "handler": ["dist/handler.d.ts"]
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "aiendpoint",
+    "ai",
+    "api",
+    "middleware",
+    "express",
+    "fastify",
+    "nextjs",
+    "hono",
+    "nestjs"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aiendpoint/platform",
+    "directory": "packages/serve"
+  },
+  "homepage": "https://aiendpoint.dev",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "express": ">=4",
+    "fastify": ">=4",
+    "next": ">=14",
+    "hono": ">=4"
+  },
+  "peerDependenciesMeta": {
+    "express": { "optional": true },
+    "fastify": { "optional": true },
+    "next": { "optional": true },
+    "hono": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "express": "^5.1.0",
+    "fastify": "^5.8.4",
+    "hono": "^4.7.0",
+    "next": "^16.0.0",
+    "typescript": "^5.7.2"
+  }
+}
