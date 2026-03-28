@@ -1,0 +1,163 @@
+export const metadata = {
+  title: "CLI",
+  description: "Generate /ai specs from OpenAPI, validate live endpoints, and scaffold route handlers with the CLI.",
+  section: "Tools",
+  order: 4,
+  href: "/docs/cli",
+  toc: [
+    { id: "install", title: "Install" },
+    { id: "generate-from-openapi", title: "Generate from OpenAPI" },
+    { id: "interactive-wizard", title: "Interactive wizard" },
+    { id: "validate", title: "Validate" },
+    { id: "codegen", title: "Code generation" },
+    { id: "options", title: "Options reference" },
+  ],
+};
+
+The fastest way to add `/ai` to your service. Converts OpenAPI specs, walks you through an interactive wizard, validates live endpoints, and generates framework-specific route handlers.
+
+```bash
+npm install -g @aiendpoint/cli
+# or run directly:
+npx @aiendpoint/cli init
+```
+
+---
+
+<h2 id="install">Install</h2>
+
+No install needed for one-off use:
+
+```bash
+npx @aiendpoint/cli init
+```
+
+Or install globally:
+
+```bash
+npm install -g @aiendpoint/cli
+```
+
+---
+
+<h2 id="generate-from-openapi">Generate from OpenAPI</h2>
+
+If your service already has an OpenAPI/Swagger spec, the CLI converts it to `/ai` format automatically. No LLM, no server calls, runs entirely offline.
+
+```bash
+# From a URL
+npx @aiendpoint/cli init --openapi https://petstore3.swagger.io/api/v3/openapi.json
+
+# From a local file
+npx @aiendpoint/cli init --openapi ./openapi.json
+```
+
+**What it does:**
+
+1. Reads the OpenAPI spec (supports v2.x and v3.x)
+2. Extracts up to 20 capabilities from the paths
+3. Maps `securitySchemes` to the `auth` field
+4. Maps `tags` to categories
+5. Validates and scores the result (0-100)
+
+**Example output:**
+
+```
+  Converted: 19 capabilities extracted
+
+  Score: 75/100 (Good (AI-Ready))
+  Capabilities: 19
+  Token estimate: ~1462 tokens
+
+  Framework: nextjs
+
+  Files:
+    + ai.json
+    + app/ai/route.ts
+```
+
+---
+
+<h2 id="interactive-wizard">Interactive wizard</h2>
+
+No OpenAPI spec? The wizard walks you through each field:
+
+```bash
+npx @aiendpoint/cli init
+```
+
+```
+  Service name: Acme Store
+  Description (one sentence, for AI agents): Search and order products
+  Categories: ecommerce
+  Auth type: apikey
+
+  Capability #1 id: search_products
+    Description: Search products by keyword
+    Endpoint: /api/search
+    Method: GET
+    Param name: q
+      q description: string, required
+    Returns: products[] {id, name, price}
+
+  Add another capability? (y/N):
+```
+
+---
+
+<h2 id="validate">Validate</h2>
+
+Check if a live `/ai` endpoint is valid and get a score:
+
+```bash
+npx @aiendpoint/cli validate https://api.aiendpoint.dev
+```
+
+```
+  Found: https://api.aiendpoint.dev/ai (415ms)
+  Score: 85/100 (Good (AI-Ready))
+  Capabilities: 6
+  Token estimate: ~832 tokens
+```
+
+The validator checks `GET /ai` and `GET /.well-known/ai`, uses the first that responds.
+
+Returns exit code 0 on success, 1 if errors found. Use in CI:
+
+```bash
+npx @aiendpoint/cli validate https://yoursite.com || echo "Validation failed"
+```
+
+---
+
+<h2 id="codegen">Code generation</h2>
+
+The CLI auto-detects your framework and generates a route handler alongside `ai.json`.
+
+**Auto-detection:** looks for `next.config.*` (Next.js) or `fastify` in `package.json` dependencies.
+
+**Manual override:** `--framework nextjs` or `--framework fastify`
+
+For more framework options (Express, Hono, NestJS), see [`@aiendpoint/serve`](/docs/serve).
+
+---
+
+<h2 id="options">Options reference</h2>
+
+### `init`
+
+| Option | Description |
+|---|---|
+| `--openapi <url\|file>` | Convert from OpenAPI/Swagger spec |
+| `--framework <type>` | Target framework: `nextjs`, `fastify` |
+| `--output <dir>` | Output directory (default: `.`) |
+| `--json-only` | Only generate `ai.json`, no route handler |
+| `--force` | Overwrite existing files |
+
+### `validate`
+
+```bash
+npx @aiendpoint/cli validate <url>
+```
+
+No options. Checks `/ai` and `/.well-known/ai`, returns score and diagnostics.

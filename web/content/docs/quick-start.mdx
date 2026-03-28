@@ -5,15 +5,36 @@ export const metadata = {
   order: 2,
   href: "/docs/quick-start",
   toc: [
+    { id: "fastest-path", title: "Fastest path" },
     { id: "minimal-shape", title: "Minimal shape" },
-    { id: "express-example", title: "Express example" },
+    { id: "serve-it", title: "Serve it" },
     { id: "next-steps", title: "Next steps" },
   ],
 };
 
+<h2 id="fastest-path">Fastest path</h2>
+
+If your service has an OpenAPI/Swagger spec, you can generate `/ai` in one command:
+
+```bash
+npx @aiendpoint/cli init --openapi https://your-api.com/openapi.json
+```
+
+This creates `ai.json` and a route handler for your framework. Done in under a minute.
+
+No OpenAPI? Use the interactive wizard:
+
+```bash
+npx @aiendpoint/cli init
+```
+
+See the full [CLI docs](/docs/cli) for all options.
+
+---
+
 <h2 id="minimal-shape">Minimal shape</h2>
 
-Every implementation starts with the same minimum contract.
+If you prefer to write it by hand, every implementation starts with the same minimum contract.
 
 ```json
 {
@@ -62,11 +83,37 @@ app.get("/ai", (_req, res) => {
 });
 ```
 
+<h2 id="serve-it">Serve it with @aiendpoint/serve</h2>
+
+Instead of writing the route handler yourself, use the [`@aiendpoint/serve`](/docs/serve) package:
+
+```bash
+npm install @aiendpoint/serve
+```
+
+```ts
+// Express
+import { aiendpoint } from '@aiendpoint/serve/express'
+app.use(aiendpoint({ spec: './ai.json' }))
+
+// Fastify
+import { aiendpoint } from '@aiendpoint/serve/fastify'
+app.register(aiendpoint, { spec: './ai.json' })
+
+// Next.js (app/ai/route.ts)
+import { aiendpoint } from '@aiendpoint/serve/next'
+export const GET = aiendpoint({ spec: './ai.json' })
+
+// Hono
+import { aiendpoint } from '@aiendpoint/serve/hono'
+app.use(aiendpoint({ spec: './ai.json' }))
+```
+
 <h2 id="next-steps">Next steps</h2>
 
 After the endpoint responds:
 
-1. Make sure it returns JSON over `HTTP 200`
-2. Add `auth`, `token_hints`, and `meta.last_updated`
-3. Run the validator from [`Validation`](/docs/validation)
-4. Register the service in the AIEndpoint directory
+1. Validate it: `npx @aiendpoint/cli validate https://yoursite.com`
+2. Add `auth`, `token_hints`, and `meta.last_updated` for a higher score
+3. Check the [`Spec Reference`](/docs/spec) for all available fields
+4. Register the service in the [AIEndpoint directory](https://aiendpoint.dev/register)
