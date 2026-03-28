@@ -1,6 +1,6 @@
 {
   "name": "@aiendpoint/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate /ai endpoint specs for your service — make it AI-readable in minutes",
   "type": "module",
   "main": "dist/index.js",
