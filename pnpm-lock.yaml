@@ -40,18 +40,6 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
-  packages/fastify:
-    devDependencies:
-      '@types/node':
-        specifier: ^22.10.0
-        version: 22.19.15
-      fastify:
-        specifier: ^5.8.4
-        version: 5.8.4
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
-
   packages/mcp-server:
     dependencies:
       '@modelcontextprotocol/sdk':
@@ -71,7 +59,19 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
-  packages/next:
+  packages/plugin-fastify:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.19.15
+      fastify:
+        specifier: ^5.8.4
+        version: 5.8.4
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/plugin-next:
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
