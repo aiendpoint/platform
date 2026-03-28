@@ -1,0 +1,225 @@
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "Stripe API",
+    "description": "The Stripe REST API. Please see https://stripe.com/docs/api for more details."
+  },
+  "capabilities": [
+    {
+      "id": "getaccount",
+      "description": "Retrieve account",
+      "endpoint": "/v1/account",
+      "method": "GET",
+      "params": {
+        "expand": "array (optional - Specifies which fields in the response should be expanded.)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "postaccountlinks",
+      "description": "Create an account link",
+      "endpoint": "/v1/account_links",
+      "method": "POST",
+      "returns": "Successful response."
+    },
+    {
+      "id": "postaccountsessions",
+      "description": "Create an Account Session",
+      "endpoint": "/v1/account_sessions",
+      "method": "POST",
+      "returns": "Successful response."
+    },
+    {
+      "id": "getaccounts",
+      "description": "List all connected accounts",
+      "endpoint": "/v1/accounts",
+      "method": "GET",
+      "params": {
+        "created": "string (optional - Only return connected accounts that were created during the )",
+        "ending_before": "string (optional - A cursor for use in pagination. `ending_before` is an object)",
+        "expand": "array (optional - Specifies which fields in the response should be expanded.)",
+        "limit": "integer (optional - A limit on the number of objects to be returned. Limit can r)",
+        "starting_after": "string (optional - A cursor for use in pagination. `starting_after` is an objec)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "postaccounts",
+      "description": "<p>With <a href=\"/docs/connect\">Connect</a>, you can create Stripe accounts for your users.\nTo do this, you’ll first need to <a href=\"https://dashboard.stripe.com/account/applications/settings\">regist",
+      "endpoint": "/v1/accounts",
+      "method": "POST",
+      "returns": "Successful response."
+    },
+    {
+      "id": "getaccountsaccount",
+      "description": "Retrieve account",
+      "endpoint": "/v1/accounts/{account}",
+      "method": "GET",
+      "params": {
+        "account": "string (required)",
+        "expand": "array (optional - Specifies which fields in the response should be expanded.)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "postaccountsaccount",
+      "description": "Update an account",
+      "endpoint": "/v1/accounts/{account}",
+      "method": "POST",
+      "params": {
+        "account": "string (required)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "deleteaccountsaccount",
+      "description": "Delete an account",
+      "endpoint": "/v1/accounts/{account}",
+      "method": "DELETE",
+      "params": {
+        "account": "string (required)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "postaccountsaccountbankaccounts",
+      "description": "Create an external account",
+      "endpoint": "/v1/accounts/{account}/bank_accounts",
+      "method": "POST",
+      "params": {
+        "account": "string (required)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "getaccountsaccountbankaccountsid",
+      "description": "Retrieve an external account",
+      "endpoint": "/v1/accounts/{account}/bank_accounts/{id}",
+      "method": "GET",
+      "params": {
+        "account": "string (required)",
+        "expand": "array (optional - Specifies which fields in the response should be expanded.)",
+        "id": "string (required - Unique identifier for the external account to be retrieved.)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "postaccountsaccountbankaccountsid",
+      "description": "<p>Updates the metadata, account holder name, account holder type of a bank account belonging to\na connected account and optionally sets it as the default for its currency. Other bank account\ndetails ",
+      "endpoint": "/v1/accounts/{account}/bank_accounts/{id}",
+      "method": "POST",
+      "params": {
+        "account": "string (required)",
+        "id": "string (required)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "deleteaccountsaccountbankaccountsid",
+      "description": "Delete an external account",
+      "endpoint": "/v1/accounts/{account}/bank_accounts/{id}",
+      "method": "DELETE",
+      "params": {
+        "account": "string (required)",
+        "id": "string (required - Unique identifier for the external account to be deleted.)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "getaccountsaccountcapabilities",
+      "description": "List all account capabilities",
+      "endpoint": "/v1/accounts/{account}/capabilities",
+      "method": "GET",
+      "params": {
+        "account": "string (required)",
+        "expand": "array (optional - Specifies which fields in the response should be expanded.)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "getaccountsaccountcapabilitiescapability",
+      "description": "Retrieve an Account Capability",
+      "endpoint": "/v1/accounts/{account}/capabilities/{capability}",
+      "method": "GET",
+      "params": {
+        "account": "string (required)",
+        "capability": "string (required)",
+        "expand": "array (optional - Specifies which fields in the response should be expanded.)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "postaccountsaccountcapabilitiescapability",
+      "description": "Update an Account Capability",
+      "endpoint": "/v1/accounts/{account}/capabilities/{capability}",
+      "method": "POST",
+      "params": {
+        "account": "string (required)",
+        "capability": "string (required)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "getaccountsaccountexternalaccounts",
+      "description": "List all external accounts",
+      "endpoint": "/v1/accounts/{account}/external_accounts",
+      "method": "GET",
+      "params": {
+        "account": "string (required)",
+        "ending_before": "string (optional - A cursor for use in pagination. `ending_before` is an object)",
+        "expand": "array (optional - Specifies which fields in the response should be expanded.)",
+        "limit": "integer (optional - A limit on the number of objects to be returned. Limit can r)",
+        "object": "string (optional - Filter external accounts according to a particular object ty)",
+        "starting_after": "string (optional - A cursor for use in pagination. `starting_after` is an objec)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "postaccountsaccountexternalaccounts",
+      "description": "Create an external account",
+      "endpoint": "/v1/accounts/{account}/external_accounts",
+      "method": "POST",
+      "params": {
+        "account": "string (required)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "getaccountsaccountexternalaccountsid",
+      "description": "Retrieve an external account",
+      "endpoint": "/v1/accounts/{account}/external_accounts/{id}",
+      "method": "GET",
+      "params": {
+        "account": "string (required)",
+        "expand": "array (optional - Specifies which fields in the response should be expanded.)",
+        "id": "string (required - Unique identifier for the external account to be retrieved.)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "postaccountsaccountexternalaccountsid",
+      "description": "<p>Updates the metadata, account holder name, account holder type of a bank account belonging to\na connected account and optionally sets it as the default for its currency. Other bank account\ndetails ",
+      "endpoint": "/v1/accounts/{account}/external_accounts/{id}",
+      "method": "POST",
+      "params": {
+        "account": "string (required)",
+        "id": "string (required)"
+      },
+      "returns": "Successful response."
+    },
+    {
+      "id": "deleteaccountsaccountexternalaccountsid",
+      "description": "Delete an external account",
+      "endpoint": "/v1/accounts/{account}/external_accounts/{id}",
+      "method": "DELETE",
+      "params": {
+        "account": "string (required)",
+        "id": "string (required - Unique identifier for the external account to be deleted.)"
+      },
+      "returns": "Successful response."
+    }
+  ],
+  "meta": {
+    "last_updated": "2026-03-28"
+  }
+}

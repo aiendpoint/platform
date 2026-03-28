@@ -1,0 +1,193 @@
+{
+  "aiendpoint": "1.0",
+  "service": {
+    "name": "Swagger Petstore - OpenAPI 3.0",
+    "description": "This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about\nSwagger at [https://swagger.io](https://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!\nYou can now help us improve the API whether it's by making",
+    "category": [
+      "pet",
+      "store",
+      "user"
+    ]
+  },
+  "capabilities": [
+    {
+      "id": "addpet",
+      "description": "Add a new pet to the store.",
+      "endpoint": "/pet",
+      "method": "POST",
+      "returns": "Successful operation"
+    },
+    {
+      "id": "updatepet",
+      "description": "Update an existing pet.",
+      "endpoint": "/pet",
+      "method": "PUT",
+      "returns": "Successful operation"
+    },
+    {
+      "id": "findpetsbystatus",
+      "description": "Finds Pets by status.",
+      "endpoint": "/pet/findByStatus",
+      "method": "GET",
+      "params": {
+        "status": "string (required - Status values that need to be considered for filter)"
+      },
+      "returns": "successful operation"
+    },
+    {
+      "id": "findpetsbytags",
+      "description": "Finds Pets by tags.",
+      "endpoint": "/pet/findByTags",
+      "method": "GET",
+      "params": {
+        "tags": "array (required - Tags to filter by)"
+      },
+      "returns": "successful operation"
+    },
+    {
+      "id": "getpetbyid",
+      "description": "Find pet by ID.",
+      "endpoint": "/pet/{petId}",
+      "method": "GET",
+      "params": {
+        "petId": "integer (required - ID of pet to return)"
+      },
+      "returns": "successful operation"
+    },
+    {
+      "id": "updatepetwithform",
+      "description": "Updates a pet in the store with form data.",
+      "endpoint": "/pet/{petId}",
+      "method": "POST",
+      "params": {
+        "petId": "integer (required - ID of pet that needs to be updated)",
+        "name": "string (optional - Name of pet that needs to be updated)",
+        "status": "string (optional - Status of pet that needs to be updated)"
+      },
+      "returns": "successful operation"
+    },
+    {
+      "id": "deletepet",
+      "description": "Deletes a pet.",
+      "endpoint": "/pet/{petId}",
+      "method": "DELETE",
+      "params": {
+        "petId": "integer (required - Pet id to delete)"
+      },
+      "returns": "Pet deleted"
+    },
+    {
+      "id": "uploadfile",
+      "description": "Uploads an image.",
+      "endpoint": "/pet/{petId}/uploadImage",
+      "method": "POST",
+      "params": {
+        "petId": "integer (required - ID of pet to update)",
+        "additionalMetadata": "string (optional - Additional Metadata)"
+      },
+      "returns": "successful operation"
+    },
+    {
+      "id": "getinventory",
+      "description": "Returns pet inventories by status.",
+      "endpoint": "/store/inventory",
+      "method": "GET",
+      "returns": "successful operation"
+    },
+    {
+      "id": "placeorder",
+      "description": "Place an order for a pet.",
+      "endpoint": "/store/order",
+      "method": "POST",
+      "returns": "successful operation"
+    },
+    {
+      "id": "getorderbyid",
+      "description": "Find purchase order by ID.",
+      "endpoint": "/store/order/{orderId}",
+      "method": "GET",
+      "params": {
+        "orderId": "integer (required - ID of order that needs to be fetched)"
+      },
+      "returns": "successful operation"
+    },
+    {
+      "id": "deleteorder",
+      "description": "Delete purchase order by identifier.",
+      "endpoint": "/store/order/{orderId}",
+      "method": "DELETE",
+      "params": {
+        "orderId": "integer (required - ID of the order that needs to be deleted)"
+      },
+      "returns": "order deleted"
+    },
+    {
+      "id": "createuser",
+      "description": "Create user.",
+      "endpoint": "/user",
+      "method": "POST",
+      "returns": "successful operation"
+    },
+    {
+      "id": "createuserswithlistinput",
+      "description": "Creates list of users with given input array.",
+      "endpoint": "/user/createWithList",
+      "method": "POST",
+      "returns": "Successful operation"
+    },
+    {
+      "id": "loginuser",
+      "description": "Logs user into the system.",
+      "endpoint": "/user/login",
+      "method": "GET",
+      "params": {
+        "username": "string (optional - The user name for login)",
+        "password": "string (optional - The password for login in clear text)"
+      },
+      "returns": "successful operation"
+    },
+    {
+      "id": "logoutuser",
+      "description": "Logs out current logged in user session.",
+      "endpoint": "/user/logout",
+      "method": "GET",
+      "returns": "successful operation"
+    },
+    {
+      "id": "getuserbyname",
+      "description": "Get user by user name.",
+      "endpoint": "/user/{username}",
+      "method": "GET",
+      "params": {
+        "username": "string (required - The name that needs to be fetched. Use user1 for testing)"
+      },
+      "returns": "successful operation"
+    },
+    {
+      "id": "updateuser",
+      "description": "Update user resource.",
+      "endpoint": "/user/{username}",
+      "method": "PUT",
+      "params": {
+        "username": "string (required - name that need to be deleted)"
+      },
+      "returns": "successful operation"
+    },
+    {
+      "id": "deleteuser",
+      "description": "Delete user resource.",
+      "endpoint": "/user/{username}",
+      "method": "DELETE",
+      "params": {
+        "username": "string (required - The name that needs to be deleted)"
+      },
+      "returns": "User deleted"
+    }
+  ],
+  "auth": {
+    "type": "oauth2"
+  },
+  "meta": {
+    "last_updated": "2026-03-28"
+  }
+}
