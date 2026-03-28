@@ -1,0 +1,146 @@
+export const metadata = {
+  title: "Serve",
+  description: "Serve /ai from Express, Fastify, Next.js, Hono, or NestJS with one npm package.",
+  section: "Tools",
+  order: 3,
+  href: "/docs/serve",
+  toc: [
+    { id: "install", title: "Install" },
+    { id: "express", title: "Express" },
+    { id: "fastify", title: "Fastify" },
+    { id: "nextjs", title: "Next.js" },
+    { id: "hono", title: "Hono" },
+    { id: "nestjs", title: "NestJS" },
+    { id: "options", title: "Options" },
+    { id: "custom", title: "Custom adapter" },
+  ],
+};
+
+One npm package, every JS/TS framework. Import the adapter for your stack, point it at your `ai.json`, done.
+
+```bash
+npm install @aiendpoint/serve
+```
+
+---
+
+<h2 id="install">Install</h2>
+
+```bash
+npm install @aiendpoint/serve
+```
+
+All framework dependencies are optional peer deps. You only need the one you use.
+
+---
+
+<h2 id="express">Express</h2>
+
+```ts
+import express from 'express'
+import { aiendpoint } from '@aiendpoint/serve/express'
+
+const app = express()
+app.use(aiendpoint({ spec: './ai.json' }))
+app.listen(3000)
+```
+
+`GET /ai` now serves your spec with proper headers.
+
+---
+
+<h2 id="fastify">Fastify</h2>
+
+```ts
+import Fastify from 'fastify'
+import { aiendpoint } from '@aiendpoint/serve/fastify'
+
+const app = Fastify()
+app.register(aiendpoint, { spec: './ai.json' })
+app.listen({ port: 3000 })
+```
+
+---
+
+<h2 id="nextjs">Next.js (App Router)</h2>
+
+Create `app/ai/route.ts`:
+
+```ts
+import { aiendpoint } from '@aiendpoint/serve/next'
+
+export const GET = aiendpoint({ spec: './ai.json' })
+```
+
+---
+
+<h2 id="hono">Hono</h2>
+
+```ts
+import { Hono } from 'hono'
+import { aiendpoint } from '@aiendpoint/serve/hono'
+
+const app = new Hono()
+app.use(aiendpoint({ spec: './ai.json' }))
+export default app
+```
+
+Works with Cloudflare Workers, Deno, Bun, and Node.js.
+
+---
+
+<h2 id="nestjs">NestJS</h2>
+
+NestJS uses Express under the hood. Use the Express adapter in `main.ts`:
+
+```ts
+import { aiendpoint } from '@aiendpoint/serve/express'
+
+const app = await NestFactory.create(AppModule)
+app.use(aiendpoint({ spec: './ai.json' }))
+```
+
+---
+
+<h2 id="options">Options</h2>
+
+All adapters accept the same options:
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `spec` | `string \| object` | required | Path to `ai.json` or inline spec object |
+| `path` | `string` | `'/ai'` | Route path to serve the spec at |
+| `maxAge` | `number` | `3600` | `Cache-Control` max-age in seconds |
+
+**Inline spec example:**
+
+```ts
+app.use(aiendpoint({
+  spec: {
+    aiendpoint: '1.0',
+    service: { name: 'My API', description: 'Does things' },
+    capabilities: [{ id: 'do_thing', description: 'Does a thing', endpoint: '/api/thing', method: 'GET' }]
+  }
+}))
+```
+
+---
+
+<h2 id="custom">Custom adapter</h2>
+
+For frameworks not listed above, use the shared utilities:
+
+```ts
+import { loadSpec, cacheHeader } from '@aiendpoint/serve/handler'
+
+const spec = loadSpec('./ai.json')
+
+// In your framework's route handler:
+response.setHeader('Content-Type', 'application/json')
+response.setHeader('Cache-Control', cacheHeader(3600))
+response.send(JSON.stringify(spec))
+```
+
+---
+
+**Generate `ai.json`:** Use the [CLI](/docs/cli) to create your spec from OpenAPI or interactively.
