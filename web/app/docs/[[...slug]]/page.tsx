@@ -12,9 +12,14 @@ export async function generateStaticParams() {
     {},
     { slug: ["quick-start"] },
     { slug: ["spec"] },
+    { slug: ["concepts"] },
     { slug: ["validation"] },
+    { slug: ["cli"] },
+    { slug: ["serve"] },
     { slug: ["mcp-server"] },
     { slug: ["skill"] },
+    { slug: ["changelog"] },
+    { slug: ["roadmap"] },
   ];
 }
 
