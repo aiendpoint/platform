@@ -1,0 +1,50 @@
+{
+  "name": "@aiendpoint/cli",
+  "version": "0.1.0",
+  "description": "Generate /ai endpoint specs for your service — make it AI-readable in minutes",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "aiendpoint": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "aiendpoint",
+    "ai",
+    "api",
+    "openapi",
+    "swagger",
+    "cli",
+    "generator"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aiendpoint/platform",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://aiendpoint.dev",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "commander": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
