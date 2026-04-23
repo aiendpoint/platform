@@ -71,9 +71,9 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.0",
     "express": "^5.1.0",
-    "fastify": "^5.8.4",
-    "hono": "^4.7.0",
-    "next": "^16.0.0",
+    "fastify": "^5.8.5",
+    "hono": "^4.12.14",
+    "next": "^16.2.4",
     "typescript": "^5.7.2"
   }
 }
