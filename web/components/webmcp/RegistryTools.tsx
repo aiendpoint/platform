@@ -24,12 +24,12 @@ export function RegistryTools() {
   const router = useRouter();
   const routerRef = useRef(router);
   routerRef.current = router;
-  const startedRef = useRef(false);
+  // Last find_services results, so select_service can serve community
+  // entries (which the registry detail API doesn't cover) from the set the
+  // agent just saw.
+  const lastResultsRef = useRef(new Map<string, Record<string, unknown>>());
 
   useEffect(() => {
-    if (startedRef.current) return; // Strict Mode double-mount guard
-    startedRef.current = true;
-
     const findServices: WebMcpTool = {
       name: "find_services",
       description:
@@ -78,20 +78,24 @@ export function RegistryTools() {
         sp.set("sort", "score");
         routerRef.current.push(`/services${sp.size ? `?${sp}` : ""}`);
 
+        const items = res.services.map((s) => ({
+          service_id: s.id,
+          name: s.name,
+          description: s.description,
+          url: s.url,
+          ai_manifest: s.ai_url,
+          categories: s.categories,
+          auth: s.auth_type,
+          verified: s.is_verified,
+          score: s.score,
+          source: s.source ?? "owner",
+        }));
+        lastResultsRef.current = new Map(items.map((i) => [i.service_id, i]));
+
         return textResult({
           total: res.total,
-          showing: res.services.length,
-          services: res.services.map((s) => ({
-            service_id: s.id,
-            name: s.name,
-            description: s.description,
-            url: s.url,
-            ai_manifest: s.ai_url,
-            categories: s.categories,
-            auth: s.auth_type,
-            verified: s.is_verified,
-            score: s.score,
-          })),
+          showing: items.length,
+          services: items,
           note:
             "The user's page now shows these results. Call select_service with a service_id to open its detail view, " +
             "or navigate to a service's url to use its own on-page WebMCP tools.",
@@ -119,7 +123,29 @@ export function RegistryTools() {
         if (!id) {
           return textResult({ error: "service_id is required. Call find_services first." });
         }
-        const s = await getService(id);
+
+        let s;
+        try {
+          s = await getService(id);
+        } catch {
+          // Community-generated entries exist only in the list API; serve
+          // them from the last find_services result set. The detail PAGE
+          // still renders them, so navigation below works either way.
+          const cached = lastResultsRef.current.get(id);
+          if (!cached) {
+            return textResult({
+              error: `No service found for service_id '${id}'. Call find_services first and use one of its service_id values.`,
+            });
+          }
+          routerRef.current.push(`/services/${id}`);
+          return textResult({
+            ...cached,
+            capabilities_note:
+              "Community-generated entry: the full capability list is on the page now shown to the user, and in the service's own /.well-known/ai manifest.",
+            note:
+              "The user's page now shows this service. Visit the service's url in the browser to use its own on-page WebMCP tools.",
+          });
+        }
 
         // Show the human the same detail view
         routerRef.current.push(`/services/${s.id}`);

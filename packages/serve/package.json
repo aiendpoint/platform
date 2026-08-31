@@ -1,6 +1,6 @@
 {
   "name": "@aiendpoint/serve",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Serve your /ai endpoint from any JS/TS framework - Express, Fastify, Next.js, Hono, NestJS",
   "type": "module",
   "main": "dist/index.js",
@@ -15,11 +15,21 @@
   },
   "typesVersions": {
     "*": {
-      "express": ["dist/express.d.ts"],
-      "fastify": ["dist/fastify.d.ts"],
-      "next": ["dist/next.d.ts"],
-      "hono": ["dist/hono.d.ts"],
-      "handler": ["dist/handler.d.ts"]
+      "express": [
+        "dist/express.d.ts"
+      ],
+      "fastify": [
+        "dist/fastify.d.ts"
+      ],
+      "next": [
+        "dist/next.d.ts"
+      ],
+      "hono": [
+        "dist/hono.d.ts"
+      ],
+      "handler": [
+        "dist/handler.d.ts"
+      ]
     }
   },
   "files": [
@@ -62,10 +72,18 @@
     "hono": ">=4"
   },
   "peerDependenciesMeta": {
-    "express": { "optional": true },
-    "fastify": { "optional": true },
-    "next": { "optional": true },
-    "hono": { "optional": true }
+    "express": {
+      "optional": true
+    },
+    "fastify": {
+      "optional": true
+    },
+    "next": {
+      "optional": true
+    },
+    "hono": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/express": "^5.0.0",

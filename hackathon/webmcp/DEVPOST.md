@@ -1,4 +1,4 @@
-# Devpost submission text (draft — paste into the form)
+# Devpost submission text (draft - paste into the form)
 
 ## Project name
 
@@ -29,7 +29,7 @@ manifest becomes its WebMCP tools.
 ### The experience
 
 1. On **aiendpoint.dev**, the agent calls `find_services` ("a weather service
-   with no auth") — and the human-visible page renders exactly the results
+   with no auth") - and the human-visible page renders exactly the results
    the agent received. `select_service` opens the detail view with a live
    "Open service" link.
 2. One click later, on **DemoWeather**, the agent calls `current_weather` and
@@ -44,14 +44,14 @@ Before WebMCP, a "service directory for AI agents" could only be an HTTP API
 for server-side agents. In the browser it was unreachable exactly where users
 actually work. With WebMCP, the directory, the selection, and the execution
 all happen inside one browsing session, visibly shared between the user and
-the agent — discovery stops being a backend concern and becomes part of the
+the agent - discovery stops being a backend concern and becomes part of the
 web page.
 
 ### How it's implemented
 
 - **`@aiendpoint/webmcp`** (new package, ESM + IIFE): promotes a site's
   `/.well-known/ai` manifest into WebMCP tools. Tool names, descriptions and
-  JSON input schemas are derived from the manifest — the spec's compact
+  JSON input schemas are derived from the manifest - the spec's compact
   parameter notation (`"string, required -- city name"`) is parsed into
   schema types and required lists. Execution stays in explicit
   per-capability handlers, so a site never exposes anything it didn't wire
@@ -64,7 +64,7 @@ web page.
   the browser's actual WebMCP surface.
 - **DemoWeather** (FastAPI) serves its manifest at `/.well-known/ai`, loads
   the adapter's IIFE bundle, and wires three handlers that drive the page's
-  weather card — backed by live Open-Meteo data with a stale-cache fallback
+  weather card - backed by live Open-Meteo data with a stale-cache fallback
   that is always labeled.
 - Platform-wide, `/.well-known/ai` is now the authoritative manifest
   location (draft-01), with `/ai` kept as a legacy alias.
@@ -72,8 +72,8 @@ web page.
 ### What was built during the hackathon vs. before
 
 The `/ai` spec, registry and demo API servers predate the hackathon. All
-WebMCP work — the adapter package, every registered tool, the DemoWeather
-page, and the live-data switch — was built during the submission period
+WebMCP work - the adapter package, every registered tool, the DemoWeather
+page, and the live-data switch - was built during the submission period
 (timestamped commits on the submission branch).
 
 ### Limitations and what's next
@@ -94,7 +94,7 @@ redis, vercel, cloudflare, open-meteo, webmcp
 
 Chrome 149+ with `chrome://flags/#enable-webmcp-testing` enabled (or the
 ChatGPT desktop browser). No login required anywhere. Diagnostics page:
-https://www.aiendpoint.dev/webmcp/ping — shows the detected API surface and
+https://www.aiendpoint.dev/webmcp/ping - shows the detected API surface and
 a visible call counter. Demo prompts:
 
 1. "Find me a weather service that needs no authentication." (on aiendpoint.dev)

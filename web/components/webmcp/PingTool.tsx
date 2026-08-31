@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { registerWebMcpTools, type WebMcpTool } from "@/lib/webmcp-client";
 
 type LogLine = { at: string; text: string };
 
@@ -51,17 +52,16 @@ export function PingTool() {
   const [callCount, setCallCount] = useState(0);
   const [lastMessage, setLastMessage] = useState<string | null>(null);
   const [logs, setLogs] = useState<LogLine[]>([]);
-  const startedRef = useRef(false);
 
   useEffect(() => {
-    if (startedRef.current) return; // Strict Mode double-mount guard
-    startedRef.current = true;
+    // Fresh state per (re)mount - Strict Mode runs register/cleanup/register,
+    // and the UI must reflect the registration that is actually live.
+    setLogs([]);
+    setRegisteredVia(null);
 
     const log = (text: string) => setLogs((prev) => [...prev, { at: now(), text }]);
-    const abort = new AbortController();
-    let unregister: (() => void) | null = null;
 
-    const tool = {
+    const tool: WebMcpTool = {
       name: "ping",
       description:
         "Health-check tool for the AIEndpoint WebMCP smoke test. Echoes the message back and increments the on-page call counter.",
@@ -71,13 +71,13 @@ export function PingTool() {
           message: { type: "string", description: "Any text to echo back" },
         },
       },
-      execute: async (input: { message?: string } | undefined) => {
-        const msg = input?.message ?? "(no message)";
+      execute: async (input) => {
+        const msg = typeof input?.message === "string" ? input.message : "(no message)";
         setCallCount((c) => c + 1);
         setLastMessage(msg);
         log(`ping called with message: ${JSON.stringify(msg)}`);
         return {
-          content: [{ type: "text", text: `pong: ${msg} (served by aiendpoint.dev)` }],
+          content: [{ type: "text" as const, text: `pong: ${msg} (served by aiendpoint.dev)` }],
         };
       },
     };
@@ -92,42 +92,12 @@ export function PingTool() {
       log(`Found ${s.path} with methods: [${s.methods.join(", ")}]`);
     }
 
-    (async () => {
-      for (const s of found) {
-        const mc = s.obj as Record<string, (...args: unknown[]) => unknown>;
-        try {
-          if (typeof mc.registerTool === "function") {
-            const result = await mc.registerTool(tool, { signal: abort.signal });
-            if (result && typeof (result as { unregister?: unknown }).unregister === "function") {
-              unregister = () => (result as { unregister: () => void }).unregister();
-            } else if (typeof result === "function") {
-              unregister = result as () => void;
-            }
-            setRegisteredVia(`${s.path}.registerTool`);
-            log(`Registered "ping" via ${s.path}.registerTool — result: ${String(result)}`);
-            return;
-          }
-          if (typeof mc.provideContext === "function") {
-            await mc.provideContext({ tools: [tool] });
-            setRegisteredVia(`${s.path}.provideContext`);
-            log(`Registered "ping" via ${s.path}.provideContext`);
-            return;
-          }
-          log(`${s.path} has neither registerTool nor provideContext — skipped`);
-        } catch (e) {
-          log(`Registration via ${s.path} failed: ${e instanceof Error ? e.message : String(e)}`);
-        }
-      }
-    })();
-
-    return () => {
-      abort.abort();
-      try {
-        unregister?.();
-      } catch {
-        /* best effort */
-      }
-    };
+    // Register through the shared helper so ping joins the page-wide tool
+    // union instead of clobbering tools registered by other components.
+    return registerWebMcpTools([tool], {
+      onEvent: log,
+      onRegistered: (via) => setRegisteredVia(via),
+    });
   }, []);
 
   const supported = surfaces === null ? null : surfaces.length > 0;

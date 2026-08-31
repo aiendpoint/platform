@@ -81,8 +81,10 @@ export function webMcpAvailable(): boolean {
 const PARAM_TYPES = ["string", "integer", "number", "boolean", "array"];
 
 /**
- * Parses the spec's compact parameter notation, e.g.
- * "string, required -- city name" → { type, required, description }.
+ * Parses the spec's compact parameter notation:
+ *   "string, required -- city name"          (draft-01 form)
+ *   "city name (string, required)"           (legacy v1 form)
+ * → { type, required, description }.
  */
 export function parseParamDescription(desc: string): {
   type: string;
@@ -90,9 +92,20 @@ export function parseParamDescription(desc: string): {
   description: string;
 } {
   const text = String(desc ?? "");
-  const [head, ...rest] = text.split(/--|—/);
-  const tail = rest.join("--").trim();
-  const out = { type: "string", required: false, description: tail || text };
+  let head = text;
+  let description = text;
+
+  const dashSplit = text.split(/--|—/);
+  const legacyMatch = /^(.*)\(([^()]*)\)\s*$/.exec(text);
+  if (dashSplit.length > 1) {
+    head = dashSplit[0];
+    description = dashSplit.slice(1).join("--").trim() || text;
+  } else if (legacyMatch) {
+    head = legacyMatch[2];
+    description = legacyMatch[1].trim() || text;
+  }
+
+  const out = { type: "string", required: false, description };
   for (const raw of head.split(",")) {
     const token = raw.trim().toLowerCase();
     if (PARAM_TYPES.includes(token)) out.type = token;
@@ -130,6 +143,19 @@ function toTool(
   };
 }
 
+// provideContext replaces the page's whole tool set on every call, so keep
+// one union of all tools registered through this module and always provide
+// that union - independent callers would otherwise clobber each other.
+const activeTools = new Map<string, WebMcpTool>();
+let provideQueue: Promise<void> = Promise.resolve();
+
+function provideUnion(mc: Record<string, AnyFn>): Promise<void> {
+  provideQueue = provideQueue.then(async () => {
+    await mc.provideContext({ tools: [...activeTools.values()] });
+  });
+  return provideQueue;
+}
+
 /**
  * Low-level registration: pushes ready-made tools through the first working
  * WebMCP surface. Returns a cleanup function (safe to call multiple times).
@@ -140,7 +166,10 @@ export function registerWebMcpTools(
 ): () => void {
   const abort = new AbortController();
   const unregisters: Array<() => void> = [];
+  let providedVia: Record<string, AnyFn> | null = null;
   let cleaned = false;
+
+  for (const tool of tools) activeTools.set(tool.name, tool);
 
   (async () => {
     for (const mc of surfaces()) {
@@ -158,7 +187,8 @@ export function registerWebMcpTools(
           return;
         }
         if (typeof mc.provideContext === "function") {
-          await mc.provideContext({ tools });
+          providedVia = mc;
+          await provideUnion(mc);
           onDone?.(true);
           return;
         }
@@ -173,12 +203,16 @@ export function registerWebMcpTools(
     if (cleaned) return;
     cleaned = true;
     abort.abort();
+    for (const tool of tools) activeTools.delete(tool.name);
     for (const un of unregisters) {
       try {
         un();
       } catch {
         /* best effort */
       }
+    }
+    if (providedVia) {
+      void provideUnion(providedVia).catch(() => {});
     }
   };
 }

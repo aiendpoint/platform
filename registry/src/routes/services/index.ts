@@ -43,7 +43,10 @@ export async function servicesListRoute(app: FastifyInstance) {
     const cats = category ? (Array.isArray(category) ? category : [category]) : []
 
     // ── Cache hit ─────────────────────────────────────────────────────────────
-    const cacheKey = `services:v2:${q ?? ''}:${cats.join(',')}:${auth_type ?? ''}:${language ?? ''}:${verified ?? ''}:${min_score ?? ''}:${sort}:${pageNum}:${limitNum}`
+    // PostgREST .or() syntax reserves , ( ) — strip them from user input and
+    // fall back to no keyword filter when nothing searchable remains.
+    const safeQ = q ? q.replace(/[,()]/g, ' ').trim() : ''
+    const cacheKey = `services:v3:${safeQ}:${cats.join(',')}:${auth_type ?? ''}:${language ?? ''}:${verified ?? ''}:${min_score ?? ''}:${sort}:${pageNum}:${limitNum}`
     const cached = await cacheGet<unknown>(cacheKey)
     if (cached) {
       return reply.send(cached)
@@ -59,11 +62,10 @@ export async function servicesListRoute(app: FastifyInstance) {
       .eq('status', 'active')
       .is('deleted_at', null)
 
-    if (q) {
+    if (safeQ) {
       // Match names and descriptions so capability keywords ("weather") find
-      // services not named after them. Strip PostgREST or() syntax characters.
-      const safe = q.replace(/[,()]/g, ' ').trim()
-      query = query.or(`name.ilike.%${safe}%,description.ilike.%${safe}%`)
+      // services not named after them.
+      query = query.or(`name.ilike.%${safeQ}%,description.ilike.%${safeQ}%`)
     }
 
     if (cats.length > 0) {
@@ -154,8 +156,8 @@ export async function servicesListRoute(app: FastifyInstance) {
         .select('id, url, domain, ai_spec, confidence, contributors, discover_count, created_at, updated_at')
         .eq('status', 'active')
 
-      if (q) {
-        communityQuery = communityQuery.or(`url.ilike.%${q}%,domain.ilike.%${q}%`)
+      if (safeQ) {
+        communityQuery = communityQuery.or(`url.ilike.%${safeQ}%,domain.ilike.%${safeQ}%`)
       }
 
       const { data: communityData } = await communityQuery

@@ -42,9 +42,18 @@ var AIEndpointWebMCP = (() => {
   var PARAM_TYPES = ["string", "integer", "number", "boolean", "array"];
   function parseParamDescription(desc) {
     const text = String(desc ?? "");
-    const [head, ...rest] = text.split(/--|—/);
-    const tail = rest.join("--").trim();
-    const out = { type: "string", required: false, description: tail || text };
+    let head = text;
+    let description = text;
+    const dashSplit = text.split(/--|—/);
+    const legacyMatch = /^(.*)\(([^()]*)\)\s*$/.exec(text);
+    if (dashSplit.length > 1) {
+      head = dashSplit[0];
+      description = dashSplit.slice(1).join("--").trim() || text;
+    } else if (legacyMatch) {
+      head = legacyMatch[2];
+      description = legacyMatch[1].trim() || text;
+    }
+    const out = { type: "string", required: false, description };
     for (const raw of head.split(",")) {
       const token = raw.trim().toLowerCase();
       if (PARAM_TYPES.includes(token)) out.type = token;
@@ -75,10 +84,20 @@ var AIEndpointWebMCP = (() => {
       }
     };
   }
+  var activeTools = /* @__PURE__ */ new Map();
+  var provideQueue = Promise.resolve();
+  function provideUnion(mc) {
+    provideQueue = provideQueue.then(async () => {
+      await mc.provideContext({ tools: [...activeTools.values()] });
+    });
+    return provideQueue;
+  }
   function registerWebMcpTools(tools, onDone) {
     const abort = new AbortController();
     const unregisters = [];
+    let providedVia = null;
     let cleaned = false;
+    for (const tool of tools) activeTools.set(tool.name, tool);
     (async () => {
       for (const mc of surfaces()) {
         try {
@@ -95,7 +114,8 @@ var AIEndpointWebMCP = (() => {
             return;
           }
           if (typeof mc.provideContext === "function") {
-            await mc.provideContext({ tools });
+            providedVia = mc;
+            await provideUnion(mc);
             onDone?.(true);
             return;
           }
@@ -109,11 +129,16 @@ var AIEndpointWebMCP = (() => {
       if (cleaned) return;
       cleaned = true;
       abort.abort();
+      for (const tool of tools) activeTools.delete(tool.name);
       for (const un of unregisters) {
         try {
           un();
         } catch {
         }
+      }
+      if (providedVia) {
+        void provideUnion(providedVia).catch(() => {
+        });
       }
     };
   }

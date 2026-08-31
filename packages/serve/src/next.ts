@@ -1,15 +1,18 @@
 /**
  * Next.js App Router handler for serving the AI discovery document.
  *
- * The route file's location decides the path. Serve the authoritative
- * well-known location, plus the /ai legacy alias if you want one:
+ * The route file's location decides the path. The App Router cannot route
+ * dot-folders, so serve the handler at /ai and rewrite the authoritative
+ * well-known location onto it:
  *
- *   // app/.well-known/ai/route.ts
+ *   // app/ai/route.ts
  *   import { aiendpoint } from '@aiendpoint/serve/next'
  *   export const GET = aiendpoint({ spec: './ai.json' })
  *
- *   // app/ai/route.ts (optional legacy alias — same spec)
- *   export { GET } from '../.well-known/ai/route'
+ *   // next.config.ts
+ *   async rewrites() {
+ *     return [{ source: '/.well-known/ai', destination: '/ai' }]
+ *   }
  */
 
 import { NextResponse } from 'next/server'

@@ -121,7 +121,10 @@
     }
 
     function renderError(msg) {
-      document.getElementById("current-body").innerHTML = `<div class="error">${msg}</div>`;
+      const body = document.getElementById("current-body");
+      body.innerHTML = '<div class="error"></div>';
+      // Error text echoes caller input (city names) - keep it text, never HTML
+      body.firstChild.textContent = msg;
       document.getElementById("current-src").textContent = "";
     }
 

@@ -60,6 +60,11 @@ def _condition(code) -> str:
         return "cloudy"
 
 
+def _ri(value):
+    """Open-Meteo arrays legitimately contain nulls; keep them as null."""
+    return round(value) if value is not None else None
+
+
 def _fetch_open_meteo(city_key: str) -> dict:
     """Fetch and normalize live weather. Raises on any upstream problem."""
     city = CITIES[city_key]
@@ -88,9 +93,9 @@ def _fetch_open_meteo(city_key: str) -> dict:
             "condition": _condition(daily["weather_code"][i]),
             "temp_high_c": daily["temperature_2m_max"][i],
             "temp_low_c": daily["temperature_2m_min"][i],
-            "humidity_pct": round(daily["relative_humidity_2m_mean"][i]),
+            "humidity_pct": _ri(daily["relative_humidity_2m_mean"][i]),
             "precipitation_mm": daily["precipitation_sum"][i],
-            "wind_kph": round(daily["wind_speed_10m_max"][i]),
+            "wind_kph": _ri(daily["wind_speed_10m_max"][i]),
         })
 
     return {
@@ -98,8 +103,8 @@ def _fetch_open_meteo(city_key: str) -> dict:
         "current": {
             "condition": _condition(current["weather_code"]),
             "temp_c": current["temperature_2m"],
-            "humidity_pct": round(current["relative_humidity_2m"]),
-            "wind_kph": round(current["wind_speed_10m"]),
+            "humidity_pct": _ri(current["relative_humidity_2m"]),
+            "wind_kph": _ri(current["wind_speed_10m"]),
             "observed_at": current["time"],
         },
         "forecast": forecast,
