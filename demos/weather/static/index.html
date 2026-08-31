@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DemoWeather — an AI-ready weather service</title>
+  <style>
+    :root {
+      --bg: #0a0a0a; --card: #141414; --line: #262626;
+      --fg: #fafafa; --muted: #a3a3a3; --faint: #666;
+      --accent: #fafafa; --ok: #4ade80; --warn: #fbbf24; --err: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--fg);
+      font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+      padding: 48px 24px;
+    }
+    .wrap { width: 100%; max-width: 560px; }
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    h1 { font-size: 22px; font-weight: 700; }
+    .sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+    .sub a { color: var(--muted); }
+    .badge {
+      font: 11px ui-monospace, monospace; padding: 4px 10px; border-radius: 999px;
+      border: 1px solid var(--line); color: var(--faint);
+    }
+    .badge.on { color: var(--ok); border-color: rgba(74, 222, 128, .35); }
+    .cities { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .cities button {
+      background: none; border: 1px solid var(--line); color: var(--muted);
+      padding: 6px 12px; border-radius: 8px; font-size: 13px; cursor: pointer;
+    }
+    .cities button:hover { color: var(--fg); }
+    .cities button.active { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 24px; margin-bottom: 16px; transition: box-shadow .3s;
+    }
+    .card.flash { box-shadow: 0 0 0 2px var(--ok); }
+    .current { display: flex; align-items: center; gap: 20px; }
+    .emoji { font-size: 56px; line-height: 1; }
+    .temp { font-size: 44px; font-weight: 700; letter-spacing: -1px; }
+    .cond { color: var(--muted); text-transform: capitalize; }
+    .meta { margin-left: auto; text-align: right; color: var(--muted); font-size: 13px; }
+    .src { font: 11px ui-monospace, monospace; color: var(--faint); margin-top: 16px; }
+    .src .stale { color: var(--warn); }
+    .forecast { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .day { text-align: center; padding: 12px 4px; border: 1px solid var(--line); border-radius: 12px; }
+    .day .d { font-size: 11px; color: var(--faint); }
+    .day .e { font-size: 22px; margin: 4px 0; }
+    .day .t { font-size: 12px; color: var(--muted); }
+    .error { color: var(--err); padding: 24px; text-align: center; }
+    .hidden { display: none; }
+    footer { margin-top: 28px; font-size: 12px; color: var(--faint); text-align: center; }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer code { font-family: ui-monospace, monospace; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>DemoWeather</h1>
+      <span id="webmcp-badge" class="badge">WebMCP: checking…</span>
+    </header>
+    <p class="sub">
+      An AI-ready demo service by <a href="https://www.aiendpoint.dev">AIEndpoint</a>.
+      Live data from Open-Meteo. Agents: see <code>/.well-known/ai</code>.
+    </p>
+
+    <div class="cities" id="cities"></div>
+
+    <div class="card" id="current-card">
+      <div id="current-body">Loading…</div>
+      <div class="src" id="current-src"></div>
+    </div>
+
+    <div class="card">
+      <div class="forecast" id="forecast">Loading…</div>
+    </div>
+
+    <footer>
+      Discovered via <a href="https://www.aiendpoint.dev">aiendpoint.dev</a> ·
+      manifest at <a href="/.well-known/ai"><code>/.well-known/ai</code></a> ·
+      tools registered from the manifest by the AIEndpoint WebMCP adapter
+    </footer>
+  </div>
+
+  <script src="/static/webmcp.js"></script>
+  <script>
+    const EMOJI = {
+      sunny: "☀️", partly_cloudy: "⛅", cloudy: "☁️", rainy: "🌧️",
+      snowy: "🌨️", stormy: "⛈️", windy: "💨", foggy: "🌫️",
+    };
+    let activeCity = "seoul";
+
+    function flash(id) {
+      const el = document.getElementById(id);
+      el.classList.add("flash");
+      setTimeout(() => el.classList.remove("flash"), 900);
+    }
+
+    function renderCurrent(d) {
+      document.getElementById("current-body").innerHTML = `
+        <div class="current">
+          <div class="emoji">${EMOJI[d.condition] || "🌡️"}</div>
+          <div>
+            <div class="temp">${Math.round(d.temp_c)}°C</div>
+            <div class="cond">${d.condition.replace("_", " ")}</div>
+          </div>
+          <div class="meta">
+            <div><strong>${d.city}</strong>, ${d.country}</div>
+            <div>humidity ${d.humidity_pct}%</div>
+            <div>wind ${d.wind_kph} km/h</div>
+          </div>
+        </div>`;
+      document.getElementById("current-src").innerHTML =
+        `source: ${d.source} · observed ${d.observed_at}` +
+        (d.stale ? ` · <span class="stale">stale (upstream unavailable)</span>` : "");
+    }
+
+    function renderError(msg) {
+      document.getElementById("current-body").innerHTML = `<div class="error">${msg}</div>`;
+      document.getElementById("current-src").textContent = "";
+    }
+
+    function renderForecast(d) {
+      document.getElementById("forecast").innerHTML = d.forecast.slice(0, 5).map(f => `
+        <div class="day">
+          <div class="d">${f.date.slice(5)}</div>
+          <div class="e">${EMOJI[f.condition] || "🌡️"}</div>
+          <div class="t">${Math.round(f.temp_high_c)}° / ${Math.round(f.temp_low_c)}°</div>
+        </div>`).join("");
+    }
+
+    function setActiveCity(key) {
+      activeCity = key;
+      document.querySelectorAll(".cities button").forEach(b =>
+        b.classList.toggle("active", b.dataset.key === key));
+    }
+
+    async function api(path, params) {
+      const qs = new URLSearchParams(params);
+      const res = await fetch(`${path}?${qs}`);
+      const body = await res.json();
+      if (!res.ok) throw Object.assign(new Error("api error"), { body });
+      return body;
+    }
+
+    async function loadCity(key) {
+      setActiveCity(key);
+      try {
+        const [cur, fc] = await Promise.all([
+          api("/api/weather/current", { city: key }),
+          api("/api/weather/forecast", { city: key, days: 5 }),
+        ]);
+        renderCurrent(cur);
+        renderForecast(fc);
+        return { current: cur, forecast: fc };
+      } catch (e) {
+        const detail = e.body && e.body.detail;
+        renderError((detail && detail.error) || "Weather service unavailable.");
+        throw e;
+      }
+    }
+
+    async function init() {
+      const { cities } = await api("/api/weather/cities", {});
+      document.getElementById("cities").innerHTML = cities.map(c =>
+        `<button data-key="${c.key}">${c.name}</button>`).join("");
+      document.querySelectorAll(".cities button").forEach(b =>
+        b.addEventListener("click", () => loadCity(b.dataset.key)));
+      await loadCity(activeCity);
+    }
+    init();
+
+    // ── WebMCP: promote /.well-known/ai capabilities into live page tools ──
+    const badge = document.getElementById("webmcp-badge");
+    AIEndpointWebMCP.registerAiEndpointTools({
+      specUrl: "/.well-known/ai",
+      handlers: {
+        // Handlers drive the SAME UI the human is looking at.
+        current_weather: async (input) => {
+          const city = String(input.city || activeCity).toLowerCase();
+          const { current } = await loadCity(city);
+          flash("current-card");
+          return current;
+        },
+        forecast: async (input) => {
+          const city = String(input.city || activeCity).toLowerCase();
+          await loadCity(city);
+          flash("current-card");
+          return api("/api/weather/forecast", {
+            city, days: Math.min(7, Number(input.days) || 3),
+          });
+        },
+        supported_cities: async () => api("/api/weather/cities", {}),
+      },
+      onStatus: (s) => {
+        if (s.registered) {
+          badge.textContent = `WebMCP: ${s.tools.length} tools live`;
+          badge.classList.add("on");
+        } else {
+          badge.textContent = s.available ? "WebMCP: registration failed" : "WebMCP: not supported";
+        }
+      },
+    });
+  </script>
+</body>
+</html>
