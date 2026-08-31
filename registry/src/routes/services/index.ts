@@ -43,7 +43,7 @@ export async function servicesListRoute(app: FastifyInstance) {
     const cats = category ? (Array.isArray(category) ? category : [category]) : []
 
     // ── Cache hit ─────────────────────────────────────────────────────────────
-    const cacheKey = `services:v1:${q ?? ''}:${cats.join(',')}:${auth_type ?? ''}:${language ?? ''}:${verified ?? ''}:${min_score ?? ''}:${sort}:${pageNum}:${limitNum}`
+    const cacheKey = `services:v2:${q ?? ''}:${cats.join(',')}:${auth_type ?? ''}:${language ?? ''}:${verified ?? ''}:${min_score ?? ''}:${sort}:${pageNum}:${limitNum}`
     const cached = await cacheGet<unknown>(cacheKey)
     if (cached) {
       return reply.send(cached)
@@ -60,7 +60,10 @@ export async function servicesListRoute(app: FastifyInstance) {
       .is('deleted_at', null)
 
     if (q) {
-      query = query.ilike('name', `%${q}%`)
+      // Match names and descriptions so capability keywords ("weather") find
+      // services not named after them. Strip PostgREST or() syntax characters.
+      const safe = q.replace(/[,()]/g, ' ').trim()
+      query = query.or(`name.ilike.%${safe}%,description.ilike.%${safe}%`)
     }
 
     if (cats.length > 0) {
