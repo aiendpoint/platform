@@ -1,0 +1,45 @@
+{
+  "name": "@aiendpoint/webmcp",
+  "version": "0.1.0",
+  "description": "Promote your /.well-known/ai capability manifest into live WebMCP tools - one manifest, discovered before navigation, executable in the page",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc && esbuild src/index.ts --bundle --format=iife --global-name=AIEndpointWebMCP --outfile=dist/aiendpoint-webmcp.iife.js --footer:js=\"window.AIEndpointWebMCP=AIEndpointWebMCP;\"",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "aiendpoint",
+    "webmcp",
+    "ai",
+    "agents",
+    "model-context",
+    "discovery"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aiendpoint/platform",
+    "directory": "packages/webmcp"
+  },
+  "homepage": "https://aiendpoint.dev",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.4",
+    "typescript": "^5.7.2"
+  }
+}
