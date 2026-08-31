@@ -1,10 +1,15 @@
 /**
- * Next.js App Router handler for serving /ai.
+ * Next.js App Router handler for serving the AI discovery document.
  *
- * Usage:
- *   // app/ai/route.ts
+ * The route file's location decides the path. Serve the authoritative
+ * well-known location, plus the /ai legacy alias if you want one:
+ *
+ *   // app/.well-known/ai/route.ts
  *   import { aiendpoint } from '@aiendpoint/serve/next'
  *   export const GET = aiendpoint({ spec: './ai.json' })
+ *
+ *   // app/ai/route.ts (optional legacy alias — same spec)
+ *   export { GET } from '../.well-known/ai/route'
  */
 
 import { NextResponse } from 'next/server'

@@ -118,7 +118,8 @@ program
   .description('Validate a live /ai endpoint')
   .action(async (url: string) => {
     const base = url.replace(/\/$/, '')
-    const aiUrls = [`${base}/ai`, `${base}/.well-known/ai`]
+    // /.well-known/ai is authoritative (draft-01); /ai is the legacy fallback
+    const aiUrls = [`${base}/.well-known/ai`, `${base}/ai`]
 
     console.log(`\n  Validating /ai endpoint at ${base}...\n`)
 

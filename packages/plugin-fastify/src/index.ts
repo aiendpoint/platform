@@ -16,14 +16,22 @@ import type { FastifyInstance, FastifyPluginOptions } from 'fastify'
 interface AiEndpointOptions extends FastifyPluginOptions {
   /** Path to ai.json file (relative to cwd) or inline spec object */
   spec: string | Record<string, unknown>
-  /** Route path (default: '/ai') */
+  /** Explicit route path override. When set, ONLY this path is served. */
   path?: string
+  /** Also serve the legacy '/ai' alias alongside '/.well-known/ai' (default: true). */
+  legacyAlias?: boolean
   /** Cache-Control max-age in seconds (default: 3600) */
   maxAge?: number
 }
 
 async function aiendpointPlugin(app: FastifyInstance, opts: AiEndpointOptions) {
-  const { path: routePath = '/ai', maxAge = 3600 } = opts
+  const { maxAge = 3600 } = opts
+  // /.well-known/ai is authoritative (draft-01); /ai stays as a legacy alias
+  const paths = opts.path
+    ? [opts.path]
+    : opts.legacyAlias === false
+      ? ['/.well-known/ai']
+      : ['/.well-known/ai', '/ai']
 
   let specData: Record<string, unknown>
 
@@ -35,12 +43,14 @@ async function aiendpointPlugin(app: FastifyInstance, opts: AiEndpointOptions) {
     specData = opts.spec
   }
 
-  app.get(routePath, async (_req, reply) => {
-    reply
-      .header('Content-Type', 'application/json')
-      .header('Cache-Control', `public, max-age=${maxAge}`)
-      .send(specData)
-  })
+  for (const routePath of paths) {
+    app.get(routePath, async (_req, reply) => {
+      reply
+        .header('Content-Type', 'application/json')
+        .header('Cache-Control', `public, max-age=${maxAge}`)
+        .send(specData)
+    })
+  }
 }
 
 export default aiendpointPlugin

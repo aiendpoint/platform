@@ -47,7 +47,8 @@ export async function validateAiEndpoint(url: string): Promise<ValidationResult>
   }
 
   const base = url.replace(/\/$/, '')
-  const aiUrls = [`${base}/ai`, `${base}/.well-known/ai`]
+  // /.well-known/ai is authoritative (draft-01); /ai is the legacy fallback
+  const aiUrls = [`${base}/.well-known/ai`, `${base}/ai`]
 
   // ── Group 1: Connectivity (15pts) ────────────────────────────────────────
   let spec: unknown = null

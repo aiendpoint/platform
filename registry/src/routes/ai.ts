@@ -1,7 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 
 export async function aiRoute(app: FastifyInstance) {
-  app.get('/ai', async (_, reply) => {
+  // /.well-known/ai is authoritative (draft-01); /ai stays as a legacy alias
+  for (const path of ['/.well-known/ai', '/ai']) {
+    app.get(path, async (_, reply) => {
     reply.send({
       aiendpoint: '1.0',
       service: {
@@ -85,9 +87,10 @@ export async function aiRoute(app: FastifyInstance) {
         delta_support: false
       },
       meta: {
-        last_updated: '2026-03-21',
+        last_updated: '2026-09-01',
         status: '/health'
       }
     })
-  })
+    })
+  }
 }
