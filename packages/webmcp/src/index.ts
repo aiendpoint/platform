@@ -283,3 +283,5 @@ export async function registerAiEndpointTools(
   options.onStatus?.(status);
   return { ...status, cleanup };
 }
+
+export { attachAgentWidget } from "./agent-widget.js";
