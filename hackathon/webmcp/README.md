@@ -37,7 +37,7 @@ One manifest, two layers, shared on-screen state between human and agent.
    > *Open the weather one.*
    The agent calls `select_service` - the detail view opens with an
    "Open service" link.
-4. Follow the link to the DemoWeather site and ask:
+4. Follow the link to https://weather.aiendpoint.dev and ask:
    > *What's the weather in Seoul right now?*
    The agent calls the page's `current_weather` tool - the weather card
    updates in front of you with live Open-Meteo data.

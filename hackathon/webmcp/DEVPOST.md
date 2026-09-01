@@ -97,10 +97,8 @@ ChatGPT desktop browser). No login required anywhere. Diagnostics page:
 https://www.aiendpoint.dev/webmcp/ping - shows the detected API surface and
 a visible call counter. Demo prompts:
 
-1. "Find me a weather service that needs no authentication." (on aiendpoint.dev)
-2. "Open the weather one."
-3. "What's the weather in Seoul right now?" (on the DemoWeather site)
+1. "Find me a weather service that needs no authentication." (on https://www.aiendpoint.dev)
+2. "Open the weather one." (DemoWeather - verified, score 100 - tops the results)
+3. "What's the weather in Seoul right now?" (on https://weather.aiendpoint.dev)
 
-<!-- TODO morning: replace DemoWeather URL placeholder once the permanent
-     domain (weather.aiendpoint.dev) is connected; add YouTube link and
-     repo/branch link before submitting. -->
+<!-- TODO before submitting: add YouTube link and repo/branch link. -->
