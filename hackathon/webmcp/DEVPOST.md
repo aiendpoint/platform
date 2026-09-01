@@ -10,7 +10,7 @@ AIEndpoint finds the right website. WebMCP operates it. An open standard and
 live registry that lets browser agents discover which service can do the job
 before they ever navigate.
 
-## About the project (Project Story field)
+## About the project (Project Story field, Devpost template headings)
 
 ### Inspiration
 
@@ -85,6 +85,21 @@ user and the agent.
   capability keywords against descriptions, and fixed count/filter bugs the
   new browser-driven usage exposed.
 
+### Accomplishments that we're proud of
+
+- The full loop is **verified in a real browser**, not just designed: tool
+  registration, an actual `executeTool` call, and a visible UI change on the
+  page.
+- The discovery chain runs on **live production data**: the registry indexes
+  3,600+ services, and DemoWeather registers itself, passes our own validator
+  at 100/100, and tops the "weather" search results agents actually see.
+- One adapter call makes any `/.well-known/ai` site agent-operable - schemas
+  included - while keeping execution in explicit handlers the site controls.
+- We migrated the entire platform (registry, validator, CLI, MCP server,
+  three demos, and every framework adapter) to the well-known location during
+  the hackathon window, and cleared all 71 dependency audit vulnerabilities
+  while we were at it.
+
 ### What we learned
 
 Dogfooding an open spec against a second standard is the fastest way to find
@@ -92,7 +107,7 @@ its weak points. Migrating `/ai` to `/.well-known/ai` (draft-01), parsing
 our own compact notation into JSON Schema, and watching a real browser call
 our tools taught us more in three days than months of design.
 
-### What's next
+### What's next for AIEndpoint - Service Discovery for the Agentic Web
 
 Schema-typed params in spec v1.1, mutations with confirmation UI,
 auth-scoped tools, and a "WebMCP-ready" tier on the registry's verification
