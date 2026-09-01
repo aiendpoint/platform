@@ -74,13 +74,25 @@ var AIEndpointWebMCP = (() => {
     if (required.length) schema.required = required;
     return schema;
   }
+  function normalizeInput(raw) {
+    if (raw == null) return {};
+    if (typeof raw === "string") {
+      try {
+        const parsed = JSON.parse(raw);
+        return typeof parsed === "object" && parsed !== null ? parsed : {};
+      } catch {
+        return {};
+      }
+    }
+    return typeof raw === "object" ? raw : {};
+  }
   function toTool(capability, handler, serviceName) {
     return {
       name: capability.id,
       description: `${capability.description} (${serviceName}, via AIEndpoint /.well-known/ai manifest)`,
       inputSchema: toInputSchema(capability.params),
       execute: async (input) => {
-        const result = await handler(input ?? {});
+        const result = await handler(normalizeInput(input));
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
     };

@@ -128,6 +128,21 @@ function toInputSchema(params: Record<string, string> | undefined): Record<strin
   return schema;
 }
 
+// Runtimes differ in what reaches execute(): a parsed object, or the raw
+// JSON string the caller passed to executeTool. Accept both.
+function normalizeInput(raw: unknown): Record<string, unknown> {
+  if (raw == null) return {};
+  if (typeof raw === "string") {
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : {};
+    } catch {
+      return {};
+    }
+  }
+  return typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+}
+
 function toTool(
   capability: ManifestCapability,
   handler: CapabilityHandler,
@@ -138,7 +153,7 @@ function toTool(
     description: `${capability.description} (${serviceName}, via AIEndpoint /.well-known/ai manifest)`,
     inputSchema: toInputSchema(capability.params),
     execute: async (input) => {
-      const result = await handler(input ?? {});
+      const result = await handler(normalizeInput(input));
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     },
   };

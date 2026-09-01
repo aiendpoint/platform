@@ -63,12 +63,31 @@ export interface RegisterCallbacks {
  * Registers tools via the first available WebMCP surface.
  * Returns a cleanup function (safe to call multiple times).
  */
+// Runtimes differ in what reaches execute(): a parsed object, or the raw
+// JSON string the caller passed to executeTool. Accept both.
+function normalizeInput(raw: unknown): Record<string, unknown> {
+  if (raw == null) return {};
+  if (typeof raw === "string") {
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : {};
+    } catch {
+      return {};
+    }
+  }
+  return typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+}
+
 export function registerWebMcpTools(tools: WebMcpTool[], callbacks?: RegisterCallbacks): () => void {
   const abort = new AbortController();
   const unregisters: Array<() => void> = [];
   let providedVia: Record<string, AnyFn> | null = null;
   let cleaned = false;
 
+  tools = tools.map((tool) => ({
+    ...tool,
+    execute: (input: unknown) => tool.execute(normalizeInput(input)),
+  }));
   for (const tool of tools) activeTools.set(tool.name, tool);
 
   (async () => {
