@@ -1,0 +1,140 @@
+export const metadata = {
+  title: "WebMCP",
+  description: "Declare WebMCP support in your manifest, promote it into live page tools with @aiendpoint/webmcp, and let agents find operable sites.",
+  section: "Integrations",
+  order: 7,
+  href: "/docs/webmcp",
+  toc: [
+    { id: "overview", title: "Overview" },
+    { id: "declare", title: "Declare support" },
+    { id: "adapter", title: "The adapter" },
+    { id: "badge", title: "The WebMCP badge" },
+    { id: "agents", title: "For agents" },
+    { id: "browsers", title: "Browser support" },
+  ],
+};
+
+AIEndpoint and [WebMCP](https://developer.chrome.com/docs/ai/webmcp) are two halves of one loop.
+Your `/.well-known/ai` manifest answers *"which site can do this?"* before an
+agent navigates; WebMCP answers *"what can I do on this page?"* after it
+arrives.
+
+> **AIEndpoint finds the right website. WebMCP operates it.**
+
+---
+
+<h2 id="overview">Overview</h2>
+
+WebMCP is an emerging browser standard: a page registers structured tools via
+`document.modelContext.registerTool(...)`, and an in-browser agent (Chrome
+149+ behind a flag, or the ChatGPT desktop browser) can call them directly
+instead of guessing at your UI.
+
+AIEndpoint connects to it in three places:
+
+1. **Your manifest** can declare WebMCP support, so agents know your site is
+   operable before they open it.
+2. **`@aiendpoint/webmcp`** promotes your manifest's capabilities into live
+   WebMCP tools - names, descriptions, and input schemas derived from what
+   you already published.
+3. **The registry** detects support at validation time, shows a **⚡ WebMCP**
+   badge, and lets agents filter for operable sites.
+
+<h2 id="declare">Declare support</h2>
+
+Add one key to your manifest's `meta` object (the spec's extension point):
+
+```json
+{
+  "aiendpoint": "1.0",
+  "service": { "name": "DemoWeather", "description": "..." },
+  "capabilities": [ ... ],
+  "meta": {
+    "last_updated": "2026-09-01",
+    "webmcp": "true"
+  }
+}
+```
+
+Agents reading your manifest see it immediately, and the registry validator
+records it. Even without the declaration, the validator also scans your
+homepage for the WebMCP API surface (`modelContext`, `registerTool(...)`)
+as a fallback heuristic.
+
+<h2 id="adapter">The adapter</h2>
+
+`@aiendpoint/webmcp` turns the capabilities you already declared into page
+tools. You supply one explicit handler per capability - nothing is exposed
+that you did not wire up.
+
+```html
+<script src="/static/aiendpoint-webmcp.iife.js"></script>
+<script>
+  AIEndpointWebMCP.registerAiEndpointTools({
+    specUrl: "/.well-known/ai",
+    handlers: {
+      current_weather: async (input) => {
+        const data = await loadCity(input.city);
+        updateWeatherCard(data); // drive the UI the human is watching
+        return data;
+      },
+    },
+  });
+</script>
+```
+
+Or as an ES module in a bundled app:
+
+```ts
+import { registerAiEndpointTools } from "@aiendpoint/webmcp";
+
+registerAiEndpointTools({ specUrl: "/.well-known/ai", handlers: { ... } });
+```
+
+What the adapter does for you:
+
+- Parses the spec's compact parameter notation
+  (`"string, required -- city name"`) into JSON Schema `inputSchema` with
+  types and required lists
+- Probes every known API surface (`document.modelContext`,
+  `navigator.modelContext`, legacy entry points), preferring `registerTool`
+  with `AbortSignal` cleanup
+- Keeps a page-wide tool union on `provideContext`-only runtimes so
+  independent components never clobber each other
+- Normalizes tool input (runtimes pass parsed objects or raw JSON strings)
+
+See it live: [weather.aiendpoint.dev](https://weather.aiendpoint.dev) - the
+badge in the corner reports registered tools, and agent calls update the
+weather card on screen.
+
+<h2 id="badge">The WebMCP badge</h2>
+
+Services detected as WebMCP-capable get a **⚡ WebMCP** badge on
+[the services directory](/services), next to the verified badge. Detection
+happens at registration and validation time:
+
+1. `meta.webmcp` is `"true"` in the manifest (authoritative), or
+2. the homepage HTML references the WebMCP API surface (heuristic)
+
+<h2 id="agents">For agents</h2>
+
+The list API accepts `webmcp=true`:
+
+```bash
+curl "https://api.aiendpoint.dev/api/services?q=weather&webmcp=true"
+```
+
+And on aiendpoint.dev itself, the `find_services` WebMCP tool accepts
+`webmcp_only: true` - so an in-browser agent can ask the registry for sites
+it will be able to operate after navigating, closing the discovery-to-
+execution loop in one session.
+
+<h2 id="browsers">Browser support</h2>
+
+- **Chrome 149+** with `chrome://flags/#enable-webmcp-testing` enabled
+- **ChatGPT desktop app** built-in browser
+- Diagnostics: [/webmcp/ping](/webmcp/ping) registers a single `ping` tool
+  and reports exactly which API surface your browser exposes
+
+The API surface is still evolving; the adapter is deliberately defensive and
+degrades to a no-op in unsupported browsers.

@@ -18,6 +18,7 @@ export async function generateStaticParams() {
     { slug: ["serve"] },
     { slug: ["mcp-server"] },
     { slug: ["skill"] },
+    { slug: ["webmcp"] },
     { slug: ["changelog"] },
     { slug: ["roadmap"] },
   ];

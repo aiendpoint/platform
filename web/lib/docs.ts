@@ -27,6 +27,7 @@ const docsEntries: DocsEntry[] = [
   { slug: ["cli"], load: () => import("@/content/docs/cli.mdx") },
   { slug: ["mcp-server"], load: () => import("@/content/docs/mcp-server.mdx") },
   { slug: ["skill"], load: () => import("@/content/docs/skill.mdx") },
+  { slug: ["webmcp"], load: () => import("@/content/docs/webmcp.mdx") },
   { slug: ["changelog"], load: () => import("@/content/docs/changelog.mdx") },
   { slug: ["roadmap"], load: () => import("@/content/docs/roadmap.mdx") },
 ];
