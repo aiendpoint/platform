@@ -39,7 +39,11 @@ export function ServiceCard({ service }: { service: ServiceListItem }) {
               unoptimized
             />
           )}
-          <h3 className="font-semibold text-fg group-hover:text-white transition-colors truncate">
+          <h3
+            className={`font-semibold text-fg group-hover:text-white transition-colors break-words line-clamp-2 ${
+              service.name.length > 28 ? "text-sm leading-snug" : ""
+            }`}
+          >
             {service.name}
           </h3>
         </div>
