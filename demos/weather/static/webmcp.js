@@ -29,8 +29,9 @@ var AIEndpointWebMCP = (() => {
   function surfaces() {
     if (typeof window === "undefined") return [];
     const candidates = [
-      navigator.modelContext,
+      // Chrome deprecates navigator.modelContext in favor of document.modelContext
       document.modelContext,
+      navigator.modelContext,
       window.modelContext,
       window.agent
     ];

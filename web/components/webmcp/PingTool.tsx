@@ -17,8 +17,8 @@ function now(): string {
 
 function detectSurfaces(): Surface[] {
   const candidates: Array<[string, unknown]> = [
-    ["navigator.modelContext", (navigator as unknown as Record<string, unknown>).modelContext],
     ["document.modelContext", (document as unknown as Record<string, unknown>).modelContext],
+    ["navigator.modelContext", (navigator as unknown as Record<string, unknown>).modelContext],
     ["window.modelContext", (window as unknown as Record<string, unknown>).modelContext],
     ["window.agent", (window as unknown as Record<string, unknown>).agent],
   ];

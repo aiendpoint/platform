@@ -65,8 +65,9 @@ type AnyFn = (...args: unknown[]) => unknown;
 function surfaces(): Array<Record<string, AnyFn>> {
   if (typeof window === "undefined") return [];
   const candidates = [
-    (navigator as unknown as Record<string, unknown>).modelContext,
+    // Chrome deprecates navigator.modelContext in favor of document.modelContext
     (document as unknown as Record<string, unknown>).modelContext,
+    (navigator as unknown as Record<string, unknown>).modelContext,
     (window as unknown as Record<string, unknown>).modelContext,
     (window as unknown as Record<string, unknown>).agent,
   ];

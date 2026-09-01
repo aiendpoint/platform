@@ -14,12 +14,15 @@ import { convertWebpageRoute }  from './routes/convert-webpage.js'
 import { communityRoute }       from './routes/community.js'
 
 const app = Fastify({
-  logger: {
-    transport: {
-      target: 'pino-pretty',
-      options: { colorize: true, ignore: 'pid,hostname' }
-    }
-  }
+  // pino-pretty is a devDependency; production logs plain JSON
+  logger: process.env.NODE_ENV === 'production'
+    ? true
+    : {
+        transport: {
+          target: 'pino-pretty',
+          options: { colorize: true, ignore: 'pid,hostname' }
+        }
+      }
 })
 
 // ─── CORS ─────────────────────────────────────────────────────────────────
