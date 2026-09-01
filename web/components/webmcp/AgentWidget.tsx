@@ -15,7 +15,7 @@ declare global {
 export function AgentWidget() {
   return (
     <Script
-      src="/aiendpoint-webmcp.iife.js"
+      src="/aiendpoint-webmcp.iife.js?v=2"
       strategy="afterInteractive"
       onLoad={() => window.AIEndpointWebMCP?.attachAgentWidget?.()}
     />

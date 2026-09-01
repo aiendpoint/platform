@@ -15,7 +15,7 @@ type AnyRecord = Record<string, unknown>;
 
 const KEY_STORAGE = "aiendpoint_agent_openai_key";
 const MODEL_STORAGE = "aiendpoint_agent_model";
-const DEFAULT_MODEL = "gpt-4o-mini";
+const DEFAULT_MODEL = "gpt-4o";
 const WIDGET_ID = "aiendpoint-agent-widget";
 const MAX_TOOL_ROUNDS = 4;
 
@@ -119,7 +119,10 @@ export function attachAgentWidget(options?: { model?: string }): void {
     <div class="aw-panel">
       <div class="aw-head">
         <span>Page Agent<small>via WebMCP tools</small></span>
-        <button class="aw-close">✕</button>
+        <span>
+          <button class="aw-gear" style="background:none;border:none;color:#888;cursor:pointer;font-size:14px">⚙</button>
+          <button class="aw-close">✕</button>
+        </span>
       </div>
       <div class="aw-msgs"></div>
       <div class="aw-setup" style="display:none">
@@ -172,6 +175,11 @@ export function attachAgentWidget(options?: { model?: string }): void {
     qInput.focus();
   });
   $(".aw-close").addEventListener("click", () => panel.classList.remove("open"));
+  $(".aw-gear").addEventListener("click", () => {
+    keyInput.value = storage(KEY_STORAGE);
+    modelInput.value = storage(MODEL_STORAGE) || DEFAULT_MODEL;
+    setup.style.display = "flex";
+  });
   $(".aw-save").addEventListener("click", () => {
     if (keyInput.value.trim()) storage(KEY_STORAGE, keyInput.value.trim());
     if (modelInput.value.trim()) storage(MODEL_STORAGE, modelInput.value.trim());
@@ -206,6 +214,13 @@ export function attachAgentWidget(options?: { model?: string }): void {
           parameters: parseSchema(t.inputSchema),
         },
       }));
+      const toolNames = toolDefs.map((t) => t.function.name);
+      addMsg("tool", `📋 ${toolNames.length} page tool(s): ${toolNames.join(", ") || "(none)"}`);
+      history[0].content =
+        SYSTEM_PROMPT +
+        (toolNames.length
+          ? ` The tools available on this page RIGHT NOW are: ${toolNames.join(", ")}. Use them.`
+          : "");
 
       for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
         const res = await fetch("https://api.openai.com/v1/chat/completions", {

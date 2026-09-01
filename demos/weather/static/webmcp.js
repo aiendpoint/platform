@@ -31,7 +31,7 @@ var AIEndpointWebMCP = (() => {
   // src/agent-widget.ts
   var KEY_STORAGE = "aiendpoint_agent_openai_key";
   var MODEL_STORAGE = "aiendpoint_agent_model";
-  var DEFAULT_MODEL = "gpt-4o-mini";
+  var DEFAULT_MODEL = "gpt-4o";
   var WIDGET_ID = "aiendpoint-agent-widget";
   var MAX_TOOL_ROUNDS = 4;
   function getModelContext() {
@@ -112,7 +112,10 @@ var AIEndpointWebMCP = (() => {
     <div class="aw-panel">
       <div class="aw-head">
         <span>Page Agent<small>via WebMCP tools</small></span>
-        <button class="aw-close">\u2715</button>
+        <span>
+          <button class="aw-gear" style="background:none;border:none;color:#888;cursor:pointer;font-size:14px">\u2699</button>
+          <button class="aw-close">\u2715</button>
+        </span>
       </div>
       <div class="aw-msgs"></div>
       <div class="aw-setup" style="display:none">
@@ -160,6 +163,11 @@ var AIEndpointWebMCP = (() => {
       qInput.focus();
     });
     $(".aw-close").addEventListener("click", () => panel.classList.remove("open"));
+    $(".aw-gear").addEventListener("click", () => {
+      keyInput.value = storage(KEY_STORAGE);
+      modelInput.value = storage(MODEL_STORAGE) || DEFAULT_MODEL;
+      setup.style.display = "flex";
+    });
     $(".aw-save").addEventListener("click", () => {
       if (keyInput.value.trim()) storage(KEY_STORAGE, keyInput.value.trim());
       if (modelInput.value.trim()) storage(MODEL_STORAGE, modelInput.value.trim());
@@ -191,6 +199,9 @@ var AIEndpointWebMCP = (() => {
             parameters: parseSchema(t.inputSchema)
           }
         }));
+        const toolNames = toolDefs.map((t) => t.function.name);
+        addMsg("tool", `\u{1F4CB} ${toolNames.length} page tool(s): ${toolNames.join(", ") || "(none)"}`);
+        history[0].content = SYSTEM_PROMPT + (toolNames.length ? ` The tools available on this page RIGHT NOW are: ${toolNames.join(", ")}. Use them.` : "");
         for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
           const res = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
