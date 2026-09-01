@@ -66,6 +66,11 @@ user and the agent.
 - **DemoWeather** (FastAPI) serves its manifest, loads the adapter's IIFE
   bundle, and wires three handlers that drive the page's weather card,
   backed by live Open-Meteo data with a labeled stale-cache fallback.
+- **An in-page natural-language agent** (the ✨ Agent button on both sites):
+  reads the page's registered tools via `document.modelContext.getTools()`,
+  offers them to an OpenAI model as functions, and runs the requested
+  `executeTool` calls in-page - judges can reproduce the natural-language
+  demo with nothing but their own API key, no extension required.
 
 ### Challenges we ran into
 
@@ -130,4 +135,7 @@ a visible call counter. Demo prompts:
 2. "Open the weather one." (DemoWeather - verified, score 100 - tops the results)
 3. "What's the weather in Seoul right now?" (on https://weather.aiendpoint.dev)
 
-<!-- TODO before submitting: add YouTube link and repo/branch link. -->
+## Links for the form
+
+- Video: https://www.youtube.com/watch?v=_CChF5lgWP4
+- Try it out: https://www.aiendpoint.dev · https://weather.aiendpoint.dev · https://github.com/aiendpoint/platform · https://www.aiendpoint.dev/webmcp/ping

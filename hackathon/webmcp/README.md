@@ -30,7 +30,9 @@ One manifest, two layers, shared on-screen state between human and agent.
 
 1. Use Google Chrome 149+ and enable `chrome://flags/#enable-webmcp-testing`,
    then restart Chrome (or use the ChatGPT desktop app browser).
-2. Open **https://www.aiendpoint.dev** and ask the agent:
+2. Open **https://www.aiendpoint.dev**, click the **✨ Agent** button
+   (bottom-right), paste an OpenAI API key (stored in your browser only),
+   and ask:
    > *Find me a weather service that needs no authentication.*
    The agent calls `find_services` - watch the result cards render on the page.
 3. Ask:
@@ -45,6 +47,8 @@ One manifest, two layers, shared on-screen state between human and agent.
 Diagnostics: `https://www.aiendpoint.dev/webmcp/ping` registers a single
 `ping` tool and shows exactly which WebMCP API surface the browser exposes,
 plus a visible call counter.
+
+Demo video: https://www.youtube.com/watch?v=_CChF5lgWP4
 
 ## Where the WebMCP code lives
 
