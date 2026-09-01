@@ -20,6 +20,7 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 CITIES = {
     "seoul":    {"lat": 37.5665, "lon": 126.9780, "name": "Seoul",    "country": "KR"},
+    "san francisco": {"lat": 37.7749, "lon": -122.4194, "name": "San Francisco", "country": "US"},
     "busan":    {"lat": 35.1796, "lon": 129.0756, "name": "Busan",    "country": "KR"},
     "tokyo":    {"lat": 35.6762, "lon": 139.6503, "name": "Tokyo",    "country": "JP"},
     "new york": {"lat": 40.7128, "lon": -74.0060, "name": "New York", "country": "US"},
@@ -162,7 +163,7 @@ AI_DOCUMENT = {
             "endpoint": "/api/weather/current",
             "method": "GET",
             "params": {
-                "city": "string, required -- city name (e.g. Seoul, Tokyo, London)",
+                "city": "string, required -- city name (e.g. Seoul, San Francisco, Tokyo)",
                 "units": "string, optional -- celsius|fahrenheit, default celsius",
                 "compact": "boolean, optional -- return minimal fields only"
             },
