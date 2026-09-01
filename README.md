@@ -1,5 +1,15 @@
 # AIEndpoint — The `/ai` Standard
 
+> ### 🏆 The WebMCP Challenge
+> AIEndpoint now speaks WebMCP: the registry's search is a live in-browser
+> tool (`find_services`), and any site's `/.well-known/ai` manifest can be
+> promoted into page tools with [`@aiendpoint/webmcp`](packages/webmcp).
+> **AIEndpoint finds the right website. WebMCP operates it.**
+>
+> [Live demo](https://www.aiendpoint.dev) ·
+> [90-second test & docs](hackathon/webmcp/README.md) ·
+> Chrome 149+ with `chrome://flags/#enable-webmcp-testing`
+
 **The web was built for human browsers. AI agents are a fundamentally different client.**
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)

@@ -141,6 +141,29 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>
 }
 
+/**
+ * Fetches a site's AI discovery document, trying the authoritative
+ * /.well-known/ai location first (draft-01) and falling back to the /ai
+ * legacy alias. Only a body carrying "aiendpoint" + "service.name" counts.
+ * Throws when neither location yields a valid document.
+ */
+async function fetchAiSpec(base: string): Promise<{ spec: AiSpec; aiUrl: string }> {
+  const candidates = base.endsWith('/ai')
+    ? [base]
+    : [`${base}/.well-known/ai`, `${base}/ai`]
+  let lastError: unknown = null
+  for (const aiUrl of candidates) {
+    try {
+      const spec = await apiFetch<AiSpec>(aiUrl)
+      if (spec.aiendpoint && spec.service?.name) return { spec, aiUrl }
+      lastError = new Error(`Response from ${aiUrl} is not a valid AI discovery document (missing "aiendpoint" or "service.name").`)
+    } catch (e) {
+      lastError = e
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(String(lastError))
+}
+
 function truncate(text: string): string {
   if (text.length <= CHARACTER_LIMIT) return text
   return text.slice(0, CHARACTER_LIMIT) + '\n\n[... response truncated — refine your query or use offset/limit to see more]'
@@ -214,11 +237,10 @@ Returns:
   async ({ url, force_refresh }) => {
     const base = url.replace(/\/+$/, '')
 
-    // ── Step 1: Try direct /ai fetch ────────────────────────────────────
+    // ── Step 1: Try direct discovery document fetch ─────────────────────
     if (!force_refresh) {
       try {
-        const aiUrl = `${base}/ai`
-        const spec = await apiFetch<AiSpec>(aiUrl)
+        const { spec } = await fetchAiSpec(base)
         if (spec.aiendpoint && spec.service?.name) {
           const caps = spec.capabilities ?? []
           const text = [
@@ -643,18 +665,10 @@ Examples:
   },
   async ({ url }) => {
     try {
-      // Normalize: strip trailing slash, append /ai
-      const base   = url.replace(/\/+$/, '')
-      const aiUrl  = base.endsWith('/ai') ? base : `${base}/ai`
-
-      const spec = await apiFetch<AiSpec>(aiUrl)
-
-      // Validate minimal shape
-      if (!spec.aiendpoint || !spec.service?.name) {
-        return {
-          content: [{ type: 'text', text: `Error: Response from ${aiUrl} does not appear to be a valid /ai spec (missing "aiendpoint" or "service.name" field).` }],
-        }
-      }
+      // Normalize: strip trailing slash; fetchAiSpec tries /.well-known/ai
+      // then the /ai legacy alias (shape-validated).
+      const base = url.replace(/\/+$/, '')
+      const { spec } = await fetchAiSpec(base)
 
       const caps = spec.capabilities ?? []
       const lines: string[] = [

@@ -1,6 +1,6 @@
 {
   "name": "@aiendpoint/fastify",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Serve your /ai endpoint from Fastify in one line",
   "type": "module",
   "main": "dist/index.js",

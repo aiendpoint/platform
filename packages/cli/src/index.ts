@@ -118,7 +118,8 @@ program
   .description('Validate a live /ai endpoint')
   .action(async (url: string) => {
     const base = url.replace(/\/$/, '')
-    const aiUrls = [`${base}/ai`, `${base}/.well-known/ai`]
+    // /.well-known/ai is authoritative (draft-01); /ai is the legacy fallback
+    const aiUrls = [`${base}/.well-known/ai`, `${base}/ai`]
 
     console.log(`\n  Validating /ai endpoint at ${base}...\n`)
 
@@ -126,6 +127,9 @@ program
     let aiUrl = ''
     let responseMs = 0
 
+    // Soft-404 servers return 200 + arbitrary JSON on unknown paths; only a
+    // body carrying "aiendpoint" wins outright, first JSON kept as fallback.
+    let fallback: { spec: unknown; url: string; ms: number } | null = null
     for (const u of aiUrls) {
       try {
         const start = Date.now()
@@ -133,13 +137,23 @@ program
           signal: AbortSignal.timeout(5000),
           headers: { 'User-Agent': 'AIEndpoint-CLI/0.1' },
         })
-        responseMs = Date.now() - start
+        const ms = Date.now() - start
         if (res.ok) {
-          spec = await res.json()
-          aiUrl = u
-          break
+          const body: unknown = await res.json()
+          if (body !== null && typeof body === 'object' && 'aiendpoint' in body) {
+            spec = body
+            aiUrl = u
+            responseMs = ms
+            break
+          }
+          if (!fallback) fallback = { spec: body, url: u, ms }
         }
       } catch { /* try next */ }
+    }
+    if (!spec && fallback) {
+      spec = fallback.spec
+      aiUrl = fallback.url
+      responseMs = fallback.ms
     }
 
     if (!spec) {

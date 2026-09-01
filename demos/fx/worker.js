@@ -113,8 +113,8 @@ export default {
       });
     }
 
-    // GET /ai
-    if (path === '/ai') {
+    // GET /.well-known/ai (authoritative, draft-01) and /ai (legacy alias)
+    if (path === '/.well-known/ai' || path === '/ai') {
       return json(AI_SPEC);
     }
 

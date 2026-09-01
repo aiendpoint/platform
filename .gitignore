@@ -36,3 +36,5 @@ Thumbs.db
 /ai-work
 start.sh
 skills-lock.json
+.vercel
+.env*

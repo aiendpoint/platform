@@ -47,19 +47,36 @@ export async function validateAiEndpoint(url: string): Promise<ValidationResult>
   }
 
   const base = url.replace(/\/$/, '')
-  const aiUrls = [`${base}/ai`, `${base}/.well-known/ai`]
+  // /.well-known/ai is authoritative (draft-01); /ai is the legacy fallback
+  const aiUrls = [`${base}/.well-known/ai`, `${base}/ai`]
 
   // ── Group 1: Connectivity (15pts) ────────────────────────────────────────
   let spec: unknown = null
+  // Servers that soft-404 (200 + arbitrary JSON on unknown paths) must not
+  // stop the probe: only a document carrying "aiendpoint" wins outright, and
+  // the first JSON body of any shape is kept as a last resort so schema
+  // errors are still reported against it.
+  let fallback: { url: string; ms: number; data: unknown } | null = null
 
   for (const aiUrl of aiUrls) {
     const fetched = await fetchWithTimeout(aiUrl, 3000)
     if (fetched.ok && fetched.data !== null) {
-      result.ai_url = aiUrl
-      result.response_ms = fetched.ms
-      spec = fetched.data
-      break
+      const looksLikeDoc =
+        typeof fetched.data === 'object' && 'aiendpoint' in (fetched.data as object)
+      if (looksLikeDoc) {
+        result.ai_url = aiUrl
+        result.response_ms = fetched.ms
+        spec = fetched.data
+        break
+      }
+      if (!fallback) fallback = { url: aiUrl, ms: fetched.ms, data: fetched.data }
     }
+  }
+
+  if (!spec && fallback) {
+    result.ai_url = fallback.url
+    result.response_ms = fallback.ms
+    spec = fallback.data
   }
 
   if (!spec) {

@@ -19,14 +19,13 @@ export function GET() {
         endpoint: "/api/services",
         method: "GET",
         params: {
-          q: "search keyword (string, optional)",
+          q: "string, optional -- keyword matched against names and descriptions",
           category:
-            "filter by category (string, optional) — productivity, ecommerce, finance, news, weather, ...",
-          auth_type:
-            "filter by auth type (string, optional) — none, apikey, oauth2, bearer",
-          verified: "only verified services (boolean, optional)",
-          page: "page number (integer, optional, default: 1)",
-          limit: "results per page (integer, optional, default: 20, max: 100)",
+            "string, optional -- productivity|ecommerce|finance|news|weather|maps|search|data|communication|calendar|storage|media|health|education|travel|food|government|developer",
+          auth_type: "string, optional -- none|apikey|bearer|oauth2",
+          verified: "boolean, optional -- only verified services",
+          page: "integer, optional, default 1",
+          limit: "integer, optional, default 20, max 100",
         },
         returns:
           "{ total, page, limit, services[]: { id, name, description, url, ai_url, categories, auth_type, is_verified } }",
@@ -37,7 +36,7 @@ export function GET() {
         endpoint: "/api/services/:id",
         method: "GET",
         params: {
-          id: "service UUID (string, required, path param)",
+          id: "string, required -- service UUID (path param)",
         },
         returns:
           "service object with capabilities[], token_hints, rate_limits, raw_spec",
@@ -48,7 +47,7 @@ export function GET() {
         endpoint: "/api/validate",
         method: "GET",
         params: {
-          url: "service base URL to validate (string, required)",
+          url: "string, required -- service base URL to validate",
         },
         returns:
           "{ passed, score, grade, capability_count, errors[], warnings[], passes[], response_ms }",
@@ -59,8 +58,8 @@ export function GET() {
         endpoint: "/api/services",
         method: "POST",
         params: {
-          url: "service base URL (string, required)",
-          owner_email: "owner contact email (string, optional)",
+          url: "string, required -- service base URL",
+          owner_email: "string, optional -- owner contact email",
         },
         returns:
           "{ id, name, url, is_verified, validation: { score, grade, warnings[] } }",
@@ -79,8 +78,8 @@ export function GET() {
       docs: "https://github.com/aiendpoint/platform",
     },
     meta: {
-      last_updated: "2026-03-13",
-      spec_url: "https://aiendpoint.dev/ai",
+      last_updated: "2026-09-01",
+      spec_url: "https://www.aiendpoint.dev/.well-known/ai",
       github: "https://github.com/aiendpoint/platform",
     },
   });

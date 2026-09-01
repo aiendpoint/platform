@@ -3,6 +3,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
+import { RegistryTools } from "@/components/webmcp/RegistryTools";
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
         <Navbar />
+        <RegistryTools />
         <main>{children}</main>
         <footer className="border-t border-line mt-20 py-8 px-6 text-center text-muted text-sm">
           <div className="max-w-5xl mx-auto flex flex-wrap justify-center gap-6">

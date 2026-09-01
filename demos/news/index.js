@@ -6,8 +6,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ─── /ai endpoint ──────────────────────────────────────────────────────────
-app.get('/ai', (req, res) => {
+// ─── AI discovery document ─────────────────────────────────────────────────
+// /.well-known/ai is authoritative (draft-01); /ai stays as a legacy alias
+app.get(['/.well-known/ai', '/ai'], (req, res) => {
   res.json({
     aiendpoint: '1.0',
     service: {
