@@ -25,7 +25,7 @@ export function ServiceCard({ service }: { service: ServiceListItem }) {
   return (
     <Link
       href={`/services/${service.id}`}
-      className="block bg-canvas border border-line rounded-lg p-5 hover:border-line-dim hover:bg-surface transition-all group"
+      className="flex flex-col h-full bg-canvas border border-line rounded-lg p-5 hover:border-line-dim hover:bg-surface transition-all group"
     >
       <div className="mb-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -84,7 +84,7 @@ export function ServiceCard({ service }: { service: ServiceListItem }) {
         ))}
       </div>
 
-      <div className="flex items-center justify-between text-xs text-ghost">
+      <div className="mt-auto flex items-center justify-between text-xs text-ghost">
         <span className={auth.color}>{auth.label}</span>
         <div className="flex items-center gap-2">
           {(service.discover_count ?? 0) > 0 && (
