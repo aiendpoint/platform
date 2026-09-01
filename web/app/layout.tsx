@@ -19,12 +19,44 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  openGraph: {
+    title: "AIEndpoint — The /ai Standard",
+    description:
+      "Service discovery for the agentic web. Publish a /.well-known/ai capability manifest; agents find you before they navigate.",
+    url: "https://www.aiendpoint.dev",
+    siteName: "AIEndpoint",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "AIEndpoint — The /ai Standard",
+    description:
+      "Service discovery for the agentic web. Publish a /.well-known/ai capability manifest; agents find you before they navigate.",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "AIEndpoint",
+  url: "https://www.aiendpoint.dev",
+  description:
+    "Open standard and live registry for AI agent service discovery: sites publish a /.well-known/ai capability manifest, agents search it before navigating.",
+  publisher: {
+    "@type": "Organization",
+    name: "AIEndpoint",
+    url: "https://www.aiendpoint.dev",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <Navbar />
         <RegistryTools />
         <main>{children}</main>

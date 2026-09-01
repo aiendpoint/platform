@@ -6,7 +6,10 @@ const nextConfig: NextConfig = {
   // /.well-known/ai is the authoritative discovery location (draft-01).
   // App Router can't route dot-folders, so rewrite to the /ai route handler.
   async rewrites() {
-    return [{ source: "/.well-known/ai", destination: "/ai" }];
+    return [
+      { source: "/.well-known/ai", destination: "/ai" },
+      { source: "/.well-known/webmcp", destination: "/webmcp/manifest" },
+    ];
   },
   images: {
     remotePatterns: [

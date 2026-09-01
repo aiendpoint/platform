@@ -91,8 +91,17 @@ export function ServicesFilter({ categories, initialQ = "", initialCategories = 
 
   return (
     <>
-      {/* Search */}
-      <form onSubmit={handleSearch} className="mb-5">
+      {/* Search - declarative WebMCP attributes mirror the imperative
+          find_services tool for agents that read markup */}
+      <form
+        onSubmit={handleSearch}
+        className="mb-5"
+        {...{
+          toolname: "find_services",
+          tooldescription: "Search the AIEndpoint registry for AI-ready web services by keyword",
+          toolaction: "/services",
+        }}
+      >
         <input
           type="search"
           value={searchInput}

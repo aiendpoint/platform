@@ -4,6 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DemoWeather — an AI-ready weather service</title>
+  <meta name="description" content="Live weather demo by AIEndpoint. Agents: capability manifest at /.well-known/ai, WebMCP tools registered on this page." />
+  <link rel="canonical" href="https://weather.aiendpoint.dev/" />
+  <meta property="og:title" content="DemoWeather - an AI-ready weather service" />
+  <meta property="og:description" content="Live Open-Meteo weather. WebMCP tools generated from the /.well-known/ai manifest update this page when agents call them." />
+  <meta property="og:url" content="https://weather.aiendpoint.dev/" />
+  <meta property="og:site_name" content="DemoWeather" />
+  <meta property="og:type" content="website" />
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"DemoWeather","url":"https://weather.aiendpoint.dev/","description":"AI-ready weather demo: /.well-known/ai capability manifest promoted into WebMCP page tools by AIEndpoint.","applicationCategory":"Weather"}
+  </script>
   <style>
     :root {
       --bg: #0a0a0a; --card: #141414; --line: #262626;
@@ -69,7 +79,7 @@
       Live data from Open-Meteo. Agents: see <code>/.well-known/ai</code>.
     </p>
 
-    <div class="cities" id="cities"></div>
+    <div class="cities" id="cities" toolname="current_weather" tooldescription="Pick a city to load its current weather and forecast" toolaction="/api/weather/current"></div>
 
     <div class="card" id="current-card">
       <div id="current-body">Loading…</div>

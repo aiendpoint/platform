@@ -199,6 +199,29 @@ AI_DOCUMENT = {
 }
 
 
+# WebMCP discovery manifest: mirrors the tools the page registers
+# imperatively via document.modelContext (adapter-generated).
+WEBMCP_MANIFEST = {
+    "name": "DemoWeather",
+    "description": "Live weather demo by AIEndpoint. Page tools are generated from the /.well-known/ai capability manifest.",
+    "version": "1.0",
+    "tools": [
+        {"name": "current_weather", "description": "Get current weather for a city (updates the visible weather card)", "annotations": {"readOnlyHint": True}},
+        {"name": "forecast", "description": "Get a multi-day forecast for a city", "annotations": {"readOnlyHint": True}},
+        {"name": "supported_cities", "description": "List all supported cities", "annotations": {"readOnlyHint": True}},
+    ],
+    "links": {
+        "ai_manifest": "https://weather.aiendpoint.dev/.well-known/ai",
+        "registry": "https://www.aiendpoint.dev",
+    },
+}
+
+
+@app.get("/.well-known/webmcp")
+def webmcp_manifest():
+    return WEBMCP_MANIFEST
+
+
 # /.well-known/ai is the authoritative location (draft-aiendpoint-ai-discovery-01);
 # /ai stays as a backward-compatible alias serving identical content.
 @app.get("/.well-known/ai")
