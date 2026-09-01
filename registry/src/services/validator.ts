@@ -27,6 +27,8 @@ export interface ValidationResult {
   capability_count: number
   raw_response: unknown
   token_efficiency: TokenEfficiency | null
+  /** Site exposes WebMCP tools (meta.webmcp declaration or page heuristic) */
+  webmcp: boolean
 }
 
 // ─── Main validator ────────────────────────────────────────────────────────
@@ -44,6 +46,7 @@ export async function validateAiEndpoint(url: string): Promise<ValidationResult>
     capability_count: 0,
     raw_response: null,
     token_efficiency: null,
+    webmcp: false,
   }
 
   const base = url.replace(/\/$/, '')
@@ -236,11 +239,47 @@ export async function validateAiEndpoint(url: string): Promise<ValidationResult>
   result.token_efficiency = computeTokenEfficiency(s, caps)
   result.score += result.token_efficiency.score
 
+  // ── WebMCP support detection ──────────────────────────────────────────────
+  result.webmcp = await detectWebMcp(base, spec)
+  if (result.webmcp) {
+    result.passes.push({
+      field: 'webmcp',
+      message: 'Site exposes WebMCP tools (declared in meta.webmcp or detected on the page)',
+      code: 'OK'
+    })
+  }
+
   // ── Final judgment ────────────────────────────────────────────────────────
   result.score = Math.min(100, result.score)
   result.passed = result.errors.length === 0
 
   return result
+}
+
+// ─── WebMCP detection ──────────────────────────────────────────────────────
+// WebMCP tools are registered by client-side JS, so a server cannot observe
+// them directly. Two signals, either one counts:
+//   1. Self-declaration: meta.webmcp === true | "true" in the manifest
+//   2. Heuristic: the homepage HTML mentions the WebMCP API surface
+const WEBMCP_SIGNALS = /\bmodelContext\b|AIEndpointWebMCP|registerTool\s*\(|provideContext\s*\(/
+
+export async function detectWebMcp(baseUrl: string, spec: unknown): Promise<boolean> {
+  const meta = (spec as { meta?: Record<string, unknown> } | null)?.meta
+  const declared = meta?.['webmcp']
+  if (declared === true || declared === 'true' || declared === '1') return true
+
+  try {
+    const res = await fetch(baseUrl, {
+      signal: AbortSignal.timeout(3000),
+      headers: { accept: 'text/html', 'user-agent': 'AIEndpoint-Validator/0.2' },
+      redirect: 'follow',
+    })
+    if (!res.ok) return false
+    const html = (await res.text()).slice(0, 500_000)
+    return WEBMCP_SIGNALS.test(html)
+  } catch {
+    return false
+  }
 }
 
 // ─── Token efficiency computation ──────────────────────────────────────────

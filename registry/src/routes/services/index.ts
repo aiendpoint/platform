@@ -1,6 +1,6 @@
 /**
  * ⚠️  CACHE: Results are cached in Redis for 60 s (1 min).
- *     Cache key: services:v4:<q>:<category>:<auth_type>:<language>:<verified>:<min_score>:<sort>:<page>:<limit>
+ *     Cache key: services:v5:<q>:<category>:<auth_type>:<language>:<verified>:<min_score>:<sort>:<page>:<limit>
  *     If Redis env vars are absent the route works without caching.
  */
 import type { FastifyInstance } from 'fastify'
@@ -18,6 +18,7 @@ export async function servicesListRoute(app: FastifyInstance) {
       auth_type?: string
       language?: string
       verified?: string
+      webmcp?: string
       min_score?: string
       sort?: string
       page?: string
@@ -30,6 +31,7 @@ export async function servicesListRoute(app: FastifyInstance) {
       auth_type,
       language,
       verified,
+      webmcp,
       min_score,
       sort = 'newest',
       page = '1',
@@ -46,7 +48,7 @@ export async function servicesListRoute(app: FastifyInstance) {
     // PostgREST .or() syntax reserves , ( ) — strip them from user input and
     // fall back to no keyword filter when nothing searchable remains.
     const safeQ = q ? q.replace(/[,()]/g, ' ').trim() : ''
-    const cacheKey = `services:v4:${safeQ}:${cats.join(',')}:${auth_type ?? ''}:${language ?? ''}:${verified ?? ''}:${min_score ?? ''}:${sort}:${pageNum}:${limitNum}`
+    const cacheKey = `services:v5:${safeQ}:${cats.join(',')}:${auth_type ?? ''}:${language ?? ''}:${verified ?? ''}:${webmcp ?? ''}:${min_score ?? ''}:${sort}:${pageNum}:${limitNum}`
     const cached = await cacheGet<unknown>(cacheKey)
     if (cached) {
       return reply.send(cached)
@@ -69,13 +71,14 @@ export async function servicesListRoute(app: FastifyInstance) {
       if (auth_type) qb = qb.eq('auth_type', auth_type)
       if (language) qb = qb.overlaps('language', [language])
       if (verified === 'true') qb = qb.eq('is_verified', true)
+      if (webmcp === 'true') qb = qb.eq('webmcp', true)
       if (!isNaN(minScoreNum)) qb = qb.gte('score', minScoreNum)
       return qb as T
     }
 
     // Community rows are never verified and store category/language only
     // inside their spec JSON, so those filters exclude them entirely.
-    const communityEligible = verified !== 'true' && cats.length === 0 && !language
+    const communityEligible = verified !== 'true' && webmcp !== 'true' && cats.length === 0 && !language
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const applyCommunityFilters = <T,>(qb: any): T => {
       qb = qb.eq('status', 'active')
@@ -91,7 +94,7 @@ export async function servicesListRoute(app: FastifyInstance) {
       return db
         .from('services')
         .select(
-          'id, name, description, url, ai_url, categories, auth_type, is_verified, score, spec_version, created_at',
+          'id, name, description, url, ai_url, categories, auth_type, is_verified, webmcp, score, spec_version, created_at',
           { count: 'exact' }
         )
     }
@@ -140,6 +143,7 @@ export async function servicesListRoute(app: FastifyInstance) {
       categories:     row.categories,
       auth_type:      row.auth_type,
       is_verified:    row.is_verified,
+      webmcp:         row.webmcp ?? false,
       score:          row.score ?? 0,
       spec_version:   row.spec_version,
       created_at:     row.created_at,
@@ -187,6 +191,7 @@ export async function servicesListRoute(app: FastifyInstance) {
           categories:     (svc?.['category'] as string[]) ?? [],
           auth_type:      (((spec?.['auth'] as Record<string, unknown>)?.['type'] as string) ?? 'none') as import('../../types/index.js').AuthType,
           is_verified:    false,
+          webmcp:         (() => { const m = spec?.['meta'] as Record<string, unknown> | undefined; const w = m?.['webmcp']; return w === true || w === 'true' || w === '1' })(),
           score:          row.confidence ?? 0,
           spec_version:   (spec?.['aiendpoint'] as string) ?? '1.0',
           created_at:     row.created_at,

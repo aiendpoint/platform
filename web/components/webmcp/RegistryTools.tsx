@@ -53,6 +53,10 @@ export function RegistryTools() {
             enum: ["none", "apikey", "bearer", "oauth2"],
             description: "Filter by required authentication. Use 'none' for services an agent can call without credentials",
           },
+          webmcp_only: {
+            type: "boolean",
+            description: "Only services whose pages register WebMCP tools - sites an in-browser agent can operate directly after navigating",
+          },
           limit: { type: "integer", description: "Max results (default 12, max 50)" },
         },
       },
@@ -60,12 +64,14 @@ export function RegistryTools() {
         const query = typeof input?.query === "string" ? input.query : undefined;
         const category = typeof input?.category === "string" ? input.category : undefined;
         const authType = typeof input?.auth_type === "string" ? input.auth_type : undefined;
+        const webmcpOnly = input?.webmcp_only === true || input?.webmcp_only === "true";
         const limit = Math.min(50, Math.max(1, Number(input?.limit) || 12));
 
         const res = await getServices({
           q: query,
           category,
           auth_type: authType,
+          webmcp: webmcpOnly || undefined,
           sort: "score",
           limit,
         });
@@ -87,6 +93,7 @@ export function RegistryTools() {
           categories: s.categories,
           auth: s.auth_type,
           verified: s.is_verified,
+          webmcp: s.webmcp ?? false,
           score: s.score,
           source: s.source ?? "owner",
         }));
@@ -97,8 +104,8 @@ export function RegistryTools() {
           showing: items.length,
           services: items,
           note:
-            "The user's page now shows these results. Call select_service with a service_id to open its detail view, " +
-            "or navigate to a service's url to use its own on-page WebMCP tools.",
+            "The user's page now shows these results. Call select_service with a service_id to open its detail view. " +
+            "Services with webmcp=true register their own WebMCP tools - navigate to their url and operate them directly.",
         });
       },
     };

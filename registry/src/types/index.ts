@@ -113,6 +113,7 @@ export interface ServiceListItem {
   categories: string[]
   auth_type: AuthType
   is_verified: boolean
+  webmcp?: boolean
   score: number
   spec_version: string
   created_at: string

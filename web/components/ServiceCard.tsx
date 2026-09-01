@@ -43,6 +43,14 @@ export function ServiceCard({ service }: { service: ServiceListItem }) {
             {service.name}
           </h3>
         </div>
+        {service.webmcp && (
+          <span
+            className="shrink-0 text-xs bg-accent/10 text-accent border border-accent/20 px-2 py-0.5 rounded-full"
+            title="Registers WebMCP tools - in-browser agents can operate this site directly"
+          >
+            ⚡ WebMCP
+          </span>
+        )}
         {service.is_verified && (
           <span className="shrink-0 text-xs bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded-full">
             ✓ verified

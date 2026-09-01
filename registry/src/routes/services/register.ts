@@ -85,6 +85,7 @@ export async function serviceRegisterRoute(app: FastifyInstance) {
         status:        'active',
         score:         validation.score,
         is_verified:   badge !== 'none',
+        webmcp:        validation.webmcp,
         verified_at:   badge !== 'none' ? now : null,
         owner_email:   owner_email ?? null,
         is_official:   false

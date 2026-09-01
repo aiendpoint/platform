@@ -195,7 +195,7 @@ AI_DOCUMENT = {
         "field_filtering": False,
         "delta_support": False
     },
-    "meta": {"last_updated": "2026-09-01"}
+    "meta": {"last_updated": "2026-09-01", "webmcp": "true"}
 }
 
 

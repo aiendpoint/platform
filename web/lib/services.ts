@@ -58,7 +58,7 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
   // ── Owner services query ──────────────────────────────────────────
   let ownerQuery = db
     .from("services")
-    .select("id, name, description, url, ai_url, categories, auth_type, is_verified, score, spec_version, created_at")
+    .select("id, name, description, url, ai_url, categories, auth_type, is_verified, webmcp, score, spec_version, created_at")
     .eq("status", "active")
     .is("deleted_at", null);
 
@@ -87,6 +87,7 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
     categories: row.categories,
     auth_type: row.auth_type,
     is_verified: row.is_verified,
+    webmcp: row.webmcp ?? false,
     score: row.score ?? 0,
     spec_version: row.spec_version,
     created_at: row.created_at,
