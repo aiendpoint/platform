@@ -84,6 +84,17 @@ export function registerWebMcpTools(tools: WebMcpTool[], callbacks?: RegisterCal
             }
           }
           callbacks?.onRegistered?.("registerTool");
+          // Chrome's implementation exposes getTools - confirm what is
+          // actually registered rather than trusting our own bookkeeping.
+          if (typeof mc.getTools === "function") {
+            try {
+              const registered = (await mc.getTools()) as Array<{ name?: string }> | undefined;
+              const names = (registered ?? []).map((t) => t?.name).filter(Boolean);
+              callbacks?.onEvent?.(`getTools() reports: [${names.join(", ")}]`);
+            } catch (e) {
+              callbacks?.onEvent?.(`getTools() failed: ${e instanceof Error ? e.message : String(e)}`);
+            }
+          }
           return;
         }
         if (typeof mc.provideContext === "function") {

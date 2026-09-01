@@ -1,6 +1,6 @@
 /**
  * ⚠️  CACHE: Results are cached in Redis for 60 s (1 min).
- *     Cache key: services:v1:<q>:<category>:<auth_type>:<language>:<verified>:<min_score>:<sort>:<page>:<limit>
+ *     Cache key: services:v4:<q>:<category>:<auth_type>:<language>:<verified>:<min_score>:<sort>:<page>:<limit>
  *     If Redis env vars are absent the route works without caching.
  */
 import type { FastifyInstance } from 'fastify'
@@ -46,49 +46,54 @@ export async function servicesListRoute(app: FastifyInstance) {
     // PostgREST .or() syntax reserves , ( ) — strip them from user input and
     // fall back to no keyword filter when nothing searchable remains.
     const safeQ = q ? q.replace(/[,()]/g, ' ').trim() : ''
-    const cacheKey = `services:v3:${safeQ}:${cats.join(',')}:${auth_type ?? ''}:${language ?? ''}:${verified ?? ''}:${min_score ?? ''}:${sort}:${pageNum}:${limitNum}`
+    const cacheKey = `services:v4:${safeQ}:${cats.join(',')}:${auth_type ?? ''}:${language ?? ''}:${verified ?? ''}:${min_score ?? ''}:${sort}:${pageNum}:${limitNum}`
     const cached = await cacheGet<unknown>(cacheKey)
     if (cached) {
       return reply.send(cached)
     }
 
     // ── DB query ──────────────────────────────────────────────────────────────
-    let query = db
-      .from('services')
-      .select(
-        'id, name, description, url, ai_url, categories, auth_type, is_verified, score, spec_version, created_at',
-        { count: 'exact' }
-      )
-      .eq('status', 'active')
-      .is('deleted_at', null)
+    const minScoreNum = min_score ? parseInt(min_score, 10) : NaN
 
-    if (safeQ) {
-      // Match names and descriptions so capability keywords ("weather") find
-      // services not named after them.
-      query = query.or(`name.ilike.%${safeQ}%,description.ilike.%${safeQ}%`)
-    }
-
-    if (cats.length > 0) {
-      query = query.overlaps('categories', cats)
-    }
-
-    if (auth_type) {
-      query = query.eq('auth_type', auth_type)
-    }
-
-    if (language) {
-      query = query.overlaps('language', [language])
-    }
-
-    if (verified === 'true') {
-      query = query.eq('is_verified', true)
-    }
-
-    if (min_score) {
-      const minScoreNum = parseInt(min_score, 10)
-      if (!isNaN(minScoreNum)) {
-        query = query.gte('score', minScoreNum)
+    // Every filter must be applied identically to the data query AND the
+    // count query, or `total` disagrees with the rows actually returned.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const applyOwnerFilters = <T,>(qb: any): T => {
+      qb = qb.eq('status', 'active').is('deleted_at', null)
+      if (safeQ) {
+        // Match names and descriptions so capability keywords ("weather")
+        // find services not named after them.
+        qb = qb.or(`name.ilike.%${safeQ}%,description.ilike.%${safeQ}%`)
       }
+      if (cats.length > 0) qb = qb.overlaps('categories', cats)
+      if (auth_type) qb = qb.eq('auth_type', auth_type)
+      if (language) qb = qb.overlaps('language', [language])
+      if (verified === 'true') qb = qb.eq('is_verified', true)
+      if (!isNaN(minScoreNum)) qb = qb.gte('score', minScoreNum)
+      return qb as T
+    }
+
+    // Community rows are never verified and store category/language only
+    // inside their spec JSON, so those filters exclude them entirely.
+    const communityEligible = verified !== 'true' && cats.length === 0 && !language
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const applyCommunityFilters = <T,>(qb: any): T => {
+      qb = qb.eq('status', 'active')
+      if (safeQ) qb = qb.or(`url.ilike.%${safeQ}%,domain.ilike.%${safeQ}%`)
+      if (auth_type) qb = qb.eq('ai_spec->auth->>type', auth_type)
+      if (!isNaN(minScoreNum)) qb = qb.gte('confidence', minScoreNum)
+      return qb as T
+    }
+
+    let query = applyOwnerFilters<ReturnType<typeof buildOwnerSelect>>(buildOwnerSelect())
+
+    function buildOwnerSelect() {
+      return db
+        .from('services')
+        .select(
+          'id, name, description, url, ai_url, categories, auth_type, is_verified, score, spec_version, created_at',
+          { count: 'exact' }
+        )
     }
 
     // Sorting
@@ -100,17 +105,16 @@ export async function servicesListRoute(app: FastifyInstance) {
       query = query.order('created_at', { ascending: false })
     }
 
-    // ── Get counts first (cheap, no row limit) ──────────────────────────
-    const ownerCountQuery = db
-      .from('services')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'active')
-      .is('deleted_at', null)
+    // ── Get counts first (cheap, no row limit), with the SAME filters ───
+    const ownerCountQuery = applyOwnerFilters<PromiseLike<{ count: number | null }>>(
+      db.from('services').select('id', { count: 'exact', head: true })
+    )
 
-    const communityCountQuery = db
-      .from('community_specs')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'active')
+    const communityCountQuery: PromiseLike<{ count: number | null }> = communityEligible
+      ? applyCommunityFilters<PromiseLike<{ count: number | null }>>(
+          db.from('community_specs').select('id', { count: 'exact', head: true })
+        )
+      : Promise.resolve({ count: 0 })
 
     const [{ count: ownerCount }, { count: communityCount }] = await Promise.all([
       ownerCountQuery,
@@ -147,22 +151,29 @@ export async function servicesListRoute(app: FastifyInstance) {
     const remaining = limitNum - services.length
     let communityServices: ServiceListItem[] = []
 
-    if (remaining > 0) {
-      // Offset into community = max(0, offset - ownerCount)
+    if (remaining > 0 && communityEligible) {
+      // Offset into community = max(0, offset - ownerCount), where ownerCount
+      // reflects the active filters so pagination lines up with the counts.
       const communityOffset = Math.max(0, offset - (ownerCount ?? 0))
 
-      let communityQuery = db
-        .from('community_specs')
-        .select('id, url, domain, ai_spec, confidence, contributors, discover_count, created_at, updated_at')
-        .eq('status', 'active')
+      const communityQuery = applyCommunityFilters<
+        ReturnType<typeof buildCommunitySelect>
+      >(buildCommunitySelect())
 
-      if (safeQ) {
-        communityQuery = communityQuery.or(`url.ilike.%${safeQ}%,domain.ilike.%${safeQ}%`)
+      function buildCommunitySelect() {
+        return db
+          .from('community_specs')
+          .select('id, url, domain, ai_spec, confidence, contributors, discover_count, created_at, updated_at')
       }
 
-      const { data: communityData } = await communityQuery
+      const { data: communityData, error: communityError } = await communityQuery
         .order('discover_count', { ascending: false })
         .range(communityOffset, communityOffset + remaining - 1)
+
+      if (communityError) {
+        // Surface instead of silently returning partial results
+        return reply.status(500).send({ error: 'Failed to fetch services', code: 'INTERNAL_ERROR' })
+      }
 
       communityServices = (communityData ?? []).map(row => {
         const spec = row.ai_spec as Record<string, unknown>
