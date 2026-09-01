@@ -30,10 +30,12 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
   let ownerCountQ = db.from("services").select("id", { count: "exact", head: true }).eq("status", "active").is("deleted_at", null);
   let communityCountQ = db.from("community_specs").select("id", { count: "exact", head: true }).eq("status", "active");
 
-  if (params.q) {
-    // description 검색은 노이즈가 많아 제외 (필요 시 복원: description.ilike.%${params.q}%)
-    ownerCountQ = ownerCountQ.or(`name.ilike.${params.q}%,url.ilike.${params.q}%`);
-    communityCountQ = communityCountQ.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
+  // Keep this in lockstep with the registry API's search (services route):
+  // substring match on name+description, or() syntax chars stripped.
+  const safeQ = params.q ? params.q.replace(/[,()]/g, " ").trim() : "";
+  if (safeQ) {
+    ownerCountQ = ownerCountQ.or(`name.ilike.%${safeQ}%,description.ilike.%${safeQ}%`);
+    communityCountQ = communityCountQ.or(`url.ilike.%${safeQ}%,domain.ilike.%${safeQ}%`);
   }
   const cats = params.category ? params.category.split(",").filter(Boolean) : [];
   if (cats.length > 0) {
@@ -60,7 +62,7 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
     .eq("status", "active")
     .is("deleted_at", null);
 
-  if (params.q) ownerQuery = ownerQuery.or(`name.ilike.${params.q}%,url.ilike.${params.q}%`);
+  if (safeQ) ownerQuery = ownerQuery.or(`name.ilike.%${safeQ}%,description.ilike.%${safeQ}%`);
   if (cats.length > 0) {
     ownerQuery = ownerQuery.contains("categories", cats);
   }
@@ -103,7 +105,7 @@ async function _getServicesSSR(params: ServicesParams): Promise<ServicesResult> 
       .select("id, url, domain, ai_spec, confidence, contributors, discover_count, created_at")
       .eq("status", "active");
 
-    if (params.q) communityQuery = communityQuery.or(`url.ilike.%${params.q}%,domain.ilike.${params.q}%`);
+    if (safeQ) communityQuery = communityQuery.or(`url.ilike.%${safeQ}%,domain.ilike.%${safeQ}%`);
     if (params.auth_type) communityQuery = communityQuery.filter("ai_spec->auth->>type", "eq", params.auth_type);
     for (const c of cats) {
       communityQuery = communityQuery.filter("ai_spec->service->category", "cs", `["${c}"]`);
